@@ -17,7 +17,7 @@ go get google.golang.org/grpc
 cd src/google.golang.org/grpc
 git remote add mwitkow git@github.com:mwitkow/grpc-go.git
 git fetch mwitkow
-git co mwitkow/browser_compatible_transport
+git checkout mwitkow/feature/browser_compatible_transport
 ```
 
 
