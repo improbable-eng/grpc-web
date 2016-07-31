@@ -7,12 +7,13 @@ import (
 	"net"
 	"log"
 	"google.golang.org/grpc"
-	testproto "github.com/mwitkow/grpc-browser-compat/testproto"
+	testproto "github.com/mwitkow/grpc-browser-compat/cmd/testproto"
 	"google.golang.org/grpc/grpclog"
 	"os"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/jsonpb"
 	"bytes"
+	"github.com/mwitkow/grpc-browser-compat"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 	grpclog.Print("WOLO")
 
 	httpServer := http.Server{
-		Handler: grpcServer,
+		Handler: grpc_browser_compat.Middleware(grpcServer),
 	}
 	listener, err := net.Listen("tcp", ":9090")
 	if err != nil {

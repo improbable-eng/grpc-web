@@ -9,7 +9,7 @@ def main():
 
   full_payload = struct.pack('x') + struct.pack('>I', len(payload)) + payload
   
-  resp = requests.post("http://localhost:9090/mwitkow.testproto.TestService/PingList", headers={"Content-Type": "application/grpc+browser"}, data=full_payload)
+  resp = requests.post("http://localhost:9090/mwitkow.testproto.TestService/PingList", headers={"Content-Type": "application/grpc", "Grpc-Browser-Compat": "true"}, data=full_payload)
 
   logging.info("Got response headers: {}".format(resp.headers))
   for out in resp.iter_lines(4 * 1024 * 1024):
