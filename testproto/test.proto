@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mwitkow.testproto;
 
+import "nested/somenested.proto";
 
 message Empty {
 }
@@ -15,6 +16,7 @@ message PingRequest {
 message PingResponse {
   string Value = 1;
   int32 counter = 2;
+  nested.SomeMessage something = 3;
 }
 
 service TestService {
