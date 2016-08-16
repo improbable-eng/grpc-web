@@ -28,8 +28,6 @@ var (
 func main() {
 	flag.Parse()
 
-
-
 	//grpcServer := grpc.NewServer(grpc.CustomCodec(NewJsonPBCodec()))
 	grpcServer := grpc.NewServer()
 	testproto.RegisterTestServiceServer(grpcServer, &testproto.TestServiceImpl{})
