@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
+	"fmt"
 )
 
 type TestServiceImpl struct {
@@ -30,8 +31,8 @@ func (s *TestServiceImpl) PingError(ctx context.Context, ping *PingRequest) (*Em
 func (s *TestServiceImpl) PingList(ping *PingRequest, stream TestService_PingListServer) error {
 	stream.SetTrailer(metadata.Pairs("MyKey", "MyValue", "SomeKey", "SomeValue"))
 	grpclog.Printf("Handling PingList")
-	for i := int32(0); i < 20; i++ {
-		stream.Send(&PingResponse{Value: ping.Value})
+	for i := int32(0); i < 3000; i++ {
+		stream.Send(&PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
 	}
 	return nil
 }

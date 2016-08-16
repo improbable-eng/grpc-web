@@ -10,13 +10,20 @@ protoc \
    --js_out=import_style=commonjs,binary:src/proto \
    --grpc_out=commonjs,binary:src/proto \
    --plugin=protoc-gen-grpc=node_modules/grpc-tools/bin/grpc_node_plugin \
-   -I ../testproto ../testproto/*.proto
+   -I ../cmd/testproto ../cmd/testproto/*.proto
 
 protoc \
    --js_out=import_style=commonjs,binary:src/proto \
    --grpc_out=commonjs,binary:src/proto \
    --plugin=protoc-gen-grpc=node_modules/grpc-tools/bin/grpc_node_plugin \
-   -I ../testproto ../testproto/nested/*.proto
+   -I ../cmd/testproto ../cmd/testproto/nested/*.proto
+
+
+protoc \
+   --js_out=import_style=commonjs,binary:src/proto \
+   --grpc_out=commonjs,binary:src/proto \
+   --plugin=protoc-gen-grpc=node_modules/grpc-tools/bin/grpc_node_plugin \
+   -I ../ ../terminator.proto
 
 # Nuke gRPC import
 find src/proto -iname '*grpc_pb.js' -exec sed -i '/grpc/d' {} \;

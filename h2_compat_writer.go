@@ -81,11 +81,12 @@ func (w *h2CompatResponse) copyTrailersToPayload(req *http.Request) {
 	terminatorPrefix := make([]byte, 5+4)
 	copy(terminatorPrefix, grpcBrowserTerminationMarker)
 	binary.BigEndian.PutUint32(terminatorPrefix[5:], uint32(len(out)))
-	grpclog.Printf("Terminator prefix: %v", terminatorPrefix)
 	w.wrapped.(http.Flusher).Flush()
 	w.wrapped.Write(terminatorPrefix)
 	w.wrapped.Write(out)
 	w.wrapped.(http.Flusher).Flush()
+	grpclog.Printf("Wrote terminator: %v", term)
+
 }
 
 func (w *h2CompatResponse) trailersToTerminator() *BrowserTerminator {
