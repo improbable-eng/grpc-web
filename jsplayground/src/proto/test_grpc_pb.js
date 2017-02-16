@@ -1,9 +1,7 @@
 // GENERATED CODE -- DO NOT EDIT!
 
 'use strict';
-var grpc = require('grpc-polyfill');
 var test_pb = require('./test_pb.js');
-var nested_somenested_pb = require('./nested/somenested_pb.js');
 
 function serialize_mwitkow_testproto_Empty(arg) {
   if (!(arg instanceof test_pb.Empty)) {
@@ -86,4 +84,3 @@ var TestServiceService = exports.TestServiceService = {
   },
 };
 
-exports.TestServiceClient = grpc.makeGenericClientConstructor(TestServiceService);

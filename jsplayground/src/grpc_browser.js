@@ -1,4 +1,6 @@
-import terminator_pb from './proto/terminator_pb.js'
+require('./proto/terminator_pb.js');
+
+console.log("I AM BEING INCLUDED");
 
 // Demo
 import testproto from './proto/test_pb.js'
