@@ -1,8 +1,6 @@
 import chunkedRequest from 'chunked-request';
 import { grpcChunkParser, frameRequest } from './src/transport';
 
-//const terminator_pb = require('./proto/terminator_pb.js');
-
 function makeRequestBody(req, serializer) {
 	try {
 		return frameRequest(serializer(req))
@@ -16,7 +14,7 @@ function makeRequestBody(req, serializer) {
 // makeRpc returns a new gRPC service which can be used to initiate calls against
 // the gRPC host; this function is not intended to be called directly, but is instead
 // used as a factory function by `makeGenericClientConstructor()`.
-function makeRpc(name, serviceDescriptor, { host }) {
+function makeRpc(name, serviceDescriptor, props) {
 	if (serviceDescriptor.requestStream) {
 		// it's not possible to stream data to a server using HTML5.
 		throw new Error(`unsupported requestStream on ${key}`);
@@ -32,7 +30,7 @@ function makeRpc(name, serviceDescriptor, { host }) {
 
 		// initiate the request.
 		chunkedRequest({
-			url: `${host}${serviceDescriptor.path}`,
+			url: `${props.host}${serviceDescriptor.path}`,
 			method: 'POST',
 			headers: {
 				"content-type": "application/grpc",

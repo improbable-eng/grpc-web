@@ -1,3 +1,5 @@
+require('../proto/terminator_pb.js');
+
 var TERMINATOR_SIZE = 4
 var HEADER_SIZE = 5
 
