@@ -1,4 +1,4 @@
-module.exports = require("protobufjs").newBuilder({})['import']({
+{
     "package": "mwitkow.testproto",
     "messages": [
         {
@@ -17,13 +17,13 @@ module.exports = require("protobufjs").newBuilder({})['import']({
                 {
                     "rule": "optional",
                     "type": "int32",
-                    "name": "sleepTimeMs",
+                    "name": "sleep_time_ms",
                     "id": 2
                 },
                 {
                     "rule": "optional",
                     "type": "uint32",
-                    "name": "errorCodeReturned",
+                    "name": "error_code_returned",
                     "id": 3
                 }
             ]
@@ -45,18 +45,18 @@ module.exports = require("protobufjs").newBuilder({})['import']({
                 },
                 {
                     "rule": "optional",
-                    "type": "boo.Boo",
-                    "name": "boo",
+                    "type": "nested.SomeMessage",
+                    "name": "something",
                     "id": 3
                 }
             ]
         },
         {
-            "name": "boo",
+            "name": "nested",
             "fields": [],
             "messages": [
                 {
-                    "name": "Boo",
+                    "name": "SomeMessage",
                     "fields": [
                         {
                             "rule": "optional",
@@ -97,4 +97,4 @@ module.exports = require("protobufjs").newBuilder({})['import']({
             }
         }
     ]
-}).build();
+}
