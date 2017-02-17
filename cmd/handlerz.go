@@ -48,11 +48,11 @@ func main() {
 		//resp.Write([]byte(`{"msg": "hello"}`))
 		//log.Printf("Got request: %v", req)
 		log.Printf("Got request: %v", req)
-		grpc_browser_compat.Middleware(grpcServer)(resp, req)
+		grpcweb.WrapServer(grpcServer)(resp, req)
 	}
 
 	httpServer := http.Server{
-		//Handler: grpc_browser_compat.Middleware(grpcServer),
+		//Handler: grpc_browser_compat.WrapServer(grpcServer),
 		Handler: corsWrapper.Handler(http.HandlerFunc(handler)),
 	}
 	if !*useTls {
