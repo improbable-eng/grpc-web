@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package mwitkow.testproto.nested;
-
-message SomeMessage {
-  string value = 1;
-}
