@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "build": "webpack",
-    "start": "webpack-dev-server --progress --colors --watch --hot --inline --port 8081 --host 0.0.0.0 --output-public-path=http://localhost:8081/assets/ --content-base ./ --https"
+    "start": "webpack-dev-server --progress --colors --watch --hot --inline --port 8081 --host 0.0.0.0 --output-public-path=http://localhost:8081/assets/ --content-base ./ --https --cert=../misc/localhost.crt --open --key=../misc/localhost.key"
   },
   "author": "mwitkow",
   "license": "none",
-  "dependencies": {},
+  "dependencies": {
+    "parse-headers": "^2.0.1"
+  },
   "devDependencies": {
     "babel-core": "6.10.4",
     "babel-loader": "6.2.4",

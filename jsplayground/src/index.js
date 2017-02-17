@@ -16,11 +16,19 @@ client.ping(req, function(err, resp) {
   console.log("ping complete");
   console.dir(err);
   console.dir(resp);
+});
 
-  // Make a server-streaming request
-  client.pingList(req, function(err, resp) {
+
+client.pingError(req, function(err, resp) {
+    console.log("ping complete");
+    console.dir(err);
+    console.dir(resp);
+});
+
+
+// Make a server-streaming request
+client.pingList(req, function(err, resp) {
     console.log("pingList complete");
     console.dir(err);
     console.dir(resp);
-  });
 });

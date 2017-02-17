@@ -33,7 +33,7 @@ function makeRpc(name, serviceDescriptor, props) {
 			url: `${props.host}${serviceDescriptor.path}`,
 			method: 'POST',
 			headers: {
-				"content-type": "application/grpc",
+				"content-type": "application/grpc-web",
 				"grpc-browser-compat": "true"
 			},
 			body: makeRequestBody(req, requestSerialize),
@@ -59,7 +59,7 @@ function makeRpc(name, serviceDescriptor, props) {
 				}
 			},
 			onComplete: function() {
-				console.log(">>> on complete");
+				console.log(">>> on complete, terminator ", lastTerminator.data);
 				callback(lastError, lastMessage)
 			}
 		});
