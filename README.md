@@ -16,6 +16,10 @@ to add them to the `fetch` standard, but actual implementation in browsers is ve
 
 The [gRPC-Web spec](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) works around this by moving the `Trailer` headers into the response stream (`DATA` frames for HTTP2 calls, chunked body for HTTP1.1) and encoding them as HTTP1.1 headers in yet-another gRPC [`Delimited-Message`](http://www.grpc.io/docs/guides/wire.html).
 
+It is very important to note that gRPC-Web currently *does not support client-side streaming*. This is unlikely to change until until new whatwg fetch/[streams API](https://www.w3.org/TR/streams-api/) lands in browsers. As such, if you plan on using gRPC-Web you're limited to:
+ * unary RPCs (1 request 1 response)
+ * server-side streaming RPCs (1 request N responses)
+
 ## Status
 
 At the moment this repo holds:
