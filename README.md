@@ -1,69 +1,46 @@
-# gRPC Browser Compatibility demostrator
+# gRPC-Web for Golang and TypeScript
 
-This is a demonstrator project of how to make Browser-compatible requests against gRPC servers.
+This repository implements the upcoming [gRPC-Web spec](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) allowing for invoking gRPC services from modern browsers (Chrome >= 40.0, Firefox >= 39, Safari >=10, IE >= 10). 
+
+The stack consists of :
+ * a Go `http.Handler` that exposes a `grpc.Server` with gRPC-Web wrapping over both HTTP2 and HTTP1.1 (*done*)
+ * a TypeScript library (usable in ES5) that implements for invoking gRPC-Web endpoints (*in progress*)
+ * a TypeScript `protoc` plugin that code-generates TypeScript types and service stubs around the library (*in progress)
+ * a Go-based gRPC Proxy Server that allows exposing non-gRPC-Web enabled gRPC services (*todo*) 
+ 
 
 ## gRPC and browsers
 
-The biggest problem with Browser clients, is that although the vast majority of them support HTTP2, 
-do not support accessing `Trailer` headers. A discussion is happening in [fetch#34](https://github.com/whatwg/fetch/issues/34) 
-to add them to the `fetch` standard, but support is waay off.
+The biggest problem with Browser as gRPC clients, is that that they do not support accessing `Trailer` headers. A discussion is happening in [fetch#34](https://github.com/whatwg/fetch/issues/34) 
+to add them to the `fetch` standard, but actual implementation in browsers is very much in the future.
 
-The idea is to encode the values of `Trailer` headers (including gRPC status codes) in a protobuf
-(see [terminator.proto](terminator.proto) that is sent as `DATA` of the stream instead of as 
-headers. This makes it accessible to Browser clients through normal APIs. The presence of the 
-terminator is signalled by frame starting with `0xDEADE` and followed by a normal gRPC [delimited message](http://www.grpc.io/docs/guides/wire.html)
-containing the status code, status message and additional user trailers.
-
-## Implementation
-
-The implementation is an `http.Handler` that acts as Middleware wrapping a `grpc.Server`. It 
-intercepts the request and checks if a `:grpc-browser-compat` header is contained within it. If not,
-normal gRPC wire protocol semantics are followed. If it exists the Terminator proto is used.
-
-Basically:
-
-```go
-httpServer := http.Server{
-		Handler: grpc_browser_compat.Middleware(grpcServer),
-}
-```
+The [gRPC-Web spec](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) works around this by moving the `Trailer` headers into the response stream (`DATA` frames for HTTP2 calls, chunked body for HTTP1.1) and encoding them as HTTP1.1 headers in yet-another gRPC [`Delimited-Message`](http://www.grpc.io/docs/guides/wire.html).
 
 ## Status
 
-### HTTP2 Browser support.
+At the moment this repo holds:
+ * a Go `http.Handler` that exposes a `grpc.Server` with gRPC-Web wrapping over both HTTP2 and HTTP1.1 (*done*)
+ * a JavaScript `playground` proof of concept
 
-You can make gRPC requests from a Browser-like clients. You need to prefix each message with
-the [gRPC binary message delimiter](http://www.grpc.io/docs/guides/wire.html)) (5 bytes) and use
-protobuf encoding. 
+The implementation is in **experimental** stage, and we're trying it out on Improbable Platform's staging environment.
 
-Together with [protobuf.js](https://github.com/dcodeIO/ProtoBuf.js/) and a dispatching client that uses
-[jonnyreeves' chunked-request](https://github.com/jonnyreeves/chunked-request) it should be
- possible to autogenerate gRPC clients in a browser.
+### Trying it out
 
-**TODO(michal)**: Update this section when work is done.
+Install the `localhost` certificates of this repo found in `misc/`. Follow [this guide](http://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate) for Chrome.
 
-### HTTP1.1 support
-
-This kinda-sorta-works now. The gRPC Message Delimiters are written as Chunked-Encoding stream back
-to the client. This means that the response looks something like:
-
+Run the Golang demoserver:
 ```
-<chunk-length-in-ascii-int>\r\n
-<grpc-message-delimiter><message-payload>
+go get github.com/improbable-eng/grpc-web/go/demoserver
+cd ${GOPATH}/github.com/improbable-eng/grpc-web/go/demoserver
+go build
+./demoserver 
 ```
-
-This is not ideal, as you have a double representation of the lenght of the message.
-
-It would be possible to reimplement the grpc-message-delimiter as chunked encoded values, but its
-not needed now.
-
-### Debug mode
-
-Binary protocols are hard to troubleshoot. Once the browser-end of the implementation is done, would
-be useful to come up with an ASCII translation of the `grpc-message-delimiter` making it easy to 
-debug.
-
-More crucially, gRPC would have to support multiple codecs. See [grpc-go#803](https://github.com/grpc/grpc-go/issues/803)
+Run the JS `playground` against the DemoServer
+```
+cd  ${GOPATH}/github.com/improbable-eng/grpc-web/js/playground
+npm start
+```
+Point your browser a https://localhost:8081/index.html and open the Developer Console.
 
 
 
