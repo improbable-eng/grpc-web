@@ -93,9 +93,9 @@ func (s *GrpcWebWrapperTestSuite) ctxForTest() context.Context {
 	return ctx
 }
 
-func (s *GrpcWebWrapperTestSuite) makeRequest(method string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (s *GrpcWebWrapperTestSuite) makeRequest(verb string, method string, headers http.Header, body io.Reader) (*http.Response, error) {
 	url := fmt.Sprintf("https://%s%s", s.listener.Addr().String(), method)
-	req, err := http.NewRequest("POST", url, body)
+	req, err := http.NewRequest(verb, url, body)
 	req = req.WithContext(s.ctxForTest())
 	require.NoError(s.T(), err, "failed creating a request")
 	req.Header = headers
@@ -118,7 +118,7 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 		writer.Write(grpcPreamble)
 		writer.Write(msgBytes)
 	}
-	resp, err := s.makeRequest(method, reqHeaders, writer)
+	resp, err := s.makeRequest("POST", method, reqHeaders, writer)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -178,6 +178,7 @@ func (s *GrpcWebWrapperTestSuite) TestPing() {
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
 	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
@@ -193,6 +194,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
 	s.assertTrailerGrpcCode(trailers, codes.Unimplemented, "Not implemented PingError")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
 	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
@@ -208,6 +210,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
 	s.assertTrailerGrpcCode(headers, codes.Unimplemented, "Not implemented PingError")
 	// s.assertHeadersContainMetadata(headers, expectedHeaders) // TODO(mwitkow): There is a bug in gRPC where headers don't get added if no payload exists.
 	s.assertHeadersContainMetadata(headers, expectedTrailers)
+	s.assertHeadersContainCorsExpectedHeaders(headers, expectedTrailers)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingList() {
@@ -220,6 +223,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingList() {
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
 	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
 }
 
 func (s *GrpcWebWrapperTestSuite) getStandardGrpcClient() *grpc.ClientConn {
@@ -243,8 +247,31 @@ func (s *GrpcWebWrapperTestSuite) TestPingList_NormalGrpcWorks() {
 	trailerMd := metadata.Pairs()
 	_, err := client.Ping(s.ctxForTest(), &testproto.PingRequest{Value: "foo"}, grpc.Header(&headerMd), grpc.Trailer(&trailerMd))
 	require.NoError(s.T(), err, "no error during execution")
-	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(headerMd), "expected headers must be received")
+	assert.Equal(s.T(), len(expectedHeaders)+2 /*trailers*/, len(headerMd), "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, trailerMd, "expected trailers must be received")
+}
+
+
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
+	/**
+	OPTIONS /mwitkow.grpcweb.test.TestService/Ping
+	Access-Control-Request-Method: POST
+	Access-Control-Request-Headers: origin, x-requested-with, accept
+	Origin: http://foo.client.com
+	 */
+	headers := http.Header{}
+	headers.Add("Access-Control-Request-Method", "POST")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, accept")
+	headers.Add("Origin", "http://foo.client.com")
+
+	corsResp, err := s.makeRequest("OPTIONS", "/mwitkow.grpcweb.test.TestService/PingList", headers, nil)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+
+	preflight := corsResp.Header
+	assert.Equal(s.T(), "http://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the preflight")
+	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the preflight")
+	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response")
+	assert.Equal(s.T(), "Origin, X-Something-Custom, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must be in the response")
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {
@@ -253,6 +280,17 @@ func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Head
 		for _, vv := range v {
 			assert.Equal(s.T(), headers.Get(lowerKey), vv, "Expected there to be %v=%v", lowerKey, vv)
 		}
+	}
+}
+
+func (s *GrpcWebWrapperTestSuite) assertHeadersContainCorsExpectedHeaders(headers http.Header, meta metadata.MD) {
+	value := headers.Get("Access-Control-Expose-Headers")
+	assert.NotEmpty(s.T(), value, "cors: access control expose headers should not be empty")
+	for k, _ := range meta {
+		if k == "Access-Control-Expose-Headers" {
+			continue
+		}
+		assert.Contains(s.T(), value, http.CanonicalHeaderKey(k), "cors: exposed headers should contain metadata")
 	}
 }
 
