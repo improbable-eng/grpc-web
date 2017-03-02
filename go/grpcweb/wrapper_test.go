@@ -1,4 +1,4 @@
-// Copyright 2017 Michal Witkowski. All Rights Reserved.
+//Copyright 2017 Improbable. All Rights Reserved.
 // See LICENSE for licensing terms.
 
 package grpcweb_test
@@ -34,8 +34,8 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/mwitkow/go-conntrack/connhelpers"
-	"github.com/mwitkow/grpc-web/go/grpcweb"
-	testproto "github.com/mwitkow/grpc-web/go/_proto/mwitkow/grpcweb/test"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
 )
 
 var (

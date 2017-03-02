@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
-	testproto "github.com/mwitkow/grpc-web/go/_proto/mwitkow/grpcweb/test"
+	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
 )
 
 type demoTestService struct {
