@@ -32,7 +32,7 @@ func (w *grpcWebResponse) Write(b []byte) (int, error) {
 
 func (w *grpcWebResponse) WriteHeader(code int) {
 	w.copyJustHeadersToWrapped()
-	w.wrapped.Header().Add(hdGrpcCompat, "true")
+	w.writeCorsExposedHeaders()
 	w.wrapped.WriteHeader(code)
 	w.wroteHeaders = true
 }
@@ -86,9 +86,18 @@ func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
 			wrappedHeader.Add(k, v)
 		}
 	}
-	w.wrapped.Header().Add(hdGrpcCompat, "true")
+	w.writeCorsExposedHeaders()
 	w.wrapped.WriteHeader(http.StatusOK)
 	w.wrapped.(http.Flusher).Flush()
+}
+
+func (w *grpcWebResponse) writeCorsExposedHeaders() {
+	// These cors handlers are added to the *response*, not a preflight.
+	knownHeaders := []string{}
+	for h, _ := range w.wrapped.Header() {
+		knownHeaders = append(knownHeaders, http.CanonicalHeaderKey(h))
+	}
+	w.wrapped.Header().Set("Access-Control-Expose-Headers", strings.Join(knownHeaders, ", "))
 }
 
 func (w *grpcWebResponse) copyTrailersToPayload() {

@@ -8,27 +8,45 @@ import (
 
 	"google.golang.org/grpc"
 	"strings"
+	"github.com/rs/cors"
+	"time"
 )
 
-const (
-	hdGrpcCompat = "Grpc-Browser-Compat"
+var (
+	internalRequestHeadersWhitelist = []string{
+		"U-A", // for gRPC-Web User Agent indicator.
+	}
 )
 
 // WrapServer takes a gRPC Server in Go and returns an http.HandlerFunc that adds gRPC-Web Compatibility.
 //
 // The internal implementation fakes out a http.Request that carries standard gRPC, and performs the remapping inside
 // http.ResponseWriter, i.e. mostly the re-encoding of Trailers (that carry gRPC status).
-func WrapServer(server *grpc.Server) http.HandlerFunc {
+//
+// You can control the behaviour of the wrapper (e.g. modifying CORS behaviour) using `With*` options.
+func WrapServer(server *grpc.Server, options ...Option) http.HandlerFunc {
+	opts := evaluateOptions(options)
+	corsWrapper := cors.New(cors.Options{
+		AllowOriginFunc:  opts.originFunc,
+		AllowedHeaders:   append(opts.allowedRequestHeaders, internalRequestHeadersWhitelist...),
+		ExposedHeaders:   nil,                                 // make sure that this is *nil*, otherwise the WebResponse overwrite will not work.
+		AllowCredentials: true,                                // always allow credentials, otherwise :authorization headers won't work
+		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
+	})
+	grpcWebHandler := func(resp http.ResponseWriter, req *http.Request) {
+
+		intReq := hackIntoNormalGrpcRequest(req)
+		intResp := newGrpcWebResponse(resp)
+		server.ServeHTTP(intResp, intReq)
+		intResp.finishRequest(req)
+	}
 	return func(resp http.ResponseWriter, req *http.Request) {
 		// Short circuit if a normal gRPC request.
 		if req.ProtoMajor == 2 && !isGrpcWebRequest(req.Header) {
 			server.ServeHTTP(resp, req)
 			return
 		}
-		intReq := hackIntoNormalGrpcRequest(req)
-		intResp := newGrpcWebResponse(resp)
-		server.ServeHTTP(intResp, intReq)
-		intResp.finishRequest(req)
+		corsWrapper.Handler(http.HandlerFunc(grpcWebHandler)).ServeHTTP(resp, req)
 	}
 }
 
