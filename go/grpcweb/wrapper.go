@@ -1,4 +1,4 @@
-// Copyright 2017 Michal Witkowski. All Rights Reserved.
+//Copyright 2017 Improbable. All Rights Reserved.
 // See LICENSE for licensing terms.
 
 package grpcweb

@@ -12,8 +12,8 @@ import (
 	"crypto/tls"
 	"fmt"
 
-	testproto "github.com/mwitkow/grpc-web/go/_proto/mwitkow/grpcweb/test"
-	"github.com/mwitkow/grpc-web/go/grpcweb"
+	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/rs/cors"
 )
 
