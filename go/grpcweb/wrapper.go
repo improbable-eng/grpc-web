@@ -33,18 +33,21 @@ func WrapServer(server *grpc.Server, options ...Option) http.HandlerFunc {
 		AllowCredentials: true,                                // always allow credentials, otherwise :authorization headers won't work
 		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
 	})
-	grpcHandler := func(resp http.ResponseWriter, req *http.Request) {
-		// Short circuit if a normal gRPC request.
-		if req.ProtoMajor == 2 && !isGrpcWebRequest(req.Header) {
-			server.ServeHTTP(resp, req)
-			return
-		}
+	grpcWebHandler := func(resp http.ResponseWriter, req *http.Request) {
+
 		intReq := hackIntoNormalGrpcRequest(req)
 		intResp := newGrpcWebResponse(resp)
 		server.ServeHTTP(intResp, intReq)
 		intResp.finishRequest(req)
 	}
-	return corsWrapper.Handler(http.HandlerFunc(grpcHandler)).ServeHTTP
+	return func(resp http.ResponseWriter, req *http.Request) {
+		// Short circuit if a normal gRPC request.
+		if req.ProtoMajor == 2 && !isGrpcWebRequest(req.Header) {
+			server.ServeHTTP(resp, req)
+			return
+		}
+		corsWrapper.Handler(http.HandlerFunc(grpcWebHandler)).ServeHTTP(resp, req)
+	}
 }
 
 func isGrpcWebRequest(headers http.Header) bool {

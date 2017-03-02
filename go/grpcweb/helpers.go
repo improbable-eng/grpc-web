@@ -8,6 +8,9 @@ import (
 	"fmt"
 )
 
+// ListGRPCResources is a helper function that lists all URLs that are registered on gRPC server.
+//
+// This makes it easy to register all the relevant routes in your HTTP router of choice.
 func ListGRPCResources(server *grpc.Server) []string {
 	ret := []string{}
 	for serviceName, serviceInfo := range server.GetServiceInfo() {
