@@ -1,5 +1,7 @@
-# grpc-web
+# grpc-web-client
 > Library for making gRPC-web requests from a Browser
+
+This library is intended for both JavaScript and TypeScript usage.
 
 ## Usage
 * Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes.

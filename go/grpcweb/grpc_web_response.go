@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"golang.org/x/net/http2"
-	"log"
 )
 
 // grpcWebResponse implements http.ResponseWriter.
@@ -65,8 +64,6 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 }
 
 func (w *grpcWebResponse) finishRequest(req *http.Request) {
-	log.Println("finishRequest", req)
-	log.Println("w.headers", w.headers)
 	if w.wroteHeaders {
 		w.copyTrailersToPayload()
 	} else {

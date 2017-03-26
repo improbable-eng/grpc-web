@@ -1,7 +1,7 @@
 {
   "name": "grpc-web-client",
   "version": "0.1.2",
-  "description": "gRPC browser requests (in TypeScript)",
+  "description": "gRPC-Web client for browsers (JS/TS)",
   "main": "dist/index.js",
   "types": "dist/index.ts",
   "scripts": {

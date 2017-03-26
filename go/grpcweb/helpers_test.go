@@ -4,6 +4,7 @@
 package grpcweb_test
 
 import (
+	"sort"
 	"testing"
 	testproto "../../test/go/_proto/improbable/grpcweb/test"
 
@@ -21,8 +22,11 @@ func TestListGRPCResources(t *testing.T) {
 		"/improbable.grpcweb.test.TestService/PingError",
 		"/improbable.grpcweb.test.TestService/PingList",
 	}
+	actual := grpcweb.ListGRPCResources(server)
+	sort.Strings(expected)
+	sort.Strings(actual)
 	assert.EqualValues(t,
 		expected,
-		grpcweb.ListGRPCResources(server),
+		actual,
 		"list grpc resources must provide an exhaustive list of all registered handlers")
 }
