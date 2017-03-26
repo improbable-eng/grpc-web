@@ -1,0 +1,25 @@
+{
+  "name": "grpc-web",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.ts",
+  "scripts": {
+    "clean": "rm -rf build && rm -rf dist",
+    "build:lib": "npm run clean && tsc && cp -R build/ dist/",
+    "lint": "tslint -c ./tslint.json ./src/**/*.ts"
+  },
+  "author": "Improbable",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/google-protobuf": "^3.2.1",
+    "browser-headers": "^0.2.1",
+    "google-protobuf": "^3.2.0",
+    "text-encoding": "^0.6.4"
+  },
+  "devDependencies": {
+    "@types/text-encoding": "0.0.30",
+    "tslint": "^4.5.1",
+    "typescript": "^2.2.1"
+  }
+}

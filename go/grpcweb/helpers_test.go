@@ -5,7 +5,7 @@ package grpcweb_test
 
 import (
 	"testing"
-	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
+	testproto "../../test/go/_proto/improbable/grpcweb/test"
 
 	"google.golang.org/grpc"
 	"github.com/stretchr/testify/assert"
@@ -16,10 +16,10 @@ func TestListGRPCResources(t *testing.T) {
 	server := grpc.NewServer()
 	testproto.RegisterTestServiceServer(server, &testServiceImpl{})
 	expected := []string{
-		"/mwitkow.grpcweb.test.TestService/PingEmpty",
-		"/mwitkow.grpcweb.test.TestService/Ping",
-		"/mwitkow.grpcweb.test.TestService/PingError",
-		"/mwitkow.grpcweb.test.TestService/PingList",
+		"/improbable.grpcweb.test.TestService/PingEmpty",
+		"/improbable.grpcweb.test.TestService/Ping",
+		"/improbable.grpcweb.test.TestService/PingError",
+		"/improbable.grpcweb.test.TestService/PingList",
 	}
 	assert.EqualValues(t,
 		expected,

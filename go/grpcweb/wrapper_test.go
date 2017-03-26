@@ -35,7 +35,8 @@ import (
 
 	"github.com/mwitkow/go-conntrack/connhelpers"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
+	google_protobuf "github.com/golang/protobuf/ptypes/empty"
+	testproto "../../test/go/_proto/improbable/grpcweb/test"
 )
 
 var (
@@ -156,9 +157,9 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 
 func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
 	headers, trailers, responses, err := s.makeGrpcRequest(
-		"/mwitkow.grpcweb.test.TestService/PingEmpty",
+		"/improbable.grpcweb.test.TestService/PingEmpty",
 		headerWithFlag(),
-		serializeProtoMessages([]proto.Message{&testproto.Empty{}}))
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}))
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
@@ -169,7 +170,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
 
 func (s *GrpcWebWrapperTestSuite) TestPing() {
 	headers, trailers, responses, err := s.makeGrpcRequest(
-		"/mwitkow.grpcweb.test.TestService/Ping",
+		"/improbable.grpcweb.test.TestService/Ping",
 		headerWithFlag(),
 		serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "foo"}}))
 	require.NoError(s.T(), err, "No error on making request")
@@ -185,9 +186,9 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
 	// gRPC-Web spec says that if there is no payload to an answer, the trailers (including grpc-status) must be in the
 	// headers and not in trailers. However, that's not true if SendHeaders are pushed before. This tests this.
 	headers, trailers, responses, err := s.makeGrpcRequest(
-		"/mwitkow.grpcweb.test.TestService/PingError",
+		"/improbable.grpcweb.test.TestService/PingError",
 		headerWithFlag(useFlushForHeaders),
-		serializeProtoMessages([]proto.Message{&testproto.Empty{}}))
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}))
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 0, len(responses), "PingError is an unary response that has no payload")
@@ -201,9 +202,9 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
 	// gRPC-Web spec says that if there is no payload to an answer, the trailers (including grpc-status) must be in the
 	// headers and not in trailers.
 	headers, _, responses, err := s.makeGrpcRequest(
-		"/mwitkow.grpcweb.test.TestService/PingError",
+		"/improbable.grpcweb.test.TestService/PingError",
 		http.Header{},
-		serializeProtoMessages([]proto.Message{&testproto.Empty{}}))
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}))
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 0, len(responses), "PingError is an unary response that has no payload")
@@ -215,7 +216,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
 
 func (s *GrpcWebWrapperTestSuite) TestPingList() {
 	headers, trailers, responses, err := s.makeGrpcRequest(
-		"/mwitkow.grpcweb.test.TestService/PingList",
+		"/improbable.grpcweb.test.TestService/PingList",
 		headerWithFlag(),
 		serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "something"}}))
 	require.NoError(s.T(), err, "No error on making request")
@@ -245,16 +246,16 @@ func (s *GrpcWebWrapperTestSuite) TestPingList_NormalGrpcWorks() {
 	client := testproto.NewTestServiceClient(conn)
 	headerMd := metadata.Pairs()
 	trailerMd := metadata.Pairs()
-	_, err := client.Ping(s.ctxForTest(), &testproto.PingRequest{Value: "foo"}, grpc.Header(&headerMd), grpc.Trailer(&trailerMd))
+	_, err := client.Ping(s.ctxForTest(), &testproto.PingRequest{Value: "foo", ResponseCount: 10}, grpc.Header(&headerMd), grpc.Trailer(&trailerMd))
 	require.NoError(s.T(), err, "no error during execution")
-	assert.Equal(s.T(), len(expectedHeaders)+2 /*trailers*/, len(headerMd), "expected headers must be received")
+	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(headerMd), "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, trailerMd, "expected trailers must be received")
 }
 
 
 func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	/**
-	OPTIONS /mwitkow.grpcweb.test.TestService/Ping
+	OPTIONS /improbable.grpcweb.test.TestService/Ping
 	Access-Control-Request-Method: POST
 	Access-Control-Request-Headers: origin, x-requested-with, accept
 	Origin: http://foo.client.com
@@ -264,7 +265,7 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, accept")
 	headers.Add("Origin", "http://foo.client.com")
 
-	corsResp, err := s.makeRequest("OPTIONS", "/mwitkow.grpcweb.test.TestService/PingList", headers, nil)
+	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil)
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
 
 	preflight := corsResp.Header
@@ -332,7 +333,7 @@ func headerWithFlag(flags ...string) http.Header {
 type testServiceImpl struct {
 }
 
-func (s *testServiceImpl) PingEmpty(ctx context.Context, _ *testproto.Empty) (*testproto.PingResponse, error) {
+func (s *testServiceImpl) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*testproto.PingResponse, error) {
 	grpc.SendHeader(ctx, expectedHeaders)
 	grpclog.Printf("Handling PingEmpty")
 	grpc.SetTrailer(ctx, expectedTrailers)
@@ -346,7 +347,7 @@ func (s *testServiceImpl) Ping(ctx context.Context, ping *testproto.PingRequest)
 	return &testproto.PingResponse{Value: ping.Value}, nil
 }
 
-func (s *testServiceImpl) PingError(ctx context.Context, ping *testproto.PingRequest) (*testproto.Empty, error) {
+func (s *testServiceImpl) PingError(ctx context.Context, ping *testproto.PingRequest) (*google_protobuf.Empty, error) {
 	md, _ := metadata.FromContext(ctx)
 	if _, exists := md[useFlushForHeaders]; exists {
 		grpc.SendHeader(ctx, expectedHeaders)

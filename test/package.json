@@ -1,0 +1,42 @@
+{
+  "name": "grpc-web-test",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build:testserver": "cd go && go build -o ./build/testserver ./testserver/testserver.go",
+    "build:proto": "./protogen_go.sh && ./protogen_ts.sh",
+    "build:ts": "cd ts && webpack",
+    "build:dev": "cd ts && webpack --watch",
+    "build": "npm run build:proto && npm run build:testserver && npm run build:ts",
+    "lint": "tslint -c ./ts/tslint.json ./ts/src/**/*.ts",
+    "test": "npm run build && ./run-karma.sh --single-run",
+    "test:dev": "npm run build && ./run-karma.sh"
+  },
+  "license": "none",
+  "dependencies": {
+    "@types/google-protobuf": "^3.2.1",
+    "@types/node": "^7.0.5",
+    "google-protobuf": "^3.2.0",
+    "typedarray": "0.0.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.35",
+    "@types/jasmine": "^2.5.46",
+    "assert": "^1.4.1",
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-es2015": "^6.13.2",
+    "chai": "^3.5.0",
+    "jasmine-core": "^2.4.1",
+    "karma": "^1.2.0",
+    "karma-jasmine": "^1.0.2",
+    "karma-sauce-launcher": "^1.0.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^2.0.3",
+    "ts-loader": "^2.0.1",
+    "ts-protoc-gen": "^0.1.1",
+    "tslint": "^4.4.2",
+    "typescript": "^2.2.1",
+    "webpack": "^2.2.1"
+  }
+}
