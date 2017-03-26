@@ -4,7 +4,7 @@
     "install": "(cd ts && npm install) && (cd test && npm install)",
     "test:integration": "cd test && npm test",
     "test:golang": "cd go && go test ./...",
-    "test": "npm run test:integration && npm run test:golang"
+    "test": "npm run test:golang && npm run test:integration"
   },
   "author": "Improbable",
   "license": "Apache-2.0"
