@@ -7,9 +7,9 @@ import (
 	"testing"
 	testproto "../../test/go/_proto/improbable/grpcweb/test"
 
-	"google.golang.org/grpc"
-	"github.com/stretchr/testify/assert"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 )
 
 func TestListGRPCResources(t *testing.T) {

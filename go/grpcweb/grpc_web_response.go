@@ -4,10 +4,11 @@
 package grpcweb
 
 import (
+	"bytes"
 	"encoding/binary"
 	"net/http"
-	"bytes"
 	"strings"
+
 	"golang.org/x/net/http2"
 	"log"
 )

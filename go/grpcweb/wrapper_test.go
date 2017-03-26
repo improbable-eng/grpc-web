@@ -33,10 +33,9 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/mwitkow/go-conntrack/connhelpers"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	testproto "../../test/go/_proto/improbable/grpcweb/test"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/mwitkow/go-conntrack/connhelpers"
 )
 
 var (
@@ -252,14 +251,13 @@ func (s *GrpcWebWrapperTestSuite) TestPingList_NormalGrpcWorks() {
 	assert.EqualValues(s.T(), expectedTrailers, trailerMd, "expected trailers must be received")
 }
 
-
 func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	/**
 	OPTIONS /improbable.grpcweb.test.TestService/Ping
 	Access-Control-Request-Method: POST
 	Access-Control-Request-Headers: origin, x-requested-with, accept
 	Origin: http://foo.client.com
-	 */
+	*/
 	headers := http.Header{}
 	headers.Add("Access-Control-Request-Method", "POST")
 	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, accept")

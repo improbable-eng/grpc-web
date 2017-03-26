@@ -6,10 +6,11 @@ package grpcweb
 import (
 	"net/http"
 
-	"google.golang.org/grpc"
 	"strings"
-	"github.com/rs/cors"
 	"time"
+
+	"github.com/rs/cors"
+	"google.golang.org/grpc"
 )
 
 var (
