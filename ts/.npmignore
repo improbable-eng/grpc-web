@@ -1,0 +1,4 @@
+test/
+src/
+.*
+release.sh
