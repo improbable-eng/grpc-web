@@ -1,5 +1,5 @@
 {
-  "name": "grpc-web",
+  "name": "grpc-web-client",
   "version": "0.1.2",
   "description": "gRPC browser requests (in TypeScript)",
   "main": "dist/index.js",

@@ -255,7 +255,7 @@ function testWithLocalPort(port: number) {
   });
 }
 
-describe("grpc-web", () => {
+describe("grpc-web-client", () => {
   testWithLocalPort(9090); // HTTP1.1
   testWithLocalPort(9091); // HTTP2
 
