@@ -35,6 +35,9 @@ var (
 )
 
 func buildServerTlsOrFail() *tls.Config {
+	if *flagTlsServerCert == "" || *flagTlsServerKey == "" {
+		logrus.Fatalf("flags server_tls_cert_file and server_tls_key_file must be set")
+	}
 	tlsConfig, err := connhelpers.TlsConfigForServerCerts(*flagTlsServerCert, *flagTlsServerKey)
 	if err != nil {
 		logrus.Fatalf("failed reading TLS server keys: %v", err)
@@ -70,6 +73,10 @@ func buildServerTlsOrFail() *tls.Config {
 			}
 		}
 
+	}
+	tlsConfig, err = connhelpers.TlsConfigWithHttp2Enabled(tlsConfig)
+	if err != nil {
+		logrus.Fatalf("can't configure h2 handling: %v", err)
 	}
 	return tlsConfig
 }

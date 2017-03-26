@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/spf13/pflag"
 	"crypto/tls"
-	"google.golang.org/grpc"
-	"github.com/Sirupsen/logrus"
-	"google.golang.org/grpc/credentials"
 	"crypto/x509"
 	"io/ioutil"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/spf13/pflag"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -33,12 +34,11 @@ var (
 		[]string{},
 		"Paths (comma separated) to PEM certificate chains used for verification of backend certificates. If empty, host CA chain will be used.",
 	)
-
 )
 
 func dialBackendOrFail() *grpc.ClientConn {
 	if *flagBackendHostPort == "" {
-		logrus.Fatalf("flag 'backend_host_port' must be set")
+		logrus.Fatalf("flag 'backend_addr' must be set")
 	}
 	opt := []grpc.DialOption{}
 	if *flagBackendIsInsecure {
@@ -52,7 +52,6 @@ func dialBackendOrFail() *grpc.ClientConn {
 	}
 	return cc
 }
-
 
 func buildBackendTlsOrFail() *tls.Config {
 	tlsConfig := &tls.Config{}

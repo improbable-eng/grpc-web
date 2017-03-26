@@ -5,11 +5,12 @@ package grpcweb_test
 
 import (
 	"testing"
+
 	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
 
-	"google.golang.org/grpc"
-	"github.com/stretchr/testify/assert"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 )
 
 func TestListGRPCResources(t *testing.T) {

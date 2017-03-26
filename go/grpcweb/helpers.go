@@ -4,10 +4,11 @@
 package grpcweb
 
 import (
-	"google.golang.org/grpc"
 	"fmt"
 	"net/http"
 	"strings"
+
+	"google.golang.org/grpc"
 )
 
 // ListGRPCResources is a helper function that lists all URLs that are registered on gRPC server.
@@ -25,6 +26,6 @@ func ListGRPCResources(server *grpc.Server) []string {
 }
 
 // IsGrpcRequest checks whether the given request is a gRPC-Web or gRPC-standard request.
-func IsGrpcRequest(r http.Request) bool {
+func IsGrpcRequest(r *http.Request) bool {
 	return strings.HasPrefix(r.Header.Get("content-type"), "application/grpc")
 }

@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
+	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
 	context "golang.org/x/net/context"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
-	testproto "github.com/improbable-eng/grpc-web/go/_proto/mwitkow/grpcweb/test"
 )
 
 type demoTestService struct {
