@@ -1,12 +1,12 @@
 {
   "name": "grpc-web",
   "version": "0.1.0",
-  "description": "",
+  "description": "gRPC-web browser requests (in TypeScript)",
   "main": "dist/index.js",
   "types": "dist/index.ts",
   "scripts": {
     "clean": "rm -rf build && rm -rf dist",
-    "build:lib": "npm run clean && tsc && cp -R build/ dist/",
+    "lib:build": "npm run clean && tsc && cp -R build/ dist/",
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
   "author": "Improbable",
