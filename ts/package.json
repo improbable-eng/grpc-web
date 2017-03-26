@@ -1,6 +1,6 @@
 {
   "name": "grpc-web",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "gRPC browser requests (in TypeScript)",
   "main": "dist/index.js",
   "types": "dist/index.ts",

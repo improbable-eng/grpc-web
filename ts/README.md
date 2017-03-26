@@ -2,7 +2,7 @@
 > Library for making gRPC-web requests from a Browser
 
 ## Usage
-* Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with (`protoc`)[https://github.com/google/protobuf] to generate `.js` and `.d.ts` files for your request and response classes.
+* Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes.
 * Write your service definitions in the format shown [here](https://github.com/improbable-eng/grpc-web/tree/master/test/ts/src/services.ts) - plugin to generate service definitions coming soon.
 * Make a request:
     ```
