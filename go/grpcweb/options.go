@@ -5,14 +5,16 @@ package grpcweb
 
 var (
 	defaultOptions = &options{
-		allowedRequestHeaders: []string{"*"},
-		originFunc:            func(origin string) bool { return true },
+		allowedRequestHeaders:          []string{"*"},
+		corsForRegisteredEndpointsOnly: true,
+		originFunc:                     func(origin string) bool { return true },
 	}
 )
 
 type options struct {
-	allowedRequestHeaders []string
-	originFunc            func(origin string) bool
+	allowedRequestHeaders          []string
+	corsForRegisteredEndpointsOnly bool
+	originFunc                     func(origin string) bool
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -39,6 +41,18 @@ type Option func(*options)
 func WithOriginFunc(originFunc func(origin string) bool) Option {
 	return func(o *options) {
 		o.originFunc = originFunc
+	}
+}
+
+// WithCorsForRegisteredEndpointsOnly allows for customizing whether OPTIONS requests with the `X-GRPC-WEB` header will
+// only be accepted if they match a registered gRPC endpoint.
+//
+// This should be set to false to allow handling gRPC requests for unknown endpoints (e.g. for proxying).
+//
+// The default behaviour is `true`, i.e. only allows CORS requests for registered endpoints.
+func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option {
+	return func(o *options) {
+		o.corsForRegisteredEndpointsOnly = onlyRegistered
 	}
 }
 

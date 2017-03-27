@@ -44,15 +44,17 @@ func main() {
 
 	grpcServer := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
-	wrappedGrpc := grpcweb.WrapServer(grpcServer)
+
+	// gRPC-Web compatibility layer with CORS configured to accept on every
+	wrappedGrpc := grpcweb.WrapServer(grpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
 
 	// Debug server.
 	debugServer := http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if grpcweb.IsGrpcRequest(req) {
-				wrappedGrpc.ServeHTTP(resp, req)
+			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
+				wrappedGrpc.HandleGrpcWebRequest(resp, req)
 			}
 			//
 			http.DefaultServeMux.ServeHTTP(resp, req)
@@ -72,8 +74,8 @@ func main() {
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if grpcweb.IsGrpcRequest(req) {
-				wrappedGrpc.ServeHTTP(resp, req)
+			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
+				wrappedGrpc.HandleGrpcWebRequest(resp, req)
 			}
 			resp.WriteHeader(http.StatusNotImplemented)
 		}),

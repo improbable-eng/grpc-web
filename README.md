@@ -43,13 +43,11 @@ You will be able to access it in a browser using TypeScript (and equally JavaScr
 ```ts
 ```
 
- 
-
 ## Browser Support
 
-The `grpc-web-client` uses multiple techniques to efficiently invoke gRPC services. Most [modern browsers](http://caniuse.com/#feat=fetch) support the [Fetch API](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), which allows for efficient reading of partial, binary responses. For older browsers, it automatically falls back to [`XMLHttpRequest`](https://developer.mozilla.org/nl/docs/Web/API/XMLHttpRequest) with `chunked-arraybuffer` wherever they are available.
+The `grpc-web-client` uses multiple techniques to efficiently invoke gRPC services. Most [modern browsers](http://caniuse.com/#feat=fetch) support the [Fetch API](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), which allows for efficient reading of partial, binary responses. For older browsers, it automatically falls back to [`XMLHttpRequest`](https://developer.mozilla.org/nl/docs/Web/API/XMLHttpRequest).
 
-The gRPC semantics encourage you to make multiple requests at once. With most modern browsers [supporting HTTP2](http://caniuse.com/#feat=http2), the se can be executed over a single TLS connection. For older browsers, gRPC-Web falls back to HTTP/1.1 chunk responses.
+The gRPC semantics encourage you to make multiple requests at once. With most modern browsers [supporting HTTP2](http://caniuse.com/#feat=http2), these can be executed over a single TLS connection. For older browsers, gRPC-Web falls back to HTTP/1.1 chunk responses.
 
 For best results we recommend the browsers we test against:
   * Chrome >= 42
@@ -69,23 +67,16 @@ This, however is useful for a lot of frontend functionality.
 
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
 
-### Trying it out
+### Running the tests
 
 Install the `localhost` certificates of this repo found in `misc/`. Follow [this guide](http://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate) for Chrome.
 
-Run the Golang demoserver:
+Run the TypeScript tests against the Golang TestServer
 ```
-go get github.com/improbable-eng/grpc-web/go/demoserver
-cd ${GOPATH}/github.com/improbable-eng/grpc-web/go/demoserver
-go build
-./demoserver 
+cd  ${GOPATH}/github.com/improbable-eng/grpc-web/test
+npm test
 ```
-Run the JS `playground` against the DemoServer
-```
-cd  ${GOPATH}/github.com/improbable-eng/grpc-web/js/playground
-npm start
-```
-Point your browser a https://localhost:8081/index.html and open the Developer Console.
+Point your browser at https://localhost:9876
 
 
 
