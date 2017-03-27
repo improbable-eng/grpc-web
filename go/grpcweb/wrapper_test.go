@@ -33,8 +33,8 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 
-	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	testproto "../../test/go/_proto/improbable/grpcweb/test"
+	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/mwitkow/go-conntrack/connhelpers"
 )
@@ -65,12 +65,13 @@ func (s *GrpcWebWrapperTestSuite) SetupSuite() {
 	grpcServer := grpc.NewServer()
 	testproto.RegisterTestServiceServer(grpcServer, &testServiceImpl{})
 	grpclog.SetLogger(log.New(os.Stderr, "grpc: ", log.LstdFlags))
+	wrappedServer := grpcweb.WrapServer(grpcServer)
 
 	httpServer := http.Server{
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 			require.EqualValues(s.T(), s.httpMajorVersion, req.ProtoMajor, "Requests in this test are served over the wrong protocol")
 			s.T().Logf("Serving over: %d", req.ProtoMajor)
-			grpcweb.WrapServer(grpcServer)(resp, req)
+			wrappedServer.ServeHttp(resp, req)
 		}),
 	}
 

@@ -38,7 +38,7 @@ func main() {
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		wrappedServer(resp, req)
+		wrappedServer.ServeHttp(resp, req)
 	}
 
 	http1Server := http.Server{
@@ -55,7 +55,7 @@ func main() {
 	emptyGrpcServer := grpc.NewServer()
 	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
 	emptyHandler := func(resp http.ResponseWriter, req *http.Request) {
-		emptyWrappedServer(resp, req)
+		emptyWrappedServer.ServeHttp(resp, req)
 	}
 	http2EmptyServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", *http2EmptyPort),

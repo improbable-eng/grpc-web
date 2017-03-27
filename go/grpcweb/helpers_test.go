@@ -6,6 +6,7 @@ package grpcweb_test
 import (
 	"sort"
 	"testing"
+
 	testproto "../../test/go/_proto/improbable/grpcweb/test"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"

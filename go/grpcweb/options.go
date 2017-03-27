@@ -5,16 +5,16 @@ package grpcweb
 
 var (
 	defaultOptions = &options{
-		allowedRequestHeaders: []string{"*"},
+		allowedRequestHeaders:          []string{"*"},
 		corsForRegisteredEndpointsOnly: true,
-		originFunc:            func(origin string) bool { return true },
+		originFunc:                     func(origin string) bool { return true },
 	}
 )
 
 type options struct {
-	allowedRequestHeaders []string
+	allowedRequestHeaders          []string
 	corsForRegisteredEndpointsOnly bool
-	originFunc            func(origin string) bool
+	originFunc                     func(origin string) bool
 }
 
 func evaluateOptions(opts []Option) *options {

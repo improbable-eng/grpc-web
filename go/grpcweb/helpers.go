@@ -5,8 +5,6 @@ package grpcweb
 
 import (
 	"fmt"
-	"net/http"
-	"strings"
 
 	"google.golang.org/grpc"
 )
@@ -23,9 +21,4 @@ func ListGRPCResources(server *grpc.Server) []string {
 		}
 	}
 	return ret
-}
-
-// IsGrpcRequest checks whether the given request is a gRPC-Web or gRPC-standard request.
-func IsGrpcRequest(r *http.Request) bool {
-	return strings.HasPrefix(r.Header.Get("content-type"), "application/grpc")
 }
