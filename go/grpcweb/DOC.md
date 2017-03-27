@@ -29,14 +29,6 @@ If you'd like to have a standalone binary, please take a look at `grpcwebproxy`.
 
 ## Usage
 
-#### func  IsGrpcRequest
-
-```go
-func IsGrpcRequest(r *http.Request) bool
-```
-IsGrpcRequest checks whether the given request is a gRPC-Web or gRPC-standard
-request.
-
 #### func  ListGRPCResources
 
 ```go
@@ -47,21 +39,6 @@ on gRPC server.
 
 This makes it easy to register all the relevant routes in your HTTP router of
 choice.
-
-#### func  WrapServer
-
-```go
-func WrapServer(server *grpc.Server, options ...Option) http.HandlerFunc
-```
-WrapServer takes a gRPC Server in Go and returns an http.HandlerFunc that adds
-gRPC-Web Compatibility.
-
-The internal implementation fakes out a http.Request that carries standard gRPC,
-and performs the remapping inside http.ResponseWriter, i.e. mostly the
-re-encoding of Trailers (that carry gRPC status).
-
-You can control the behaviour of the wrapper (e.g. modifying CORS behaviour)
-using `With*` options.
 
 #### type Option
 
@@ -94,6 +71,21 @@ itself.
 The relevant CORS pre-flight docs:
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers
 
+#### func  WithCorsForRegisteredEndpointsOnly
+
+```go
+func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option
+```
+WithCorsForRegisteredEndpointsOnly allows for customizing whether OPTIONS
+requests with the `X-GRPC-WEB` header will only be accepted if they match a
+registered gRPC endpoint.
+
+This should be set to false to allow handling gRPC requests for unknown
+endpoints (e.g. for proxying).
+
+The default behaviour is `true`, i.e. only allows CORS requests for registered
+endpoints.
+
 #### func  WithOriginFunc
 
 ```go
@@ -110,3 +102,71 @@ The default behaviour is `*`, i.e. to allow all calling websites.
 
 The relevant CORS pre-flight docs:
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
+
+#### type WrappedGrpcServer
+
+```go
+type WrappedGrpcServer struct {
+}
+```
+
+
+#### func  WrapServer
+
+```go
+func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer
+```
+WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that
+provides gRPC-Web Compatibility.
+
+The internal implementation fakes out a http.Request that carries standard gRPC,
+and performs the remapping inside http.ResponseWriter, i.e. mostly the
+re-encoding of Trailers (that carry gRPC status).
+
+You can control the behaviour of the wrapper (e.g. modifying CORS behaviour)
+using `With*` options.
+
+#### func (*WrappedGrpcServer) HandleGrpcWebRequest
+
+```go
+func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *http.Request)
+```
+HandleGrpcWebRequest takes a HTTP request that is assumed to be a gRPC-Web
+request and wraps it with a compatibility layer to transform it to a standard
+gRPC request for the wrapped gRPC server and transforms the response to comply
+with the gRPC-Web protocol.
+
+#### func (*WrappedGrpcServer) IsAcceptableGrpcCorsRequest
+
+```go
+func (w *WrappedGrpcServer) IsAcceptableGrpcCorsRequest(req *http.Request) bool
+```
+IsAcceptableGrpcCorsRequest determines if a request is a CORS pre-flight request
+for a gRPC-Web request and that this request is acceptable for CORS.
+
+You can control the CORS behaviour using `With*` options in the WrapServer
+function.
+
+#### func (*WrappedGrpcServer) IsGrpcWebRequest
+
+```go
+func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool
+```
+IsGrpcWebRequest determines if a request is a gRPC-Web request by checking that
+the "content-type" is "application/grpc-web".
+
+#### func (*WrappedGrpcServer) ServeHttp
+
+```go
+func (w *WrappedGrpcServer) ServeHttp(resp http.ResponseWriter, req *http.Request)
+```
+ServeHttp takes a HTTP request and if it is a gRPC-Web request wraps it with a
+compatibility layer to transform it to a standard gRPC request for the wrapped
+gRPC server and transforms the response to comply with the gRPC-Web protocol.
+
+The gRPC-Web compatibility is only invoked if the request is a gRPC-Web request
+as determined by IsGrpcWebRequest or the request is a pre-flight (CORS) request
+as determined by IsAcceptableGrpcCorsRequest.
+
+You can control the CORS behaviour using `With*` options in the WrapServer
+function.
