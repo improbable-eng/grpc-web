@@ -13,7 +13,7 @@ export type TransportOptions = {
   url: string,
   headers: BrowserHeaders,
   credentials: string,
-  body: ArrayBuffer,
+  body: ArrayBufferView,
   onHeaders: (headers: BrowserHeaders, status: number) => void,
   onChunk: (chunkBytes: Uint8Array, flush?: boolean) => void,
   onComplete: (err?: Error) => void,
