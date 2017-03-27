@@ -19,7 +19,6 @@ export default function xhrRequest(options: TransportOptions) {
     setTimeout(() => {
       options.onChunk(stringToBuffer(rawText));
     });
-
   }
 
   function onLoadEvent() {

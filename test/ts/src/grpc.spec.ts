@@ -199,8 +199,12 @@ function testWithLocalPort(port: number) {
         assert.ok(message instanceof Empty);
       },
       onError: function(err: Error) {
-        assert.strictEqual(err.message, "Response closed without grpc-status (No headers)");
-        assert.ok(!didGetOnHeaders);
+        // Some browsers return empty Headers for failed requests
+        if (didGetOnHeaders) {
+          assert.strictEqual(err.message, "Response closed without grpc-status (Headers only)");
+        } else {
+          assert.strictEqual(err.message, "Response closed without grpc-status (No headers)");
+        }
         assert.ok(!didGetOnMessage);
         assert.ok(!didGetOnComplete);
         done();

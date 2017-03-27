@@ -33,7 +33,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 
-	testproto "../../test/go/_proto/improbable/grpcweb/test"
+	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/mwitkow/go-conntrack/connhelpers"

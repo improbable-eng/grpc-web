@@ -1,9 +1,9 @@
 {
   "name": "grpc-web-client",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "gRPC-Web client for browsers (JS/TS)",
   "main": "dist/index.js",
-  "types": "dist/index.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf build && rm -rf dist",
     "lib:build": "npm run clean && tsc && cp -R build/ dist/",
