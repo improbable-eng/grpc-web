@@ -11,6 +11,7 @@ import (
 
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
+	"fmt"
 )
 
 var (
@@ -35,24 +36,44 @@ func WrapServer(server *grpc.Server, options ...Option) http.HandlerFunc {
 		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
 	})
 	grpcWebHandler := func(resp http.ResponseWriter, req *http.Request) {
-
 		intReq := hackIntoNormalGrpcRequest(req)
 		intResp := newGrpcWebResponse(resp)
 		server.ServeHTTP(intResp, intReq)
 		intResp.finishRequest(req)
 	}
 	return func(resp http.ResponseWriter, req *http.Request) {
-		// Short circuit if a normal gRPC request.
-		if req.ProtoMajor == 2 && !isGrpcWebRequest(req.Header) {
-			server.ServeHTTP(resp, req)
+		if isGrpcWebRequest(req) || isAcceptableGrpcCorsRequest(req, server, opts) {
+			corsWrapper.Handler(http.HandlerFunc(grpcWebHandler)).ServeHTTP(resp, req)
 			return
 		}
-		corsWrapper.Handler(http.HandlerFunc(grpcWebHandler)).ServeHTTP(resp, req)
+		server.ServeHTTP(resp, req)
 	}
 }
 
-func isGrpcWebRequest(headers http.Header) bool {
-	return strings.HasPrefix(headers.Get("content-type"), "application/grpc-web")
+func isGrpcWebRequest(req *http.Request) bool {
+	return strings.HasPrefix(req.Header.Get("content-type"), "application/grpc-web")
+}
+
+func isAcceptableGrpcCorsRequest(req *http.Request, server *grpc.Server, opts *options) bool {
+	accessControlHeaders := strings.ToLower(req.Header.Get("Access-Control-Request-Headers"))
+	if req.Method == http.MethodOptions && strings.Contains(accessControlHeaders, "x-grpc-web") {
+		if opts.corsForRegisteredEndpointsOnly {
+			return isRequestForRegisteredEndpoint(req, server)
+		}
+		return true
+	}
+	return false
+}
+
+func isRequestForRegisteredEndpoint(req *http.Request, server *grpc.Server) bool {
+	registeredEndpoints := ListGRPCResources(server)
+	requestedEndpoint := req.URL.Path
+	for _, v := range registeredEndpoints {
+		if v == requestedEndpoint {
+			return true
+		}
+	}
+	return false
 }
 
 func hackIntoNormalGrpcRequest(req *http.Request) *http.Request {

@@ -144,7 +144,7 @@ function testWithLocalPort(port: number) {
     });
   });
 
-  it("should report failure", (done) => {
+  it("should report status code for error with headers + trailers", (done) => {
     let didGetOnHeaders = false;
     let didGetOnMessage = false;
     let didGetOnError = false;
@@ -180,38 +180,33 @@ function testWithLocalPort(port: number) {
     });
   });
 
-  it("should report failure for a trailers-only response", (done) => {
+  it("should report failure for a CORS failure", (done) => {
     let didGetOnHeaders = false;
     let didGetOnMessage = false;
-    let didGetOnError = false;
+    let didGetOnComplete = false;
 
     const ping = new PingRequest();
 
-    grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service
+    grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
       debug: DEBUG,
       request: ping,
       host: `https://localhost:${port}`,
       onHeaders: function(headers: BrowserHeaders) {
         didGetOnHeaders = true;
-        assert.deepEqual(headers.get("grpc-status"), ["12"]);
-        assert.deepEqual(headers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
       },
       onMessage: function(message: Empty) {
         didGetOnMessage = true;
         assert.ok(message instanceof Empty);
       },
       onError: function(err: Error) {
-        didGetOnError = true;
+        assert.strictEqual(err.message, "Response closed without grpc-status (No headers)");
+        assert.ok(!didGetOnHeaders);
+        assert.ok(!didGetOnMessage);
+        assert.ok(!didGetOnComplete);
+        done();
       },
       onComplete: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
-        assert.deepEqual(trailers.get("grpc-status"), ["12"]);
-        assert.deepEqual(trailers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
-        assert.strictEqual(code, 12);
-        assert.strictEqual(msg, "unknown service improbable.grpcweb.test.FailService");
-        assert.ok(didGetOnHeaders);
-        assert.ok(!didGetOnMessage);
-        assert.ok(!didGetOnError);
-        done();
+        didGetOnComplete = true;
       }
     });
   });
@@ -291,6 +286,42 @@ describe("grpc-web-client", () => {
       },
       onComplete: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
         didGetOnComplete = true;
+      }
+    });
+  });
+
+  it("should report failure for a trailers-only response", (done) => {
+    let didGetOnHeaders = false;
+    let didGetOnMessage = false;
+    let didGetOnError = false;
+
+    const ping = new PingRequest();
+
+    grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should return an error
+      debug: DEBUG,
+      request: ping,
+      host: "https://localhost:9092", // This service accepts CORS requests for unregistered endpoints
+      onHeaders: function(headers: BrowserHeaders) {
+        didGetOnHeaders = true;
+        assert.deepEqual(headers.get("grpc-status"), ["12"]);
+        assert.deepEqual(headers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
+      },
+      onMessage: function(message: Empty) {
+        didGetOnMessage = true;
+        assert.ok(message instanceof Empty);
+      },
+      onError: function(err: Error) {
+        didGetOnError = true;
+      },
+      onComplete: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+        assert.deepEqual(trailers.get("grpc-status"), ["12"]);
+        assert.deepEqual(trailers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
+        assert.strictEqual(code, 12);
+        assert.strictEqual(msg, "unknown service improbable.grpcweb.test.FailService");
+        assert.ok(didGetOnHeaders);
+        assert.ok(!didGetOnMessage);
+        assert.ok(!didGetOnError);
+        done();
       }
     });
   });

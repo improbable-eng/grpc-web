@@ -15,7 +15,6 @@ import (
 	testproto "../_proto/improbable/grpcweb/test"
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/rs/cors"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/codes"
 	"golang.org/x/net/context"
@@ -25,6 +24,7 @@ import (
 var (
 	http1Port       = flag.Int("http1_port", 9090, "Port to listen with HTTP1.1 on.")
 	http2Port       = flag.Int("http2_port", 9091, "Port to listen with HTTP2 on.")
+	http2EmptyPort  = flag.Int("http2_empty_port", 9092, "Port to listen with HTTP2 on with a grpc server that has no services.")
 	tlsCertFilePath = flag.String("tls_cert_file", "../../../misc/localhost.crt", "Path to the CRT/PEM file.")
 	tlsKeyFilePath  = flag.String("tls_key_file", "../../../misc/localhost.key", "Path to the private key file.")
 )
@@ -36,33 +36,45 @@ func main() {
 	testproto.RegisterTestServiceServer(grpcServer, &testSrv{})
 	grpclog.SetLogger(log.New(os.Stdout, "testserver: ", log.LstdFlags))
 
+	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		grpcweb.WrapServer(grpcServer)(resp, req)
+		wrappedServer(resp, req)
 	}
-
-	corsWrapper := cors.New(cors.Options{
-		AllowOriginFunc:  func(origin string) bool { return true },
-		AllowedHeaders:   []string{"*"}, // allow all headers
-		AllowCredentials: true,
-	})
 
 	http1Server := http.Server{
 		Addr:    fmt.Sprintf(":%d", *http1Port),
-		Handler: corsWrapper.Handler(http.HandlerFunc(handler)),
+		Handler: http.HandlerFunc(handler),
 	}
 	http1Server.TLSNextProto = map[string]func(*http.Server, *tls.Conn, http.Handler){}
 
 	http2Server := http.Server{
 		Addr:    fmt.Sprintf(":%d", *http2Port),
-		Handler: corsWrapper.Handler(http.HandlerFunc(handler)),
+		Handler: http.HandlerFunc(handler),
 	}
 
-	grpclog.Printf("Starting servers. http1.1 port: %d http2 port: %d", *http1Port, *http2Port)
+	emptyGrpcServer := grpc.NewServer()
+	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	emptyHandler := func(resp http.ResponseWriter, req *http.Request) {
+		emptyWrappedServer(resp, req)
+	}
+	http2EmptyServer := http.Server{
+		Addr:    fmt.Sprintf(":%d", *http2EmptyPort),
+		Handler: http.HandlerFunc(emptyHandler),
+	}
+
+	grpclog.Printf("Starting servers. http1.1 port: %d, http2 port: %d, http2 empty port: %d", *http1Port, *http2Port, *http2EmptyPort)
 
 	// Start the Http1.1 server
 	go func() {
 		if err := http1Server.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
 			grpclog.Fatalf("failed starting http1.1 server: %v", err)
+		}
+	}()
+
+	// Start the empty Http2 server
+	go func() {
+		if err := http2EmptyServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
+			grpclog.Fatalf("failed starting http2 empty server: %v", err)
 		}
 	}()
 

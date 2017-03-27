@@ -89,6 +89,7 @@ export namespace grpc {
                                                                                                                                          props: RpcOptions<TRequest, TResponse>) {
     const requestHeaders = new BrowserHeaders(props.headers ? props.headers : {});
     requestHeaders.set("content-type", "application/grpc-web");
+    requestHeaders.set("X-GRPC-WEB", "1"); // Required for CORS handling
 
     const framedRequest = frameRequest(props.request);
 
