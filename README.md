@@ -7,11 +7,12 @@
 
 [gRPC](http://www.grpc.io/) is a modern, [HTTP2](https://hpbn.co/http2/)-based protocol, that provides RPC semantics using the strongly-typed *binary* data format of [protocol buffers](https://developers.google.com/protocol-buffers/docs/overview) across multiple languages (C++, C#, Golang, Java, Python, NodeJS, ObjectiveC, etc. [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) is a cutting-edge spec that enables invoking gRPC services from *modern* browsers.
 
-Components of the stack are based on Golang and Typescript:
+Components of the stack are based on Golang and TypeScript:
  * [`grpcweb`](go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1
  * [`grpcwebproxy`](go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers
  * [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) - a TypeScript plugin for the protcol buffers compiler that provides strongly typed message classes and method definitions
- * `grpc-web-client` - a TypeScript gRPC-Web client library for browsers, not meant to be used directly by users
+ * [`grpc-web-client`](ts) - a TypeScript gRPC-Web client library for browsers, not meant to be used directly by users
+
  
 ## Why?
 
