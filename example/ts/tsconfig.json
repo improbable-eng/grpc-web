@@ -9,10 +9,6 @@
     "strictNullChecks": true,
     "stripInternal": true,
     "noFallthroughCasesInSwitch": true,
-    "outDir": "build",
     "noEmitOnError": true
-  },
-  "include": [
-    "./src"
-  ]
+  }
 }

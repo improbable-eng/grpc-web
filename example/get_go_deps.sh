@@ -8,3 +8,4 @@ go get github.com/mwitkow/grpc-proxy/proxy
 go get github.com/prometheus/client_golang/prometheus/promhttp
 go get github.com/spf13/pflag
 go get github.com/rs/cors
+go get github.com/golang/protobuf/protoc-gen-go

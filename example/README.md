@@ -3,7 +3,7 @@
 ### Get started (with HTTP 1.1)
 
 * `npm install`
-* `npm run install_go_deps` to install Golang dependencies
+* `npm run get_go_deps` to install Golang dependencies
 * `npm start` to start the Golang server and Webpack dev server
 * Go to `http://localhost:8081`
 

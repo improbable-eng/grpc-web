@@ -5,9 +5,9 @@
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
     "build:proto": "./protogen.sh",
-    "install_go_deps": "./install_go_deps.sh",
-    "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack-dev-server --colors --watch --hot --inline --port 8082 --host 0.0.0.0 --output-public-path=https://localhost:8082/build/ --content-base ./ --https --cert=../../misc/localhost.crt --key=../../misc/localhost.key",
-    "webpack-dev": "cd ts && webpack-dev-server --colors --watch --hot --inline --port 8081 --host 0.0.0.0 --output-public-path=http://localhost:8081/build/ --content-base ./",
+    "get_go_deps": "./get_go_deps.sh",
+    "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack-dev-server --colors --watch --hot --inline --port 8082 --host 0.0.0.0 --output-public-path=https://localhost:8082/build/ --https --cert=../../misc/localhost.crt --key=../../misc/localhost.key",
+    "webpack-dev": "cd ts && webpack-dev-server --colors --watch --hot --inline --port 8081 --host 0.0.0.0 --output-public-path=http://localhost:8081/build/",
     "start:tls": "npm run build:proto && concurrently --kill-others \"go run go/exampleserver/exampleserver.go --enable_tls=true\" \"npm run webpack-dev:tls\"",
     "start": "npm run build:proto && concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\""
   },
@@ -18,9 +18,6 @@
     "grpc-web-client": "0.1.3"
   },
   "devDependencies": {
-    "babel-core": "^6.23.1",
-    "babel-loader": "^6.3.2",
-    "babel-preset-es2015": "^6.13.2",
     "concurrently": "^3.4.0",
     "ts-loader": "^2.0.1",
     "ts-protoc-gen": "^0.1.1",

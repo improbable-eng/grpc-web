@@ -11,16 +11,10 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        include: /src/,
-        loader: "babel-loader",
-        exclude: /node_modules/
-      },
-      {
         test: /\.ts$/,
         include: /src/,
         exclude: /node_modules/,
-        loader: "babel-loader?cacheDirectory!ts-loader"
+        loader: "ts-loader"
       }
     ]
   },
