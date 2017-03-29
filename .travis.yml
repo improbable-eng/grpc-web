@@ -8,6 +8,7 @@ cache:
   directories:
     - node_modules
 before_install:
+  - ./install-protobuf.sh
   - true && `base64 --decode <<< ZXhwb3J0IFNBVUNFX1VTRVJOQU1FPUltcHJvYmFibGVFbmdCb3Q=`
   - true && `base64 --decode <<< ZXhwb3J0IFNBVUNFX0FDQ0VTU19LRVk9M2RmOGVkMGMtMThmNS00YWU4LTg4NTItZWMxMjZkZDYwMjQz`
 install:
