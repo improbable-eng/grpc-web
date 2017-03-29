@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package examplecom.library;
+
+message Book {
+  int64 isbn = 1;
+  string title = 2;
+  string author = 3;
+}
+
+message GetBookRequest {
+  int64 isbn = 1;
+}
+
+message QueryBooksRequest {
+  string author_prefix = 1;
+}
+
+service BookService {
+  rpc GetBook(GetBookRequest) returns (Book) {}
+  rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
+}
