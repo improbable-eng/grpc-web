@@ -3,56 +3,56 @@
 var fs = require("fs");
 module.exports = function(config) {
   var customLaunchers = {
-    'SL_Safari_Latest': {
-      base: 'SauceLabs',
-      browserName: 'safari',
-      platform: 'OS X 10.11'
-    },
-    'SL_Safari_8': {
-      base: 'SauceLabs',
-      browserName: 'safari',
-      platform: 'OS X 10.10',
-      version: '8',
-    },
+    // 'SL_Safari_Latest': {
+    //   base: 'SauceLabs',
+    //   browserName: 'safari',
+    //   platform: 'OS X 10.11'
+    // },
+    // 'SL_Safari_8': {
+    //   base: 'SauceLabs',
+    //   browserName: 'safari',
+    //   platform: 'OS X 10.10',
+    //   version: '8',
+    // },
     'SL_Chrome_Latest': {
       base: 'SauceLabs',
       browserName: 'chrome',
       platform: 'linux'
     },
-    'SL_Chrome_48': {
-      base: 'SauceLabs',
-      browserName: 'chrome',
-      platform: 'OS X 10.10',
-      version: '48',
-    },
-    'SL_Firefox_Latest': {
-      base: 'SauceLabs',
-      browserName: 'firefox',
-      platform: 'linux'
-    },
-    'SL_Opera_12': {
-      base: 'SauceLabs',
-      browserName: 'opera',
-      platform: 'Windows 7',
-      version: '12'
-    },
-    'SL_Edge': {
-      base: 'SauceLabs',
-      browserName: 'microsoftedge',
-      platform: 'Windows 10'
-    },
-    'SL_IE_10': {
-      base: 'SauceLabs',
-      browserName: 'internet explorer',
-      platform: 'Windows 7',
-      version: '10'
-    },
-    'SL_IE_9': {
-      base: 'SauceLabs',
-      browserName: 'internet explorer',
-      platform: 'Windows 7',
-      version: '9'
-    }
+    // 'SL_Chrome_48': {
+    //   base: 'SauceLabs',
+    //   browserName: 'chrome',
+    //   platform: 'OS X 10.10',
+    //   version: '48',
+    // },
+    // 'SL_Firefox_Latest': {
+    //   base: 'SauceLabs',
+    //   browserName: 'firefox',
+    //   platform: 'linux'
+    // },
+    // 'SL_Opera_12': {
+    //   base: 'SauceLabs',
+    //   browserName: 'opera',
+    //   platform: 'Windows 7',
+    //   version: '12'
+    // },
+    // 'SL_Edge': {
+    //   base: 'SauceLabs',
+    //   browserName: 'microsoftedge',
+    //   platform: 'Windows 10'
+    // },
+    // 'SL_IE_10': {
+    //   base: 'SauceLabs',
+    //   browserName: 'internet explorer',
+    //   platform: 'Windows 7',
+    //   version: '10'
+    // },
+    // 'SL_IE_9': {
+    //   base: 'SauceLabs',
+    //   browserName: 'internet explorer',
+    //   platform: 'Windows 7',
+    //   version: '9'
+    // }
   };
 
   var reporters = ['dots'];
