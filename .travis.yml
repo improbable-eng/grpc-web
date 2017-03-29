@@ -1,4 +1,4 @@
-language: go
+language: node_js
 go:
   - 1.8
 go_import_path: github.com/improbable-eng/grpc-web
