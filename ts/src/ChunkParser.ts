@@ -1,5 +1,5 @@
 import {BrowserHeaders} from "browser-headers";
-import {TextDecoder} from "text-encoding";
+const {TextDecoder} = require("text-encoding");
 
 const HEADER_SIZE = 5;
 
