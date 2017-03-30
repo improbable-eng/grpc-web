@@ -1,15 +1,17 @@
-language: node_js
+language: go
 go:
   - 1.8
 go_import_path: github.com/improbable-eng/grpc-web
 node_js:
-  - "4"
+  - "6"
 cache:
   directories:
     - node_modules
 before_install:
   - sudo apt-get install unzip
   - bash install-protobuf.sh
+  - true && npm --version
+  - true && node --version
   - true && `base64 --decode <<< ZXhwb3J0IFNBVUNFX1VTRVJOQU1FPUltcHJvYmFibGVFbmdCb3Q=`
   - true && `base64 --decode <<< ZXhwb3J0IFNBVUNFX0FDQ0VTU19LRVk9M2RmOGVkMGMtMThmNS00YWU4LTg4NTItZWMxMjZkZDYwMjQz`
 install:
@@ -25,6 +27,6 @@ install:
   - go get github.com/rs/cors
   - go get github.com/golang/protobuf/protoc-gen-go
   - go get github.com/stretchr/testify
-#  - npm install
+  - npm install
 script:
   - npm run test
