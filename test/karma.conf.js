@@ -3,17 +3,17 @@
 var fs = require("fs");
 module.exports = function(config) {
   var customLaunchers = {
-    'SL_Safari_Latest': {
-      base: 'SauceLabs',
-      browserName: 'safari',
-      platform: 'OS X 10.11'
-    },
-    'SL_Safari_8': {
-      base: 'SauceLabs',
-      browserName: 'safari',
-      platform: 'OS X 10.10',
-      version: '8',
-    },
+    // 'SL_Safari_Latest': {
+    //   base: 'SauceLabs',
+    //   browserName: 'safari',
+    //   platform: 'OS X 10.11'
+    // },
+    // 'SL_Safari_8': {
+    //   base: 'SauceLabs',
+    //   browserName: 'safari',
+    //   platform: 'OS X 10.10',
+    //   version: '8',
+    // },
     'SL_Chrome_Latest': {
       base: 'SauceLabs',
       browserName: 'chrome',
