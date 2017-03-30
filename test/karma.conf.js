@@ -3,17 +3,6 @@
 var fs = require("fs");
 module.exports = function(config) {
   var customLaunchers = {
-    // 'SL_Safari_Latest': {
-    //   base: 'SauceLabs',
-    //   browserName: 'safari',
-    //   platform: 'OS X 10.11'
-    // },
-    // 'SL_Safari_8': {
-    //   base: 'SauceLabs',
-    //   browserName: 'safari',
-    //   platform: 'OS X 10.10',
-    //   version: '8',
-    // },
     'SL_Chrome_Latest': {
       base: 'SauceLabs',
       browserName: 'chrome',
@@ -29,6 +18,17 @@ module.exports = function(config) {
       base: 'SauceLabs',
       browserName: 'firefox',
       platform: 'linux'
+    },
+    'SL_Safari_Latest': {
+      base: 'SauceLabs',
+      browserName: 'safari',
+      platform: 'OS X 10.11'
+    },
+    'SL_Safari_8': {
+      base: 'SauceLabs',
+      browserName: 'safari',
+      platform: 'OS X 10.10',
+      version: '8',
     },
     'SL_Opera_12': {
       base: 'SauceLabs',
@@ -72,6 +72,7 @@ module.exports = function(config) {
     frameworks: ['jasmine'],
     sauceLabs: {
       recordScreenshots: false,
+      avoidProxy: true,
       connectOptions: {
         port: 5757,
         logfile: 'sauce_connect.log'
