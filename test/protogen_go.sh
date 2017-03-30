@@ -6,6 +6,9 @@ PROTOBUF_DIR=${PROTOBUF_DIR-${SCRIPT_DIR}/proto}
 PROTOGEN_DIR=go/_proto
 GENERATION_DIR=${GENERATION_DIR-${SCRIPT_DIR}/${PROTOGEN_DIR}}
 
+echo "PATH within protogen_go"
+echo $PATH
+
 # Builds all .proto files in a given package dirctory.
 # NOTE: All .proto files in a given package must be processed *together*, otherwise the self-referencing
 # between files in the same proto package will not work.
