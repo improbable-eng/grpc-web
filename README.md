@@ -29,21 +29,88 @@ With gRPC-Web, it is extremely easy to build well defined, easy to reason about 
 
 In short, gRPC-Web moves the interaction between frontend code and microservices from the sphere of hand-crafted HTTP requests to well-defined user-logic methods. 
 
-### Example 
+## Example 
 
-If you define a service:
+For a self-contained demo of a Golang gRPC service called from a TypeScript projects, see [example](example). It contains most of the initialization code that performs the magic. Here's the application code extracted from the example:
+
+You use `.proto` files to define your service. In this example, one normal RPC (`GetBook`) and one server-streaming RPC (`QueryBooks`):
 
 ```proto
+syntax = "proto3";
+
+message Book {
+  int64 isbn = 1;
+  string title = 2;
+  string author = 3;
+}
+
+message GetBookRequest {
+  int64 isbn = 1;
+}
+
+message QueryBooksRequest {
+  string author_prefix = 1;
+}
+
+service BookService {
+  rpc GetBook(GetBookRequest) returns (Book) {}
+  rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
+}
 ```
 
-And implement it in Go (or any other gRPC-supported):
+And implement it in Go (or any other gRPC-supported language):
 
 ```go
+import pb_library "../_proto/examplecom/library"
+
+type bookService struct{
+  books []*pb_library.Book
+}
+
+func (s *bookService) GetBook(ctx context.Context, bookQuery *pb_library.GetBookRequest) (*pb_library.Book, error) {
+	for _, book := range s.books {
+		if book.Isbn == bookQuery.Isbn {
+			return book, nil
+		}
+	}
+	return nil, grpc.Errorf(codes.NotFound, "Book could not be found")
+}
+
+func (s *bookService) QueryBooks(bookQuery *pb_library.QueryBooksRequest, stream pb_library.BookService_QueryBooksServer) error {
+	for _, book := range s.books {
+		if strings.HasPrefix(s.book.Author, bookQuery.AuthorPrefix) {
+			stream.Send(book)
+		}
+	}
+	return nil
+}
 ```
 
 You will be able to access it in a browser using TypeScript (and equally JavaScript after transpiling):
 
 ```ts
+import {grpc, BrowserHeaders} from "grpc-web-client";
+// Import code-generated deta structures.
+import {BookService} from "./services";
+import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
+
+const queryBooksRequest = new QueryBooksRequest();
+queryBooksRequest.setAuthorPrefix("Geor");
+grpc.invoke(BookService.QueryBooks, {
+  request: queryBooksRequest,
+  host: host,
+  onMessage: function(message: Book) {
+    console.log("got book: ", message.toObject());
+  },
+  onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+    if code == grpc.Code.OK {
+      console.log("all ok")
+    } else {
+      console.log("hit an error", code, msg, trailers);
+    }
+  }
+});
+
 ```
 
 ## Browser Support
