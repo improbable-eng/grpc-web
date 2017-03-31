@@ -14,7 +14,7 @@
   },
   "license": "none",
   "dependencies": {
-    "@types/google-protobuf": "^3.2.1",
+    "@types/google-protobuf": "^3.2.4",
     "@types/node": "^7.0.5",
     "google-protobuf": "^3.2.0",
     "typedarray": "0.0.6"
