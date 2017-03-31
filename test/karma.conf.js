@@ -6,35 +6,35 @@ module.exports = function(config) {
     'SL_Chrome_Latest': {
       base: 'SauceLabs',
       browserName: 'chrome',
-      platform: 'OS X 10.10'
+      platform: 'OS X 10.12'
     },
     'SL_Chrome_48': {
       base: 'SauceLabs',
       browserName: 'chrome',
-      platform: 'OS X 10.10',
+      platform: 'OS X 10.12',
       version: '48'
     },
     'SL_Chrome_41': { // Fetch support added in Chrome 42
       base: 'SauceLabs',
       browserName: 'chrome',
-      platform: 'OS X 10.10',
+      platform: 'OS X 10.12',
       version: '41'
     },
     'SL_Firefox_Latest': {
       base: 'SauceLabs',
       browserName: 'firefox',
-      platform: 'OS X 10.10'
+      platform: 'OS X 10.12'
     },
     'SL_Firefox_52': {
       base: 'SauceLabs',
       browserName: 'firefox',
-      platform: 'OS X 10.10',
+      platform: 'OS X 10.12',
       version: '52'
     },
     'SL_Firefox_38': { // Fetch support added in Firefox 39
       base: 'SauceLabs',
       browserName: 'firefox',
-      platform: 'OS X 10.10',
+      platform: 'OS X 10.12',
       version: '38'
     }
   };
