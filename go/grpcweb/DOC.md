@@ -153,7 +153,7 @@ function.
 func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool
 ```
 IsGrpcWebRequest determines if a request is a gRPC-Web request by checking that
-the "content-type" is "application/grpc-web".
+the "content-type" is "application/grpc-web" and that the method is POST.
 
 #### func (*WrappedGrpcServer) ServeHttp
 

@@ -13,7 +13,7 @@
   },
   "license": "none",
   "dependencies": {
-    "@types/google-protobuf": "^3.2.4",
+    "@types/google-protobuf": "^3.2.5",
     "google-protobuf": "^3.2.0",
     "grpc-web-client": "0.1.3"
   },

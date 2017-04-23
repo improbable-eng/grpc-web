@@ -1,5 +1,4 @@
 import {BrowserHeaders} from "browser-headers";
-import {TextDecoder} from "text-encoding";
 
 const HEADER_SIZE = 5;
 
@@ -16,8 +15,27 @@ function readLengthFromHeader(headerView: DataView) {
   return headerView.getUint32(1, false)
 }
 
-function hasEnoughBytes(buffer: ArrayBuffer, position: number, byteCount: number) {
+function hasEnoughBytes(buffer: Uint8Array, position: number, byteCount: number) {
   return buffer.byteLength - position >= byteCount;
+}
+
+export function sliceUint8Array(buffer: Uint8Array, from: number, to?: number) {
+  if (buffer.slice) {
+    return buffer.slice(from ,to);
+  }
+
+  let end = buffer.length;
+  if (to !== undefined) {
+    end = to;
+  }
+
+  const num = end - from;
+  const array = new Uint8Array(num);
+  let arrayIndex = 0;
+  for(let i = from; i < end; i++) {
+    array[arrayIndex++] = buffer[i];
+  }
+  return array;
 }
 
 export enum ChunkType {
@@ -32,7 +50,7 @@ export type Chunk = {
 }
 
 export class ChunkParser{
-  buffer: ArrayBuffer | null = null;
+  buffer: Uint8Array | null = null;
   position: number = 0;
 
   parse(bytes: Uint8Array, flush?: boolean): Chunk[] {
@@ -43,17 +61,19 @@ export class ChunkParser{
     const chunkData: Chunk[] = [];
 
     if (this.buffer == null) {
-      this.buffer = bytes.buffer;
+      this.buffer = bytes;
       this.position = 0;
     } else if (this.position === this.buffer.byteLength) {
-      this.buffer = bytes.buffer;
+      this.buffer = bytes;
       this.position = 0;
     } else {
       const remaining = this.buffer.byteLength - this.position;
-      const newBuf = new Uint8Array(remaining + bytes.buffer.byteLength);
-      newBuf.set(new Uint8Array(this.buffer, this.position), 0);
-      newBuf.set(new Uint8Array(bytes.buffer), remaining);
-      this.buffer = newBuf.buffer;
+      const newBuf = new Uint8Array(remaining + bytes.byteLength);
+      const fromExisting = sliceUint8Array(this.buffer, this.position);
+      newBuf.set(fromExisting, 0);
+      const latestDataBuf = new Uint8Array(bytes);
+      newBuf.set(latestDataBuf, remaining);
+      this.buffer = newBuf;
       this.position = 0;
     }
 
@@ -62,14 +82,16 @@ export class ChunkParser{
         return chunkData;
       }
 
-      let headerBuffer = this.buffer.slice(this.position, this.position + HEADER_SIZE);
-      const headerView = new DataView(headerBuffer);
+      let headerBuffer = sliceUint8Array(this.buffer, this.position, this.position + HEADER_SIZE);
+
+      const headerView = new DataView(headerBuffer.buffer, headerBuffer.byteOffset, headerBuffer.byteLength);
+
       const msgLength = readLengthFromHeader(headerView);
       if (!hasEnoughBytes(this.buffer, this.position, HEADER_SIZE + msgLength)) {
         return chunkData;
       }
 
-      const messageData = new Uint8Array(this.buffer, this.position + HEADER_SIZE, msgLength);
+      const messageData = sliceUint8Array(this.buffer, this.position + HEADER_SIZE, this.position + HEADER_SIZE + msgLength);
       this.position += HEADER_SIZE + msgLength;
 
       if (isTrailerHeader(headerView)) {

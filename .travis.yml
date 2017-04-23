@@ -2,6 +2,11 @@ language: go
 go:
   - 1.8
 go_import_path: github.com/improbable-eng/grpc-web
+addons:
+  hosts:
+    # These must match the hosts defined in test/hosts-config.js
+    - validhost
+    - invalidhost
 env:
 - PROTOBUF_VER="3.2.0"
 cache:
@@ -10,8 +15,8 @@ cache:
 before_install:
   - sudo apt-get install unzip
   - bash install-protobuf.sh
-  - true && `base64 --decode <<< ZXhwb3J0IFNBVUNFX1VTRVJOQU1FPUltcHJvYmFibGVFbmdCb3Q=`
-  - true && `base64 --decode <<< ZXhwb3J0IFNBVUNFX0FDQ0VTU19LRVk9M2RmOGVkMGMtMThmNS00YWU4LTg4NTItZWMxMjZkZDYwMjQz`
+  - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfVVNFUk5BTUU9aW1wcm9iYWJsZWVuZ2JvdDEK`
+  - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfQUNDRVNTX0tFWT1xTGJxUjE2azhqdFducVh2RmlvZwo=`
 install:
   - export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
   - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 6

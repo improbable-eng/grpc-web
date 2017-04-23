@@ -2,6 +2,7 @@ import * as jspb from "google-protobuf";
 import {BrowserHeaders} from "browser-headers";
 import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Transport,DefaultTransportFactory} from "./transports/Transport";
+import {debug, debugBuffer} from "./debug";
 
 export {
   BrowserHeaders
@@ -34,6 +35,39 @@ export namespace grpc {
     Unauthenticated = 16,
   }
 
+  function httpStatusToCode(httpStatus: number): Code {
+    switch (httpStatus) {
+      case 200:
+        return Code.OK;
+      case 400:
+        return Code.InvalidArgument;
+      case 401:
+        return Code.Unauthenticated;
+      case 403:
+        return Code.PermissionDenied;
+      case 404:
+        return Code.NotFound;
+      case 409:
+        return Code.Aborted;
+      case 412:
+        return Code.FailedPrecondition;
+      case 429:
+        return Code.ResourceExhausted;
+      case 499:
+        return Code.Canceled;
+      case 500:
+        return Code.Unknown;
+      case 501:
+        return Code.Unimplemented;
+      case 503:
+        return Code.Unavailable;
+      case 504:
+        return Code.DeadlineExceeded;
+      default:
+        return Code.Unknown;
+    }
+  }
+
   export interface ServiceDefinition {
     serviceName: string;
   }
@@ -54,7 +88,6 @@ export namespace grpc {
     onHeaders?: (headers: BrowserHeaders) => void,
     onMessage?: (res: TResponse) => void,
     onComplete: (code: Code, message: string | undefined, trailers: BrowserHeaders) => void,
-    onError: (err: Error) => void,
     transport?: Transport,
     debug?: boolean,
   }
@@ -67,11 +100,11 @@ export namespace grpc {
     return new Uint8Array(frame);
   }
 
-  function getStatusFromHeaders(trailers: BrowserHeaders): Code | null {
-    const fromTrailers = trailers.get("grpc-status") || [];
-    if (fromTrailers.length > 0) {
+  function getStatusFromHeaders(headers: BrowserHeaders): Code | null {
+    const fromHeaders = headers.get("grpc-status") || [];
+    if (fromHeaders.length > 0) {
       try {
-        const asString = fromTrailers[0];
+        const asString = fromHeaders[0];
         const asNumber = parseInt(asString, 10);
         if (Code[asNumber] === undefined) {
           return null;
@@ -89,7 +122,7 @@ export namespace grpc {
                                                                                                                                          props: RpcOptions<TRequest, TResponse>) {
     const requestHeaders = new BrowserHeaders(props.headers ? props.headers : {});
     requestHeaders.set("content-type", "application/grpc-web");
-    requestHeaders.set("X-GRPC-WEB", "1"); // Required for CORS handling
+    requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
     const framedRequest = frameRequest(props.request);
 
@@ -97,27 +130,35 @@ export namespace grpc {
     function rawOnComplete(code: Code, message: string | undefined, trailers: BrowserHeaders) {
       if (completed) return;
       completed = true;
-      props.onComplete(code, message, trailers);
+      setTimeout(() => {
+        props.onComplete(code, message, trailers);
+      });
     }
 
     function rawOnHeaders(headers: BrowserHeaders) {
       if (completed) return;
-      if (props.onHeaders) {
-        props.onHeaders(headers);
-      }
+      setTimeout(() => {
+        if (props.onHeaders) {
+          props.onHeaders(headers);
+        }
+      });
     }
 
-    function rawOnError(err: Error) {
+    function rawOnError(code: Code, msg: string) {
       if (completed) return;
       completed = true;
-      props.onError(err);
+      setTimeout(() => {
+        props.onComplete(code, msg, new BrowserHeaders());
+      });
     }
 
     function rawOnMessage(res: TResponse) {
       if (completed) return;
-      if (props.onMessage) {
-        props.onMessage(res);
-      }
+      setTimeout(() => {
+        if (props.onMessage) {
+          props.onMessage(res);
+        }
+      });
     }
 
     let responseHeaders: BrowserHeaders;
@@ -130,53 +171,62 @@ export namespace grpc {
       transport = DefaultTransportFactory.getTransport();
     }
     transport({
+      debug: props.debug || false,
       url: `${props.host}/${methodDescriptor.service.serviceName}/${methodDescriptor.methodName}`,
       headers: requestHeaders,
       body: framedRequest,
       credentials: "",
       onHeaders: (headers: BrowserHeaders, status: number) => {
+        props.debug && debug("onHeaders", headers, status);
         responseHeaders = headers;
-        props.debug && console.debug("onHeaders", headers, status);
-        props.debug && console.debug("responseHeaders", JSON.stringify(responseHeaders, null, 2));
+        props.debug && debug("onHeaders.responseHeaders", JSON.stringify(responseHeaders, null, 2));
+        const code = httpStatusToCode(status);
+        props.debug && debug("onHeaders.code", code);
+        const gRPCMessage = headers.get("grpc-message");
+        props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
+        if (code !== Code.OK) {
+          rawOnError(code, gRPCMessage.length > 0 ? gRPCMessage[0] : "");
+          return;
+        }
+
         rawOnHeaders(headers);
       },
       onChunk: (chunkBytes: Uint8Array) => {
-        props.debug && console.debug("onChunk: ", chunkBytes);
-
         let data: Chunk[] = [];
         try {
           data = parser.parse(chunkBytes);
         } catch (e) {
-          props.onError(e);
+          props.debug && debug("onChunk.parsing error", e, e.message);
+          rawOnError(Code.Internal, e.message);
           return;
         }
 
         data.forEach((d: Chunk) => {
-          props.debug && console.debug("onChunk ", d);
-
           if (d.chunkType === ChunkType.MESSAGE) {
-            rawOnMessage(methodDescriptor.responseType.deserializeBinary(d.data!));
+            const deserialized = methodDescriptor.responseType.deserializeBinary(d.data!);
+            rawOnMessage(deserialized);
           } else if (d.chunkType === ChunkType.TRAILERS) {
+            props.debug && debug("onChunk.trailers", responseTrailers);
             responseTrailers = new BrowserHeaders(d.trailers);
           }
         });
       },
       onComplete: () => {
-        props.debug && console.debug("grpc.onComplete");
+        props.debug && debug("grpc.onComplete");
 
         if (responseTrailers === undefined) {
           if (responseHeaders === undefined) {
             // The request was unsuccessful - it did not receive any headers
-            rawOnError(new Error("Response closed without grpc-status (No headers)"));
+            rawOnError(Code.Unknown, "");
             return;
           }
 
           // This was a headers/trailers-only response
-          props.debug && console.debug("grpc.headers only response");
+          props.debug && debug("grpc.headers only response");
 
           const grpcStatus = getStatusFromHeaders(responseHeaders);
           if (grpcStatus === null) {
-            rawOnError(new Error("Response closed without grpc-status (Headers only)"));
+            rawOnError(Code.Internal, "Response closed without grpc-status (Headers only)");
             return;
           }
 
@@ -186,15 +236,14 @@ export namespace grpc {
         }
 
         // There were trailers - get the status from them
-
         const grpcStatus = getStatusFromHeaders(responseTrailers);
         if (grpcStatus === null) {
-          rawOnError(new Error("Response closed without grpc-status (Trailers provided)"));
+          rawOnError(Code.Internal, "Response closed without grpc-status (Trailers provided)");
           return;
         }
 
-        const grpcMessage = responseTrailers.get("grpc-message") || [];
-        rawOnComplete(grpcStatus, grpcMessage[0], responseTrailers);
+        const grpcMessage = responseTrailers.get("grpc-message");
+        rawOnComplete(grpcStatus, grpcMessage ? grpcMessage[0] : "", responseTrailers);
       }
     });
   }

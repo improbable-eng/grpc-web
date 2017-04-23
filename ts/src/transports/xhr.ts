@@ -1,33 +1,52 @@
 import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
+import {debug} from "../debug";
 
-function stringToBuffer(str: string): Uint8Array {
+function codePointAtPolyfill(str: string, index: number) {
+  let code = str.charCodeAt(index);
+  if (code >= 0xd800 && code <= 0xdbff) {
+    const surr = str.charCodeAt(index + 1);
+    if (surr >= 0xdc00 && surr <= 0xdfff) {
+      code = 0x10000 + ((code - 0xd800) << 10) + (surr - 0xdc00);
+    }
+  }
+  return code;
+}
+
+export function stringToArrayBuffer(str: string): Uint8Array {
   const asArray = new Uint8Array(str.length);
+  let arrayIndex = 0;
   for (let i = 0; i < str.length; i++) {
-    asArray[i] = (str as any).codePointAt(i) & 0xFF;
+    const codePoint = (String.prototype as any).codePointAt ? (str as any).codePointAt(i) : codePointAtPolyfill(str, i);
+    asArray[arrayIndex++] = codePoint & 0xFF;
   }
   return asArray;
 }
 
 export default function xhrRequest(options: TransportOptions) {
+  options.debug && debug("xhrRequest", options);
   const xhr = new XMLHttpRequest();
   let index = 0;
 
   function onProgressEvent() {
+    options.debug && debug("xhrRequest.onProgressEvent.length: ", xhr.response.length);
     const rawText = xhr.response.substr(index);
     index = xhr.response.length;
+    const asArrayBuffer = stringToArrayBuffer(rawText);
     setTimeout(() => {
-      options.onChunk(stringToBuffer(rawText));
+      options.onChunk(asArrayBuffer);
     });
   }
 
   function onLoadEvent() {
+    options.debug && debug("xhrRequest.onLoadEvent");
     setTimeout(() => {
       options.onComplete();
     });
   }
 
   function onStateChange() {
+    options.debug && debug("xhrRequest.onStateChange", this.readyState);
     if (this.readyState === this.HEADERS_RECEIVED) {
       setTimeout(() => {
         options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
@@ -48,6 +67,7 @@ export default function xhrRequest(options: TransportOptions) {
   xhr.addEventListener("progress", onProgressEvent);
   xhr.addEventListener("loadend", onLoadEvent);
   xhr.addEventListener("error", (err: ErrorEvent) => {
+    options.debug && debug("xhrRequest.error", err);
     setTimeout(() => {
       options.onComplete(err.error);
     });
