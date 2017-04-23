@@ -13,5 +13,7 @@ As Safari on BrowserStack does not work with `https://localhost` or `https://127
 * Run `npm test` to start the karma test runner.
 * Navigate to `https://validhost:9100` and accept the self-signed certificate.
 * Navigate to `https://validhost:9105` and accept the self-signed certificate.
-* Navigate to `https://validhost:9876` and accept the self-signed certificate.
-* The Karma tests will run in the browser and output should be visible in the terminal.
+* Navigate to `https://invalidhost:9100` and accept the self-signed certificate.
+* Navigate to `https://invalidhost:9105` and accept the self-signed certificate.
+* Navigate to `http://validhost:9876` and the tests will run for HTTP (HTTP 1.1)
+* Navigate to `https://validhost:9876`, accept the self-signed certificate, and the tests will run for HTTPS (HTTP 2)
