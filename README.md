@@ -91,8 +91,8 @@ You will be able to access it in a browser using TypeScript (and equally JavaScr
 
 ```ts
 import {grpc, BrowserHeaders} from "grpc-web-client";
-// Import code-generated deta structures.
-import {BookService} from "./services";
+// Import code-generated data structures.
+import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
 const queryBooksRequest = new QueryBooksRequest();
@@ -120,11 +120,12 @@ The `grpc-web-client` uses multiple techniques to efficiently invoke gRPC servic
 
 The gRPC semantics encourage you to make multiple requests at once. With most modern browsers [supporting HTTP2](http://caniuse.com/#feat=http2), these can be executed over a single TLS connection. For older browsers, gRPC-Web falls back to HTTP/1.1 chunk responses.
 
-For best results we recommend the browsers we test against:
-  * Chrome >= 42
-  * Firefox >= 39
-  * Edge >= 14 
-  * Safari >= 10 (with 10.1 significantly improving matters)
+This library is tested against:
+  * Chrome >= 41
+  * Firefox >= 38
+  * Edge >= 13
+  * IE >= 10
+  * Safari >= 8
 
 ### Client-side streaming
 
