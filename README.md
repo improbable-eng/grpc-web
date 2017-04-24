@@ -103,7 +103,7 @@ grpc.invoke(BookService.QueryBooks, {
   onMessage: function(message: Book) {
     console.log("got book: ", message.toObject());
   },
-  onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+  onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
     if code == grpc.Code.OK {
       console.log("all ok")
     } else {

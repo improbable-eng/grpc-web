@@ -37,6 +37,8 @@ export namespace grpc {
 
   function httpStatusToCode(httpStatus: number): Code {
     switch (httpStatus) {
+      case 0: // Connectivity issues
+        return Code.Internal;
       case 200:
         return Code.OK;
       case 400:
@@ -87,7 +89,7 @@ export namespace grpc {
     headers?: BrowserHeaders.ConstructorArg,
     onHeaders?: (headers: BrowserHeaders) => void,
     onMessage?: (res: TResponse) => void,
-    onComplete: (code: Code, message: string | undefined, trailers: BrowserHeaders) => void,
+    onEnd: (code: Code, message: string, trailers: BrowserHeaders) => void,
     transport?: Transport,
     debug?: boolean,
   }
@@ -100,22 +102,17 @@ export namespace grpc {
     return new Uint8Array(frame);
   }
 
-  function getStatusFromHeaders(headers: BrowserHeaders): Code | null {
+  function getStatusFromHeaders(headers: BrowserHeaders): Code {
     const fromHeaders = headers.get("grpc-status") || [];
     if (fromHeaders.length > 0) {
       try {
         const asString = fromHeaders[0];
-        const asNumber = parseInt(asString, 10);
-        if (Code[asNumber] === undefined) {
-          return null;
-        } else {
-          return asNumber;
-        }
+        return parseInt(asString, 10);
       } catch (e) {
-        return null;
+        return Code.Internal;
       }
     }
-    return null;
+    return Code.Internal;
   }
 
   export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
@@ -127,38 +124,30 @@ export namespace grpc {
     const framedRequest = frameRequest(props.request);
 
     let completed = false;
-    function rawOnComplete(code: Code, message: string | undefined, trailers: BrowserHeaders) {
+    function rawOnEnd(code: Code, message: string, trailers: BrowserHeaders) {
       if (completed) return;
       completed = true;
-      setTimeout(() => {
-        props.onComplete(code, message, trailers);
-      });
+      props.onEnd(code, message, trailers);
     }
 
     function rawOnHeaders(headers: BrowserHeaders) {
       if (completed) return;
-      setTimeout(() => {
-        if (props.onHeaders) {
-          props.onHeaders(headers);
-        }
-      });
+      if (props.onHeaders) {
+        props.onHeaders(headers);
+      }
     }
 
     function rawOnError(code: Code, msg: string) {
       if (completed) return;
       completed = true;
-      setTimeout(() => {
-        props.onComplete(code, msg, new BrowserHeaders());
-      });
+      props.onEnd(code, msg, new BrowserHeaders());
     }
 
     function rawOnMessage(res: TResponse) {
       if (completed) return;
-      setTimeout(() => {
-        if (props.onMessage) {
-          props.onMessage(res);
-        }
-      });
+      if (props.onMessage) {
+        props.onMessage(res);
+      }
     }
 
     let responseHeaders: BrowserHeaders;
@@ -175,10 +164,12 @@ export namespace grpc {
       url: `${props.host}/${methodDescriptor.service.serviceName}/${methodDescriptor.methodName}`,
       headers: requestHeaders,
       body: framedRequest,
-      credentials: "",
       onHeaders: (headers: BrowserHeaders, status: number) => {
         props.debug && debug("onHeaders", headers, status);
-        responseHeaders = headers;
+        if (status !== 0) {
+          // These headers should only be captured if they came from a server, otherwise they're empty
+          responseHeaders = headers;
+        }
         props.debug && debug("onHeaders.responseHeaders", JSON.stringify(responseHeaders, null, 2));
         const code = httpStatusToCode(status);
         props.debug && debug("onHeaders.code", code);
@@ -197,7 +188,7 @@ export namespace grpc {
           data = parser.parse(chunkBytes);
         } catch (e) {
           props.debug && debug("onChunk.parsing error", e, e.message);
-          rawOnError(Code.Internal, e.message);
+          rawOnError(Code.Internal, `parsing error: ${e.message}`);
           return;
         }
 
@@ -211,27 +202,23 @@ export namespace grpc {
           }
         });
       },
-      onComplete: () => {
-        props.debug && debug("grpc.onComplete");
+      onEnd: () => {
+        props.debug && debug("grpc.onEnd");
 
         if (responseTrailers === undefined) {
           if (responseHeaders === undefined) {
             // The request was unsuccessful - it did not receive any headers
-            rawOnError(Code.Unknown, "");
+            rawOnError(Code.Internal, "Response closed without headers");
             return;
           }
-
-          // This was a headers/trailers-only response
-          props.debug && debug("grpc.headers only response");
 
           const grpcStatus = getStatusFromHeaders(responseHeaders);
-          if (grpcStatus === null) {
-            rawOnError(Code.Internal, "Response closed without grpc-status (Headers only)");
-            return;
-          }
+          const grpcMessage = responseHeaders.get("grpc-message");
 
-          const grpcMessage = responseHeaders.get("grpc-message") || [];
-          rawOnComplete(grpcStatus, grpcMessage[0], responseHeaders);
+          // This was a headers/trailers-only response
+          props.debug && debug("grpc.headers only response ", grpcStatus, grpcMessage);
+
+          rawOnEnd(grpcStatus, grpcMessage[0] || "Response closed without grpc-status (Headers only)", responseHeaders);
           return;
         }
 
@@ -243,7 +230,7 @@ export namespace grpc {
         }
 
         const grpcMessage = responseTrailers.get("grpc-message");
-        rawOnComplete(grpcStatus, grpcMessage ? grpcMessage[0] : "", responseTrailers);
+        rawOnEnd(grpcStatus, grpcMessage ? grpcMessage[0] : "", responseTrailers);
       }
     });
   }

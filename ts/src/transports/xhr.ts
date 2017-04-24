@@ -33,24 +33,18 @@ export default function xhrRequest(options: TransportOptions) {
     const rawText = xhr.response.substr(index);
     index = xhr.response.length;
     const asArrayBuffer = stringToArrayBuffer(rawText);
-    setTimeout(() => {
-      options.onChunk(asArrayBuffer);
-    });
+    options.onChunk(asArrayBuffer);
   }
 
   function onLoadEvent() {
     options.debug && debug("xhrRequest.onLoadEvent");
-    setTimeout(() => {
-      options.onComplete();
-    });
+    options.onEnd();
   }
 
   function onStateChange() {
     options.debug && debug("xhrRequest.onStateChange", this.readyState);
     if (this.readyState === this.HEADERS_RECEIVED) {
-      setTimeout(() => {
-        options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
-      });
+      options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
     }
   }
 
@@ -60,17 +54,12 @@ export default function xhrRequest(options: TransportOptions) {
   options.headers.forEach((key, values) => {
     xhr.setRequestHeader(key, values.join(", "));
   });
-  if (options.credentials === "include") {
-    xhr.withCredentials = true;
-  }
   xhr.addEventListener("readystatechange", onStateChange);
   xhr.addEventListener("progress", onProgressEvent);
   xhr.addEventListener("loadend", onLoadEvent);
   xhr.addEventListener("error", (err: ErrorEvent) => {
     options.debug && debug("xhrRequest.error", err);
-    setTimeout(() => {
-      options.onComplete(err.error);
-    });
+    options.onEnd(err.error);
   });
   xhr.send(options.body);
 }

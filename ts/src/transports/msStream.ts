@@ -2,6 +2,8 @@ import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
 import {debug} from "../debug";
 
+/* ms-stream is required for binary requests in IE 10. This is due to lack of overrideMimeType that enables the text
+ * decoding used by the XHR transport. ms-stream has a 16MB response limitation due to fixed buffer length allocation. */
 export default function msStreamRequest(options: TransportOptions) {
   options.debug && debug("msStream", options);
   const xhr = new XMLHttpRequest();
@@ -14,9 +16,7 @@ export default function msStreamRequest(options: TransportOptions) {
   function onStateChange() {
     options.debug && debug("msStream.onStateChange", this.readyState);
     if (this.readyState === this.HEADERS_RECEIVED) {
-      setTimeout(() => {
-        options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
-      });
+      options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
     }
 
     if (this.readyState === this.LOADING) {
@@ -26,15 +26,11 @@ export default function msStreamRequest(options: TransportOptions) {
         if (reader.result.byteLength > pos) {
           const asBuffer = new Uint8Array(reader.result, pos);
           pos = reader.result.byteLength;
-          setTimeout(() => {
-            options.onChunk(asBuffer);
-          });
+          options.onChunk(asBuffer);
         }
       };
       reader.onload = function () {
-        setTimeout(() => {
-          options.onComplete();
-        });
+        options.onEnd();
       };
       reader.readAsArrayBuffer(this.response);
     }
@@ -45,16 +41,11 @@ export default function msStreamRequest(options: TransportOptions) {
   options.headers.forEach((key, values) => {
     xhr.setRequestHeader(key, values.join(", "));
   });
-  if (options.credentials === "include") {
-    xhr.withCredentials = true;
-  }
   xhr.addEventListener("readystatechange", onStateChange);
   xhr.addEventListener("loadend", onLoadEvent);
   xhr.addEventListener("error", (err: ErrorEvent) => {
     options.debug && debug("msStream.error", err);
-    setTimeout(() => {
-      options.onComplete(err.error);
-    });
+    options.onEnd(err.error);
   });
   xhr.send(options.body);
 }

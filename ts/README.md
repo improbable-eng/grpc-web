@@ -21,7 +21,7 @@ grpc.invoke(TestService.Ping, {
   onMessage: function(message: PingResponse) {
 
   },
-  onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+  onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
 
   }
 });

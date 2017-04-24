@@ -64,7 +64,7 @@ describe("grpc-web-client", () => {
         assert.deepEqual(message.getValue(), "hello world");
         assert.deepEqual(message.getCounter(), 252);
       },
-      onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+      onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
         DEBUG && console.log("code", code, "msg", msg);
         assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
         assert.strictEqual(msg, undefined, "expected no message");
@@ -98,7 +98,7 @@ describe("grpc-web-client", () => {
         assert.ok(message instanceof PingResponse);
         assert.strictEqual(message.getCounter(), onMessageId++);
       },
-      onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+      onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
         assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
         assert.strictEqual(msg, undefined, "expected no message");
         assert.deepEqual(trailers.get("TrailerTestKey1"), ["Value1"]);
@@ -131,7 +131,7 @@ describe("grpc-web-client", () => {
         assert.ok(message instanceof PingResponse);
         assert.strictEqual(message.getCounter(), onMessageId++);
       },
-      onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+      onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
         assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
         assert.strictEqual(msg, undefined, "expected no message");
         assert.deepEqual(trailers.get("TrailerTestKey1"), ["Value1"]);
@@ -162,7 +162,7 @@ describe("grpc-web-client", () => {
         didGetOnMessage = true;
         assert.ok(message instanceof Empty);
       },
-      onComplete: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+      onEnd: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
         assert.deepEqual(trailers.get("grpc-status"), ["12"]);
         assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
         assert.strictEqual(code, grpc.Code.Unimplemented);
@@ -195,15 +195,11 @@ describe("grpc-web-client", () => {
         didGetOnMessage = true;
         assert.ok(message instanceof Empty);
       },
-      onComplete: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+      onEnd: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
         // Some browsers return empty Headers for failed requests
         console.log("code",code,"msg",msg,"trailers",trailers);
-        if (didGetOnHeaders) {
-          assert.strictEqual(msg, "Response closed without grpc-status (Headers only)");
-        } else {
-          assert.strictEqual(msg, "");
-        }
-        assert.strictEqual(code, grpc.Code.Unknown);
+        assert.strictEqual(msg, "Response closed without headers");
+        assert.strictEqual(code, grpc.Code.Internal);
         assert.ok(!didGetOnMessage);
         done();
       }
@@ -230,13 +226,8 @@ describe("grpc-web-client", () => {
         didGetOnMessage = true;
         assert.ok(message instanceof Empty);
       },
-      onComplete: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
-        // Some browsers return empty Headers for failed requests
-        if (didGetOnHeaders) {
-          assert.strictEqual(msg, "Response closed without grpc-status (Headers only)");
-        } else {
-          assert.strictEqual(msg, "Response closed without grpc-status (No headers)");
-        }
+      onEnd: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+        assert.strictEqual(msg, "Response closed without grpc-status (Headers only)");
         assert.strictEqual(code, grpc.Code.Internal);
         assert.ok(!didGetOnMessage);
         done();
@@ -262,14 +253,9 @@ describe("grpc-web-client", () => {
         didGetOnMessage = true;
         assert.ok(message instanceof Empty);
       },
-      onComplete: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
-        // Some browsers return empty Headers for failed requests
-        if (didGetOnHeaders) {
-          assert.strictEqual(msg, "Response closed without grpc-status (Headers only)");
-        } else {
-          assert.strictEqual(msg, "");
-        }
-        assert.strictEqual(code, grpc.Code.Unknown);
+      onEnd: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+        assert.strictEqual(msg, "Response closed without headers");
+        assert.strictEqual(code, grpc.Code.Internal);
         assert.ok(!didGetOnMessage);
         done();
       }
@@ -295,7 +281,7 @@ describe("grpc-web-client", () => {
         didGetOnMessage = true;
         assert.ok(message instanceof Empty);
       },
-      onComplete: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+      onEnd: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
         assert.strictEqual(msg, "unknown service improbable.grpcweb.test.FailService");
         assert.strictEqual(code, 12);
         assert.deepEqual(trailers.get("grpc-status"), ["12"]);

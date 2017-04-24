@@ -8,14 +8,10 @@ export default function fetchRequest(options: TransportOptions) {
     return reader.read()
       .then((result: { done: boolean, value: Uint8Array}) => {
         if (result.done) {
-          setTimeout(() => {
-            options.onComplete();
-          });
+          options.onEnd();
           return;
         }
-        setTimeout(() => {
-          options.onChunk(result.value);
-        });
+        options.onChunk(result.value);
         return pump(reader, res);
       });
   }
@@ -24,20 +20,15 @@ export default function fetchRequest(options: TransportOptions) {
     headers: options.headers.toHeaders(),
     method: "POST",
     body: options.body,
-    credentials: options.credentials || undefined,
   }).then((res: Response) => {
     options.debug && debug("fetchRequest.response", res);
-    setTimeout(() => {
-      options.onHeaders(new BrowserHeaders(res.headers as any), res.status);
-    });
+    options.onHeaders(new BrowserHeaders(res.headers as any), res.status);
     if (res.body) {
       return pump(res.body.getReader(), res)
     }
     return res;
   }).catch(err => {
     options.debug && debug("fetchRequest.catch", err.message);
-    setTimeout(() => {
-      options.onComplete(err);
-    });
+    options.onEnd(err);
   });
 }

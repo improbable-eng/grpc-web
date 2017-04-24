@@ -14,11 +14,10 @@ export type TransportOptions = {
   debug: boolean,
   url: string,
   headers: BrowserHeaders,
-  credentials: string,
   body: ArrayBufferView,
   onHeaders: (headers: BrowserHeaders, status: number) => void,
   onChunk: (chunkBytes: Uint8Array, flush?: boolean) => void,
-  onComplete: (err?: Error) => void,
+  onEnd: (err?: Error) => void,
 }
 
 let xhr: XMLHttpRequest;
@@ -28,7 +27,7 @@ function getXHR () {
   if (XMLHttpRequest) {
     xhr = new XMLHttpRequest();
     try {
-      xhr.open('GET', 'https://example.com')
+      xhr.open('GET', 'https://localhost')
     } catch(e) {}
   }
   return xhr
