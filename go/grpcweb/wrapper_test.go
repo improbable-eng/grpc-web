@@ -33,9 +33,9 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 
-	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
 	"github.com/mwitkow/go-conntrack/connhelpers"
 )
 
@@ -262,7 +262,7 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	*/
 	headers := http.Header{}
 	headers.Add("Access-Control-Request-Method", "POST")
-	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, accept")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
 	headers.Add("Origin", "http://foo.client.com")
 
 	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil)
@@ -272,7 +272,7 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	assert.Equal(s.T(), "http://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the preflight")
 	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the preflight")
 	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response")
-	assert.Equal(s.T(), "Origin, X-Something-Custom, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must be in the response")
+	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must be in the response")
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {

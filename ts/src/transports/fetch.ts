@@ -1,19 +1,17 @@
 import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
+import {debug} from "../debug";
 
 export default function fetchRequest(options: TransportOptions) {
+  options.debug && debug("fetchRequest", options);
   function pump(reader: ReadableStreamReader, res: Response): Promise<Response> {
     return reader.read()
       .then((result: { done: boolean, value: Uint8Array}) => {
         if (result.done) {
-          setTimeout(() => {
-            options.onComplete();
-          });
+          options.onEnd();
           return;
         }
-        setTimeout(() => {
-          options.onChunk(result.value);
-        });
+        options.onChunk(result.value);
         return pump(reader, res);
       });
   }
@@ -22,18 +20,15 @@ export default function fetchRequest(options: TransportOptions) {
     headers: options.headers.toHeaders(),
     method: "POST",
     body: options.body,
-    credentials: options.credentials,
   }).then((res: Response) => {
-    setTimeout(() => {
-      options.onHeaders(new BrowserHeaders(res.headers as any), res.status);
-    });
+    options.debug && debug("fetchRequest.response", res);
+    options.onHeaders(new BrowserHeaders(res.headers as any), res.status);
     if (res.body) {
       return pump(res.body.getReader(), res)
     }
     return res;
   }).catch(err => {
-    setTimeout(() => {
-      options.onComplete(err);
-    });
+    options.debug && debug("fetchRequest.catch", err.message);
+    options.onEnd(err);
   });
 }

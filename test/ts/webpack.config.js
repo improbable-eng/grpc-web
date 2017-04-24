@@ -3,7 +3,7 @@ module.exports = {
   entry: "./src/grpc.spec.ts",
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'integration-tests.js',
+    filename: 'integration-tests.js'
   },
   devtool: 'inline-source-map',
   module: {
@@ -18,7 +18,7 @@ module.exports = {
         test: /\.ts$/,
         include: /src/,
         exclude: /node_modules/,
-        loader: "babel-loader?cacheDirectory!ts-loader"
+        loader: "ts-loader"
       }
     ]
   },

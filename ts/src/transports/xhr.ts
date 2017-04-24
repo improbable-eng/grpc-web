@@ -1,37 +1,50 @@
 import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
+import {debug} from "../debug";
 
-function stringToBuffer(str: string): Uint8Array {
+function codePointAtPolyfill(str: string, index: number) {
+  let code = str.charCodeAt(index);
+  if (code >= 0xd800 && code <= 0xdbff) {
+    const surr = str.charCodeAt(index + 1);
+    if (surr >= 0xdc00 && surr <= 0xdfff) {
+      code = 0x10000 + ((code - 0xd800) << 10) + (surr - 0xdc00);
+    }
+  }
+  return code;
+}
+
+export function stringToArrayBuffer(str: string): Uint8Array {
   const asArray = new Uint8Array(str.length);
+  let arrayIndex = 0;
   for (let i = 0; i < str.length; i++) {
-    asArray[i] = (str as any).codePointAt(i) & 0xFF;
+    const codePoint = (String.prototype as any).codePointAt ? (str as any).codePointAt(i) : codePointAtPolyfill(str, i);
+    asArray[arrayIndex++] = codePoint & 0xFF;
   }
   return asArray;
 }
 
 export default function xhrRequest(options: TransportOptions) {
+  options.debug && debug("xhrRequest", options);
   const xhr = new XMLHttpRequest();
   let index = 0;
 
   function onProgressEvent() {
+    options.debug && debug("xhrRequest.onProgressEvent.length: ", xhr.response.length);
     const rawText = xhr.response.substr(index);
     index = xhr.response.length;
-    setTimeout(() => {
-      options.onChunk(stringToBuffer(rawText));
-    });
+    const asArrayBuffer = stringToArrayBuffer(rawText);
+    options.onChunk(asArrayBuffer);
   }
 
   function onLoadEvent() {
-    setTimeout(() => {
-      options.onComplete();
-    });
+    options.debug && debug("xhrRequest.onLoadEvent");
+    options.onEnd();
   }
 
   function onStateChange() {
+    options.debug && debug("xhrRequest.onStateChange", this.readyState);
     if (this.readyState === this.HEADERS_RECEIVED) {
-      setTimeout(() => {
-        options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
-      });
+      options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
     }
   }
 
@@ -41,16 +54,12 @@ export default function xhrRequest(options: TransportOptions) {
   options.headers.forEach((key, values) => {
     xhr.setRequestHeader(key, values.join(", "));
   });
-  if (options.credentials === "include") {
-    xhr.withCredentials = true;
-  }
   xhr.addEventListener("readystatechange", onStateChange);
   xhr.addEventListener("progress", onProgressEvent);
   xhr.addEventListener("loadend", onLoadEvent);
   xhr.addEventListener("error", (err: ErrorEvent) => {
-    setTimeout(() => {
-      options.onComplete(err.error);
-    });
+    options.debug && debug("xhrRequest.error", err);
+    options.onEnd(err.error);
   });
   xhr.send(options.body);
 }

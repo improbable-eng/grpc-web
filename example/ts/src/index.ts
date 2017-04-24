@@ -1,5 +1,5 @@
 import {grpc, BrowserHeaders} from "grpc-web-client";
-import {BookService} from "./services";
+import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
 declare const USE_TLS: boolean;
@@ -17,11 +17,8 @@ function getBook() {
     onMessage: function (message: Book) {
       console.log("getBook.onMessage", message.toObject());
     },
-    onError: function (err: Error) {
-      console.error("getBook.onError", err);
-    },
-    onComplete: function (code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
-      console.log("getBook.onComplete", code, msg, trailers);
+    onEnd: function (code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+      console.log("getBook.onEnd", code, msg, trailers);
 
       queryBooks();
     }
@@ -42,11 +39,8 @@ function queryBooks() {
     onMessage: function(message: Book) {
       console.log("queryBooks.onMessage", message.toObject());
     },
-    onError: function(err: Error) {
-      console.error("queryBooks.onError", err);
-    },
-    onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
-      console.log("queryBooks.onComplete", code, msg, trailers);
+    onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+      console.log("queryBooks.onEnd", code, msg, trailers);
     }
   });
 }

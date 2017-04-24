@@ -2,7 +2,8 @@
 
 
 [![Master Build](https://travis-ci.org/improbable-eng/grpc-web.svg)](https://travis-ci.org/improbable-eng/grpc-web)
-[![NPM](https://img.shields.io/npm/v/grpc-web-client.svg)](https://www.npmjs.com/package/grpc-web-client) 
+![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=dU1qVEJGU3NUWmJJblNDTUtSd2h5MkZaYkkzd0t5R0NkRlVkN3dGYTl4dz0tLUpPc0dGOEYycmp1MU5Hems0c0ppNXc9PQ==--b8a3bcd29378150e1ebec92ebc7933f8710b516e)
+[![NPM](https://img.shields.io/npm/v/grpc-web-client.svg)](https://www.npmjs.com/package/grpc-web-client)
 [![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/improbable-eng/grpc-web/go/grpcweb) 
 [![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![quality: alpha](https://img.shields.io/badge/quality-alpha-orange.svg)](#status)
@@ -90,8 +91,8 @@ You will be able to access it in a browser using TypeScript (and equally JavaScr
 
 ```ts
 import {grpc, BrowserHeaders} from "grpc-web-client";
-// Import code-generated deta structures.
-import {BookService} from "./services";
+// Import code-generated data structures.
+import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
 const queryBooksRequest = new QueryBooksRequest();
@@ -102,7 +103,7 @@ grpc.invoke(BookService.QueryBooks, {
   onMessage: function(message: Book) {
     console.log("got book: ", message.toObject());
   },
-  onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+  onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
     if code == grpc.Code.OK {
       console.log("all ok")
     } else {
@@ -119,11 +120,12 @@ The `grpc-web-client` uses multiple techniques to efficiently invoke gRPC servic
 
 The gRPC semantics encourage you to make multiple requests at once. With most modern browsers [supporting HTTP2](http://caniuse.com/#feat=http2), these can be executed over a single TLS connection. For older browsers, gRPC-Web falls back to HTTP/1.1 chunk responses.
 
-For best results we recommend the browsers we test against:
-  * Chrome >= 42
-  * Firefox >= 39
-  * Edge >= 14 
-  * Safari >= 10 (with 10.1 significantly improving matters)
+This library is tested against:
+  * Chrome >= 41
+  * Firefox >= 38
+  * Edge >= 13
+  * IE >= 10
+  * Safari >= 8
 
 ### Client-side streaming
 
@@ -139,14 +141,4 @@ The code here is `alpha` quality. It is being used for a subset of Improbable's 
 
 ### Running the tests
 
-Install the `localhost` certificates of this repo found in `misc/`. Follow [this guide](http://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate) for Chrome.
-
-Run the TypeScript tests against the Golang TestServer
-```
-cd  ${GOPATH}/github.com/improbable-eng/grpc-web/test
-npm test
-```
-Point your browser at https://localhost:9876
-
-
-
+[See test README](test)
