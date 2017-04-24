@@ -166,21 +166,22 @@ export namespace grpc {
       body: framedRequest,
       onHeaders: (headers: BrowserHeaders, status: number) => {
         props.debug && debug("onHeaders", headers, status);
-        if (status !== 0) {
-          // These headers should only be captured if they came from a server, otherwise they're empty
+        if (status === 0) {
+          // The request has failed due to connectivity issues. Do not capture the headers
+        } else {
           responseHeaders = headers;
-        }
-        props.debug && debug("onHeaders.responseHeaders", JSON.stringify(responseHeaders, null, 2));
-        const code = httpStatusToCode(status);
-        props.debug && debug("onHeaders.code", code);
-        const gRPCMessage = headers.get("grpc-message");
-        props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
-        if (code !== Code.OK) {
-          rawOnError(code, gRPCMessage.length > 0 ? gRPCMessage[0] : "");
-          return;
-        }
+          props.debug && debug("onHeaders.responseHeaders", JSON.stringify(responseHeaders, null, 2));
+          const code = httpStatusToCode(status);
+          props.debug && debug("onHeaders.code", code);
+          const gRPCMessage = headers.get("grpc-message") || [];
+          props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
+          if (code !== Code.OK) {
+            rawOnError(code, gRPCMessage[0] || "");
+            return;
+          }
 
-        rawOnHeaders(headers);
+          rawOnHeaders(headers);
+        }
       },
       onChunk: (chunkBytes: Uint8Array) => {
         let data: Chunk[] = [];
