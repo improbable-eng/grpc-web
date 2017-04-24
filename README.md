@@ -139,14 +139,4 @@ The code here is `alpha` quality. It is being used for a subset of Improbable's 
 
 ### Running the tests
 
-Install the `localhost` certificates of this repo found in `misc/`. Follow [this guide](http://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate) for Chrome.
-
-Run the TypeScript tests against the Golang TestServer
-```
-cd  ${GOPATH}/github.com/improbable-eng/grpc-web/test
-npm test
-```
-Point your browser at https://localhost:9876
-
-
-
+[See test/README.md](test/README.md)

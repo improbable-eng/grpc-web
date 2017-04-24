@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-client",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "gRPC-Web client for browsers (JS/TS)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,13 +22,17 @@
     "typescript",
     "ts"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "@types/google-protobuf": "^3.2.5",
-    "browser-headers": "^0.2.1",
     "google-protobuf": "^3.2.0"
   },
+  "dependencies": {
+    "browser-headers": "^0.2.1"
+  },
   "devDependencies": {
+    "@types/google-protobuf": "^3.2.5",
     "tslint": "^4.5.1",
-    "typescript": "^2.2.1"
+    "typescript": "^2.2.1",
+    "google-protobuf": "^3.2.0"
   }
 }

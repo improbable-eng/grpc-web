@@ -27,7 +27,7 @@ module.exports = function(useHttps, withBrowserStack) {
       '**/*.js': ['sourcemap', 'config-inject']
     },
     reporters: reporters,
-    port: 9876,
+    port: useHttps ? 9876 : 5432,
     protocol: useHttps ? "https" : "http",
     hostname: hostsConfig.testHost,
     httpsServerOptions: {

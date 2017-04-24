@@ -2,7 +2,7 @@ import * as jspb from "google-protobuf";
 import {BrowserHeaders} from "browser-headers";
 import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Transport,DefaultTransportFactory} from "./transports/Transport";
-import {debug, debugBuffer} from "./debug";
+import {debug} from "./debug";
 
 export {
   BrowserHeaders

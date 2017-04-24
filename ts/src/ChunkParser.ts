@@ -2,13 +2,15 @@ import {BrowserHeaders} from "browser-headers";
 
 const HEADER_SIZE = 5;
 
+const global = Function('return this')();
+
 function isTrailerHeader(headerView: DataView) {
   // This is encoded in the MSB of the grpc header's first byte.
   return (headerView.getUint8(0) & 0x80) === 0x80
 }
 
 function parseTrailerData(msgData: Uint8Array): BrowserHeaders {
-  return new BrowserHeaders(new TextDecoder("utf-8").decode(msgData))
+  return new BrowserHeaders(new global.TextDecoder("utf-8").decode(msgData))
 }
 
 function readLengthFromHeader(headerView: DataView) {
