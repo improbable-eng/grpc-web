@@ -139,4 +139,4 @@ The code here is `alpha` quality. It is being used for a subset of Improbable's 
 
 ### Running the tests
 
-[See test/README.md](test/README.md)
+[See test README](test)
