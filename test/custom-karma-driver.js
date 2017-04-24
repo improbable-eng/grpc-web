@@ -85,6 +85,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         self.log.debug(' > ' + meth, path, (data || ''));
       });
       const bsCaps = Object.assign({
+        "project": process.env.TRAVIS_BRANCH || "dev",
         "acceptSslCerts": true,
         "defaultVideo": true,
         "browserstack.local": true,
