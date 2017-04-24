@@ -1,8 +1,8 @@
-var q = require('q');
+const q = require('q');
 const wd = require('wd');
 const browserstack = require('browserstack-local');
 
-var hostsConfig = require("./hosts-config");
+const hostsConfig = require("./hosts-config");
 
 const username = process.env.BROWSER_STACK_USERNAME;
 const accessKey = process.env.BROWSER_STACK_ACCESS_KEY;
@@ -18,9 +18,8 @@ const viaUrls = [
 
 var tunnelId = null;
 var bs_local = null;
-
 var localCallbacks = [];
-var localTunnels = [];
+const localTunnels = [];
 function LocalTunnel(logger, cb) {
   localTunnels.push(this);
 
@@ -59,32 +58,31 @@ function LocalTunnel(logger, cb) {
 
 function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   baseBrowserDecorator(this);
-  var self = this;
-  var capabilities = args.capabilities;
+  const self = this;
+  const capabilities = args.capabilities;
   self.name = capabilities.browserName + ' - ' + capabilities.browserVersion + ' - ' + capabilities.os + ' ' + capabilities.os_version;
-  var log = logger.create('launcher.selenium-webdriver: ' + self.name);
-  self.log = log;
-  var captured = false;
+  self.log = logger.create('launcher.selenium-webdriver: ' + self.name);
+  self.captured = false;
 
   self.id = id;
 
   self._start = function (testUrl) {
-    self.localTunnel = new LocalTunnel(log, function(err, tunnelIdentifier) {
+    self.localTunnel = new LocalTunnel(self.log, function(err, tunnelIdentifier) {
       if (err) {
-        return log.error("Could not create local testing", err);
+        return self.log.error("Could not create local testing", err);
       }
 
-      log.debug('Local Tunnel Connected. Now testing...');
+      self.log.debug('Local Tunnel Connected. Now testing...');
       const browser = wd.remote(seleniumHost, seleniumPort, username, accessKey);
       self.browser = browser;
       browser.on('status', function(info) {
-        log.debug(info);
+        self.log.debug(info);
       });
       browser.on('command', function(eventType, command, response) {
-        log.debug(' > ' + eventType, command, (response || ''));
+        self.log.debug(' > ' + eventType, command, (response || ''));
       });
       browser.on('http', function(meth, path, data) {
-        log.debug(' > ' + meth, path, (data || ''));
+        self.log.debug(' > ' + meth, path, (data || ''));
       });
       const bsCaps = Object.assign({
         "acceptSslCerts": true,
@@ -97,14 +95,14 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       }, capabilities);
       browser.init(bsCaps, function(err) {
         if (err) {
-          log.error("browser.init", err);
+          self.log.error("browser.init", err);
           throw err;
         }
-        var next = function(i){
+        const next = function(i){
           const via = viaUrls[i];
           if (!via) {
             browser.get(testUrl, function() {
-              captured = true;
+              self.captured = true;
               // This will just wait on the page until the browser is killed
             });
           } else {
@@ -128,7 +126,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   });
 
   self.isCaptured = function() {
-    return captured;
+    return self.captured;
   };
 }
 
