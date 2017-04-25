@@ -17,7 +17,7 @@ function getBook() {
     onMessage: function (message: Book) {
       console.log("getBook.onMessage", message.toObject());
     },
-    onEnd: function (code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+    onEnd: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
       console.log("getBook.onEnd", code, msg, trailers);
 
       queryBooks();
@@ -39,7 +39,7 @@ function queryBooks() {
     onMessage: function(message: Book) {
       console.log("queryBooks.onMessage", message.toObject());
     },
-    onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+    onEnd: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
       console.log("queryBooks.onEnd", code, msg, trailers);
     }
   });

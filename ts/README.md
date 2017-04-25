@@ -1,28 +1,40 @@
 # grpc-web-client
-> Library for making gRPC-web requests from a Browser
+> Library for making gRPC-Web requests from a Browser
 
 This library is intended for both JavaScript and TypeScript usage.
 
+*Note: This only works if the server supports [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md)*
+
+A Golang gRPC-Web middleware and a Golang-based gRPC-Web proxy are [available here](https://github.com/improbable-eng/grpc-web).
+
+## Example Project
+
+There is an [example project available here](https://github.com/improbable-eng/grpc-web/tree/master/example)
+
 ## Usage
-* Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes.
-* Write your service definitions in the format shown [here](https://github.com/improbable-eng/grpc-web/tree/master/test/ts/src/services.ts) - plugin to generate service definitions coming soon.
+* Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes. `ts-protoc-gen` can also generate gRPC service definitions with the `service=true` argument.
 * Make a request:
 ```ts
-import { grpc } from 'grpc-web';
+import {grpc, BrowserHeaders} from "grpc-web-client";
 
-const ping = new PingRequest();
-ping.setValue("hello world");
-grpc.invoke(TestService.Ping, {
-  request: ping,
+// Import code-generated data structures.
+import {BookService} from "./generated/proto/examplecom/library/book_service_pb_service";
+import {QueryBooksRequest, Book, GetBookRequest} from "./generated/proto/examplecom/library/book_service_pb";
+
+const queryBooksRequest = new QueryBooksRequest();
+queryBooksRequest.setAuthorPrefix("Geor");
+grpc.invoke(BookService.QueryBooks, {
+  request: queryBooksRequest,
   host: "https://example.com",
-  onHeaders: function(headers: BrowserHeaders) {
-
-  },
-  onMessage: function(message: PingResponse) {
-
+  onMessage: function(message: Book) {
+    console.log("got book: ", message.toObject());
   },
   onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
-
+    if code == grpc.Code.OK {
+      console.log("all ok")
+    } else {
+      console.log("hit an error", code, msg, trailers);
+    }
   }
 });
 ```
