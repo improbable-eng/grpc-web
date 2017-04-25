@@ -91,6 +91,7 @@ You will be able to access it in a browser using TypeScript (and equally JavaScr
 
 ```ts
 import {grpc, BrowserHeaders} from "grpc-web-client";
+
 // Import code-generated data structures.
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
@@ -99,7 +100,7 @@ const queryBooksRequest = new QueryBooksRequest();
 queryBooksRequest.setAuthorPrefix("Geor");
 grpc.invoke(BookService.QueryBooks, {
   request: queryBooksRequest,
-  host: host,
+  host: "https://example.com",
   onMessage: function(message: Book) {
     console.log("got book: ", message.toObject());
   },
@@ -111,7 +112,6 @@ grpc.invoke(BookService.QueryBooks, {
     }
   }
 });
-
 ```
 
 ## Browser Support
