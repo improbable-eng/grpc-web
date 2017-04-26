@@ -7,6 +7,12 @@ This library is intended for both JavaScript and TypeScript usage.
 
 A Golang gRPC-Web middleware and a Golang-based gRPC-Web proxy are [available here](https://github.com/improbable-eng/grpc-web).
 
+## Installation
+
+`grpc-web-client` has peer dependencies of `google-protobuf` and `@types/google-protobuf`.
+
+`npm install google-protobuf @types/google-protobuf grpc-web-client --save`
+
 ## Example Project
 
 There is an [example project available here](https://github.com/improbable-eng/grpc-web/tree/master/example)
