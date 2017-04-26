@@ -11,13 +11,13 @@ function getBook() {
   grpc.invoke(BookService.GetBook, {
     request: getBookRequest,
     host: host,
-    onHeaders: function (headers: BrowserHeaders) {
+    onHeaders: (headers: BrowserHeaders) => {
       console.log("getBook.onHeaders", headers);
     },
-    onMessage: function (message: Book) {
+    onMessage: (message: Book) => {
       console.log("getBook.onMessage", message.toObject());
     },
-    onEnd: function (code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+    onEnd: (code: grpc.Code, msg: string, trailers: BrowserHeaders) => {
       console.log("getBook.onEnd", code, msg, trailers);
 
       queryBooks();
@@ -33,13 +33,13 @@ function queryBooks() {
   grpc.invoke(BookService.QueryBooks, {
     request: queryBooksRequest,
     host: host,
-    onHeaders: function(headers: BrowserHeaders) {
+    onHeaders: (headers: BrowserHeaders) => {
       console.log("queryBooks.onHeaders", headers);
     },
-    onMessage: function(message: Book) {
+    onMessage: (message: Book) => {
       console.log("queryBooks.onMessage", message.toObject());
     },
-    onEnd: function(code: grpc.Code, msg: string, trailers: BrowserHeaders) {
+    onEnd: (code: grpc.Code, msg: string, trailers: BrowserHeaders) => {
       console.log("queryBooks.onEnd", code, msg, trailers);
     }
   });

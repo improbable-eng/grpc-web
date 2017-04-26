@@ -101,10 +101,10 @@ queryBooksRequest.setAuthorPrefix("Geor");
 grpc.invoke(BookService.QueryBooks, {
   request: queryBooksRequest,
   host: "https://example.com",
-  onMessage: function(message: Book) {
+  onMessage: (message: Book) => {
     console.log("got book: ", message.toObject());
   },
-  onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+  onEnd: (code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) => {
     if code == grpc.Code.OK {
       console.log("all ok")
     } else {
