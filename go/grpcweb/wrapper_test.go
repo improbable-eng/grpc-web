@@ -71,7 +71,7 @@ func (s *GrpcWebWrapperTestSuite) SetupSuite() {
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 			require.EqualValues(s.T(), s.httpMajorVersion, req.ProtoMajor, "Requests in this test are served over the wrong protocol")
 			s.T().Logf("Serving over: %d", req.ProtoMajor)
-			wrappedServer.ServeHttp(resp, req)
+			wrappedServer.ServeHTTP(resp, req)
 		}),
 	}
 
