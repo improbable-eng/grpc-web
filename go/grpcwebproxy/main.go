@@ -27,16 +27,16 @@ import (
 
 var (
 	flagBindAddr    = pflag.String("server_bind_address", "0.0.0.0", "address to bind the server to")
-	flagHttpPort    = pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls. If 0, no insecure HTTP will be open.")
-	flagHttpTlsPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web). If 0, no TLS will be open.")
+	flagHTTPPort    = pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls. If 0, no insecure HTTP will be open.")
+	flagHTTPTLSPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web). If 0, no TLS will be open.")
 
-	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
-	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
+	flagHTTPMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
+	flagHTTPMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 )
 
 func main() {
 	pflag.Parse()
-	serverTls := buildServerTlsOrFail()
+	serverTLS := buildServerTLSOrFail()
 
 	logrus.SetOutput(os.Stdout)
 
@@ -50,8 +50,8 @@ func main() {
 
 	// Debug server.
 	debugServer := http.Server{
-		WriteTimeout: *flagHttpMaxWriteTimeout,
-		ReadTimeout:  *flagHttpMaxReadTimeout,
+		WriteTimeout: *flagHTTPMaxWriteTimeout,
+		ReadTimeout:  *flagHTTPMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
 				wrappedGrpc.HandleGrpcWebRequest(resp, req)
@@ -61,7 +61,7 @@ func main() {
 		}),
 	}
 	http.Handle("/metrics", promhttp.Handler())
-	debugListener := buildListenerOrFail("http", *flagHttpPort)
+	debugListener := buildListenerOrFail("http", *flagHTTPPort)
 	go func() {
 		logrus.Infof("listening for http on: %v", debugListener.Addr().String())
 		if err := debugServer.Serve(debugListener); err != nil {
@@ -71,8 +71,8 @@ func main() {
 
 	// Debug server.
 	servingServer := http.Server{
-		WriteTimeout: *flagHttpMaxWriteTimeout,
-		ReadTimeout:  *flagHttpMaxReadTimeout,
+		WriteTimeout: *flagHTTPMaxWriteTimeout,
+		ReadTimeout:  *flagHTTPMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
 				wrappedGrpc.HandleGrpcWebRequest(resp, req)
@@ -80,8 +80,8 @@ func main() {
 			resp.WriteHeader(http.StatusNotImplemented)
 		}),
 	}
-	servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
-	servingListener = tls.NewListener(servingListener, serverTls)
+	servingListener := buildListenerOrFail("http", *flagHTTPTLSPort)
+	servingListener = tls.NewListener(servingListener, serverTLS)
 	go func() {
 		logrus.Infof("listening for http_tls on: %v", servingListener.Addr().String())
 		if err := servingServer.Serve(servingListener); err != nil {
