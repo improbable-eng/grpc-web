@@ -38,7 +38,7 @@ export default function msStreamRequest(options: TransportOptions) {
   }
 
   xhr.open("POST", options.url);
-  xhr.responseType = "ms-stream";
+  (xhr as any).responseType = "ms-stream";
   options.headers.forEach((key, values) => {
     xhr.setRequestHeader(key, values.join(", "));
   });

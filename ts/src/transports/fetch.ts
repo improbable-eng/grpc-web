@@ -10,7 +10,7 @@ export default function fetchRequest(options: TransportOptions) {
       .then((result: { done: boolean, value: Uint8Array}) => {
         if (result.done) {
           options.onEnd();
-          return;
+          return {};
         }
         options.onChunk(result.value);
         return pump(reader, res);

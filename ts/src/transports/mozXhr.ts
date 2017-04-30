@@ -27,7 +27,7 @@ export default function mozXhrRequest(options: TransportOptions) {
   }
 
   xhr.open("POST", options.url);
-  xhr.responseType = "moz-chunked-arraybuffer";
+  (xhr as any).responseType = "moz-chunked-arraybuffer";
   options.headers.forEach((key, values) => {
     xhr.setRequestHeader(key, values.join(", "));
   });

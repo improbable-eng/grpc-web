@@ -40,7 +40,7 @@ function xhrSupportsResponseType(type: string) {
     return false;
   }
   try {
-    xhr.responseType = type;
+    (xhr as any).responseType = type;
     return xhr.responseType === type;
   } catch (e) {}
   return false

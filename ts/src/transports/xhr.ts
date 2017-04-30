@@ -30,7 +30,7 @@ export default function xhrRequest(options: TransportOptions) {
   }
 
   xhr.open("POST", options.url);
-  xhr.responseType = "text";
+  (xhr as any).responseType = "text";
 
   // overriding the mime type causes a response that has a code point per byte, which can be decoded using the
   // stringToArrayBuffer function.

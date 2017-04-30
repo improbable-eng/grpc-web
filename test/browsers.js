@@ -51,5 +51,5 @@ module.exports = {
   // // Safari 10 disabled whilst investigating an issue with https requests for unresolved host hanging through Browserstack
   // safari10: browser("safari", "10", "OS X", "Sierra"),
   safari9_1: browser("safari", "9.1", "OS X", "El Capitan"),
-  safari8: browser("safari", "8", "OS X", "Yosemite")
+  safari8: browser("safari", "8", "OS X", "Yosemite"),
 };
