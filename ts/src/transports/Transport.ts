@@ -2,6 +2,7 @@ import {BrowserHeaders} from "browser-headers";
 import fetchRequest from "./fetch";
 import xhrRequest from "./xhr";
 import msStreamRequest from "./msStream";
+import mozXhrRequest from "./mozXhr";
 
 declare const Response: any;
 declare const Headers: any;
@@ -57,6 +58,10 @@ export class DefaultTransportFactory {
   static detectTransport() {
     if (typeof Response !== "undefined" && Response.prototype.hasOwnProperty("body") && typeof Headers === "function") {
       return fetchRequest;
+    }
+
+    if (xhrSupportsResponseType("moz-chunked-arraybuffer")) {
+      return mozXhrRequest;
     }
 
     if (xhrSupportsResponseType("ms-stream")) {
