@@ -2,8 +2,9 @@ import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
 import {debug} from "../debug";
 
-/* ms-stream is required for binary requests in IE 10. This is due to lack of overrideMimeType that enables the text
- * decoding used by the XHR transport. ms-stream has a 16MB response limitation due to fixed buffer length allocation. */
+/* msStreamRequest uses XmlHttpRequest with responseType "ms-stream" to support binary requests in IE 10+. This is due
+ * to lack of overrideMimeType which enables the UTF-8 decoding used by the xhrRequest transport. ms-stream has a 16MB
+ * response limitation due to fixed buffer length allocation. */
 export default function msStreamRequest(options: TransportOptions) {
   options.debug && debug("msStream", options);
   const xhr = new XMLHttpRequest();
