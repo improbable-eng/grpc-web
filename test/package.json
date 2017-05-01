@@ -40,7 +40,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.3",
     "ts-loader": "^2.0.1",
-    "ts-protoc-gen": "^0.2.2",
+    "ts-protoc-gen": "^0.3.0",
     "tslint": "^4.4.2",
     "typescript": "^2.2.1",
     "wd": "^1.2.0",

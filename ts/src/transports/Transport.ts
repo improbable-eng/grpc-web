@@ -7,6 +7,13 @@ import mozXhrRequest from "./mozXhr";
 declare const Response: any;
 declare const Headers: any;
 
+export {
+  fetchRequest,
+  mozXhrRequest,
+  msStreamRequest,
+  xhrRequest
+}
+
 export interface Transport {
   (options: TransportOptions): void;
 }
