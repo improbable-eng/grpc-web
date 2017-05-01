@@ -100,10 +100,10 @@ export namespace grpc {
   }
 
   export type UnaryOutput<TResponse> = {
-    code: Code,
-    message: string;
+    status: Code,
+    statusMessage: string;
     headers: BrowserHeaders;
-    res: TResponse | null;
+    message: TResponse | null;
     trailers: BrowserHeaders;
   }
 
@@ -152,24 +152,14 @@ export namespace grpc {
       onMessage: (res: TResponse) => {
         responseMessage = res;
       },
-      onEnd: (code: Code, message: string, trailers: BrowserHeaders) => {
-        if (code == Code.OK) {
-          props.onEnd({
-            code: Code.OK,
-            message: message,
-            headers: responseHeaders ? responseHeaders : new BrowserHeaders(),
-            res: responseMessage,
-            trailers: trailers
-          });
-        } else {
-          props.onEnd({
-            code: code,
-            message: message,
-            headers: responseHeaders ? responseHeaders : new BrowserHeaders(),
-            res: null,
-            trailers: trailers,
-          });
-        }
+      onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
+        props.onEnd({
+          status: status,
+          statusMessage: statusMessage,
+          headers: responseHeaders ? responseHeaders : new BrowserHeaders(),
+          message: responseMessage,
+          trailers: trailers
+        });
       },
       transport: props.transport,
       debug: props.debug,
