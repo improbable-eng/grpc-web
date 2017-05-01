@@ -55,8 +55,8 @@ describe("grpc-web-client", () => {
       host: validHostUrl,
       onHeaders: function(headers: BrowserHeaders) {
         didGetOnHeaders = true;
-        assert.deepEqual(headers.get("HeaderTestKey1"), ["Value1"]);
-        assert.deepEqual(headers.get("HeaderTestKey2"), ["Value2"]);
+        assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
       },
       onMessage: function(message: PingResponse) {
         didGetOnMessage = true;
@@ -68,8 +68,46 @@ describe("grpc-web-client", () => {
         DEBUG && console.log("code", code, "msg", msg);
         assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
         assert.strictEqual(msg, undefined, "expected no message");
-        assert.deepEqual(trailers.get("TrailerTestKey1"), ["Value1"]);
-        assert.deepEqual(trailers.get("TrailerTestKey2"), ["Value2"]);
+        assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+        assert.ok(didGetOnHeaders);
+        assert.ok(didGetOnMessage);
+        done();
+      }
+    });
+  });
+
+  it("should make a unary request with metadata", (done) => {
+    let didGetOnHeaders = false;
+    let didGetOnMessage = false;
+
+    const ping = new PingRequest();
+    ping.setValue("hello world");
+    ping.setCheckMetadata(true);
+
+    grpc.invoke(TestService.Ping, {
+      debug: DEBUG,
+      request: ping,
+      metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
+      host: validHostUrl,
+      onHeaders: function(headers: BrowserHeaders) {
+        DEBUG && console.log("headers", headers);
+        didGetOnHeaders = true;
+        assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+      },
+      onMessage: function(message: PingResponse) {
+        didGetOnMessage = true;
+        assert.ok(message instanceof PingResponse);
+        assert.deepEqual(message.getValue(), "hello world");
+        assert.deepEqual(message.getCounter(), 252);
+      },
+      onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
+        DEBUG && console.log("code", code, "msg", msg, "trailers", trailers);
+        assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
+        assert.strictEqual(msg, undefined, "expected no message");
+        assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
         assert.ok(didGetOnHeaders);
         assert.ok(didGetOnMessage);
         done();
@@ -91,8 +129,8 @@ describe("grpc-web-client", () => {
       host: validHostUrl,
       onHeaders: function(headers: BrowserHeaders) {
         didGetOnHeaders = true;
-        assert.deepEqual(headers.get("HeaderTestKey1"), ["Value1"]);
-        assert.deepEqual(headers.get("HeaderTestKey2"), ["Value2"]);
+        assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
       },
       onMessage: function(message: PingResponse) {
         assert.ok(message instanceof PingResponse);
@@ -101,8 +139,8 @@ describe("grpc-web-client", () => {
       onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
         assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
         assert.strictEqual(msg, undefined, "expected no message");
-        assert.deepEqual(trailers.get("TrailerTestKey1"), ["Value1"]);
-        assert.deepEqual(trailers.get("TrailerTestKey2"), ["Value2"]);
+        assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
         assert.ok(didGetOnHeaders);
         assert.strictEqual(onMessageId, 3000);
         done();
@@ -124,8 +162,8 @@ describe("grpc-web-client", () => {
       host: validHostUrl,
       onHeaders: function(headers: BrowserHeaders) {
         didGetOnHeaders = true;
-        assert.deepEqual(headers.get("HeaderTestKey1"), ["Value1"]);
-        assert.deepEqual(headers.get("HeaderTestKey2"), ["Value2"]);
+        assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
       },
       onMessage: function(message: PingResponse) {
         assert.ok(message instanceof PingResponse);
@@ -134,8 +172,8 @@ describe("grpc-web-client", () => {
       onEnd: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
         assert.strictEqual(code, grpc.Code.OK, "expected OK (0)");
         assert.strictEqual(msg, undefined, "expected no message");
-        assert.deepEqual(trailers.get("TrailerTestKey1"), ["Value1"]);
-        assert.deepEqual(trailers.get("TrailerTestKey2"), ["Value2"]);
+        assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+        assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
         assert.ok(didGetOnHeaders);
         assert.strictEqual(onMessageId, 0);
         done();

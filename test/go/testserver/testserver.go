@@ -11,7 +11,7 @@ import (
 
 	"fmt"
 
-	testproto "../_proto/improbable/grpcweb/test"
+	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc/metadata"
@@ -99,14 +99,20 @@ type testSrv struct {
 }
 
 func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*testproto.PingResponse, error) {
-	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "Value1", "HeaderTestKey2", "Value2"))
-	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "Value1", "TrailerTestKey2", "Value2"))
+	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	return &testproto.PingResponse{Value: "foobar"}, nil
 }
 
 func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testproto.PingResponse, error) {
-	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "Value1", "HeaderTestKey2", "Value2"))
-	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "Value1", "TrailerTestKey2", "Value2"))
+	if ping.GetCheckMetadata() {
+		md, ok := metadata.FromContext(ctx)
+		if !ok || md["headertestkey1"][0] != "ClientValue1" {
+			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
+		}
+	}
+	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	return &testproto.PingResponse{Value: ping.Value, Counter: 252}, nil
 }
 
@@ -117,22 +123,22 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 		return nil, grpc.Errorf(codes.Unavailable, "You got closed. You probably won't see this error")
 
 	}
-	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "Value1", "HeaderTestKey2", "Value2"))
-	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "Value1", "TrailerTestKey2", "Value2"))
+	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
 }
 
 func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestService_PingListServer) error {
-	stream.SendHeader(metadata.Pairs("HeaderTestKey1", "Value1", "HeaderTestKey2", "Value2"))
-	stream.SetTrailer(metadata.Pairs("TrailerTestKey1", "Value1", "TrailerTestKey2", "Value2"))
-	for i := int32(0); i < ping.ResponseCount; i++ {
-		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
-	}
+	stream.SendHeader(metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	stream.SetTrailer(metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	if ping.FailureType == testproto.PingRequest_DROP {
 		t, _ := transport.StreamFromContext(stream.Context())
 		t.ServerTransport().Close()
 		return nil
 
+	}
+	for i := int32(0); i < ping.ResponseCount; i++ {
+		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
 	}
 	return nil
 }
