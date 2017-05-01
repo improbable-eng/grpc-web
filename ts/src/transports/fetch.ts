@@ -2,6 +2,7 @@ import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
 import {debug} from "../debug";
 
+/* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
 export default function fetchRequest(options: TransportOptions) {
   options.debug && debug("fetchRequest", options);
   function pump(reader: ReadableStreamReader, res: Response): Promise<Response> {
@@ -9,7 +10,7 @@ export default function fetchRequest(options: TransportOptions) {
       .then((result: { done: boolean, value: Uint8Array}) => {
         if (result.done) {
           options.onEnd();
-          return;
+          return {};
         }
         options.onChunk(result.value);
         return pump(reader, res);
