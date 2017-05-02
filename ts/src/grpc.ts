@@ -124,17 +124,17 @@ export namespace grpc {
     return new Uint8Array(frame);
   }
 
-  function getStatusFromHeaders(headers: BrowserHeaders): Code {
+  function getStatusFromHeaders(headers: BrowserHeaders): Code | null {
     const fromHeaders = headers.get("grpc-status") || [];
     if (fromHeaders.length > 0) {
       try {
         const asString = fromHeaders[0];
         return parseInt(asString, 10);
       } catch (e) {
-        return Code.Internal;
+        return null;
       }
     }
-    return Code.Internal;
+    return null;
   }
 
   export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
@@ -228,7 +228,7 @@ export namespace grpc {
           const gRPCMessage = headers.get("grpc-message") || [];
           props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
           if (code !== Code.OK) {
-            rawOnError(code, gRPCMessage[0] || "");
+            rawOnError(code, gRPCMessage[0]);
             return;
           }
 
@@ -271,8 +271,13 @@ export namespace grpc {
           // This was a headers/trailers-only response
           props.debug && debug("grpc.headers only response ", grpcStatus, grpcMessage);
 
+          if (grpcStatus === null) {
+            rawOnEnd(Code.Internal, "Response closed without grpc-status (Headers only)", responseHeaders);
+            return;
+          }
+
           // Return an empty trailers instance
-          rawOnEnd(grpcStatus, grpcMessage[0] || "Response closed without grpc-status (Headers only)", new BrowserHeaders());
+          rawOnEnd(grpcStatus, grpcMessage[0], responseHeaders);
           return;
         }
 
@@ -284,7 +289,7 @@ export namespace grpc {
         }
 
         const grpcMessage = responseTrailers.get("grpc-message");
-        rawOnEnd(grpcStatus, grpcMessage ? grpcMessage[0] : "", responseTrailers);
+        rawOnEnd(grpcStatus, grpcMessage[0], responseTrailers);
       }
     });
   }

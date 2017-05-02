@@ -39,9 +39,9 @@ const unavailableHost = `${USE_HTTPS ? "https" : "http"}://${validHost}:9999`;
 const emptyHost = USE_HTTPS ? `https://${invalidHost}:9105` : `http://${invalidHost}:9095`;
 
 function headerTrailerIterator(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
-  // cb(false, false, " - no headers - no trailers");
+  cb(false, false, " - no headers - no trailers");
   cb(true, false, " - with headers - no trailers");
-  // cb(false, true, " - no headers - with trailers");
+  cb(false, true, " - no headers - with trailers");
   cb(true, true, " - with headers - with trailers");
 }
 
@@ -63,6 +63,7 @@ describe("grpc-web-client", () => {
           request: ping,
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
@@ -153,6 +154,7 @@ describe("grpc-web-client", () => {
           request: ping,
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
@@ -164,6 +166,7 @@ describe("grpc-web-client", () => {
             assert.strictEqual(message.getCounter(), onMessageId++);
           },
           onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
@@ -194,6 +197,7 @@ describe("grpc-web-client", () => {
           request: ping,
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
@@ -205,6 +209,7 @@ describe("grpc-web-client", () => {
             assert.strictEqual(message.getCounter(), onMessageId++);
           },
           onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
@@ -235,12 +240,14 @@ describe("grpc-web-client", () => {
           request: ping,
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
           },
           onMessage: (message: Empty) => {
             didGetOnMessage = true;
           },
           onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.deepEqual(trailers.get("grpc-status"), ["12"]);
             assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
             assert.strictEqual(status, grpc.Code.Unimplemented);
@@ -268,12 +275,14 @@ describe("grpc-web-client", () => {
         // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
         host: corsHostUrl,
         onHeaders: (headers: BrowserHeaders) => {
+          DEBUG && console.debug("headers", headers);
           didGetOnHeaders = true;
         },
         onMessage: (message: Empty) => {
           didGetOnMessage = true;
         },
         onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           // Some browsers return empty Headers for failed requests
           console.log("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without headers");
@@ -296,6 +305,7 @@ describe("grpc-web-client", () => {
         request: ping,
         host: validHostUrl,
         onHeaders: (headers: BrowserHeaders) => {
+          DEBUG && console.debug("headers", headers);
           didGetOnHeaders = true;
           assert.deepEqual(headers.get("grpc-status"), []);
           assert.deepEqual(headers.get("grpc-message"), []);
@@ -304,6 +314,7 @@ describe("grpc-web-client", () => {
           didGetOnMessage = true;
         },
         onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
           assert.strictEqual(status, grpc.Code.Internal);
           assert.ok(!didGetOnMessage);
@@ -323,12 +334,14 @@ describe("grpc-web-client", () => {
         request: ping,
         host: unavailableHost, // Should not be available
         onHeaders: (headers: BrowserHeaders) => {
+          DEBUG && console.debug("headers", headers);
           didGetOnHeaders = true;
         },
         onMessage: (message: Empty) => {
           didGetOnMessage = true;
         },
         onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without headers");
           assert.strictEqual(status, grpc.Code.Internal);
           assert.ok(!didGetOnMessage);
@@ -348,6 +361,7 @@ describe("grpc-web-client", () => {
         request: ping,
         host: emptyHost,
         onHeaders: (headers: BrowserHeaders) => {
+          DEBUG && console.debug("headers", headers);
           didGetOnHeaders = true;
           assert.deepEqual(headers.get("grpc-status"), ["12"]);
           assert.deepEqual(headers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
@@ -356,10 +370,11 @@ describe("grpc-web-client", () => {
           didGetOnMessage = true;
         },
         onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "unknown service improbable.grpcweb.test.FailService");
           assert.strictEqual(status, 12);
-          assert.deepEqual(trailers.get("grpc-status"), []);
-          assert.deepEqual(trailers.get("grpc-message"), []);
+          assert.deepEqual(trailers.get("grpc-status"), ["12"]);
+          assert.deepEqual(trailers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
           assert.ok(didGetOnHeaders);
           assert.ok(!didGetOnMessage);
           done();
@@ -546,8 +561,8 @@ describe("grpc-web-client", () => {
           assert.isNull(message);
           assert.deepEqual(headers.get("grpc-status"), ["12"]);
           assert.deepEqual(headers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
-          assert.deepEqual(trailers.get("grpc-status"), []);
-          assert.deepEqual(trailers.get("grpc-message"), []);
+          assert.deepEqual(trailers.get("grpc-status"), ["12"]);
+          assert.deepEqual(trailers.get("grpc-message"), ["unknown service improbable.grpcweb.test.FailService"]);
           done();
         }
       });
