@@ -39,10 +39,10 @@ const unavailableHost = `${USE_HTTPS ? "https" : "http"}://${validHost}:9999`;
 const emptyHost = USE_HTTPS ? `https://${invalidHost}:9105` : `http://${invalidHost}:9095`;
 
 function headerTrailerIterator(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
-  // cb(false, false, " - no headers - no footers");
-  // cb(true, false, " - with headers - no footers");
-  // cb(false, true, " - no headers - with footers");
-  cb(true, true, " - with headers - with footers");
+  // cb(false, false, " - no headers - no trailers");
+  cb(true, false, " - with headers - no trailers");
+  // cb(false, true, " - no headers - with trailers");
+  cb(true, true, " - with headers - with trailers");
 }
 
 describe("grpc-web-client", () => {
@@ -64,8 +64,10 @@ describe("grpc-web-client", () => {
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             didGetOnHeaders = true;
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
           },
           onMessage: (message: PingResponse) => {
             didGetOnMessage = true;
@@ -77,8 +79,10 @@ describe("grpc-web-client", () => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
-            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             assert.ok(didGetOnHeaders);
             assert.ok(didGetOnMessage);
             done();
@@ -106,8 +110,10 @@ describe("grpc-web-client", () => {
           onHeaders: (headers: BrowserHeaders) => {
             DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
           },
           onMessage: (message: PingResponse) => {
             didGetOnMessage = true;
@@ -119,8 +125,10 @@ describe("grpc-web-client", () => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
-            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             assert.ok(didGetOnHeaders);
             assert.ok(didGetOnMessage);
             done();
@@ -146,8 +154,10 @@ describe("grpc-web-client", () => {
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             didGetOnHeaders = true;
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
           },
           onMessage: (message: PingResponse) => {
             assert.ok(message instanceof PingResponse);
@@ -156,8 +166,10 @@ describe("grpc-web-client", () => {
           onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
-            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             assert.ok(didGetOnHeaders);
             assert.strictEqual(onMessageId, 3000);
             done();
@@ -183,8 +195,10 @@ describe("grpc-web-client", () => {
           host: validHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             didGetOnHeaders = true;
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
           },
           onMessage: (message: PingResponse) => {
             assert.ok(message instanceof PingResponse);
@@ -193,8 +207,10 @@ describe("grpc-web-client", () => {
           onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
-            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             assert.ok(didGetOnHeaders);
             assert.strictEqual(onMessageId, 0);
             done();
@@ -368,14 +384,18 @@ describe("grpc-web-client", () => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
             assert.ok(message instanceof PingResponse);
             const asPingResponse: PingResponse = message as PingResponse;
             assert.deepEqual(asPingResponse.getValue(), "hello world");
             assert.deepEqual(asPingResponse.getCounter(), 252);
-            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             done();
           }
         });
@@ -399,14 +419,18 @@ describe("grpc-web-client", () => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
             assert.ok(message instanceof PingResponse);
             const asPingResponse: PingResponse = message as PingResponse;
             assert.deepEqual(asPingResponse.getValue(), "hello world");
             assert.deepEqual(asPingResponse.getCounter(), 252);
-            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             done();
           }
         });
@@ -429,11 +453,17 @@ describe("grpc-web-client", () => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.Unimplemented);
             assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
-            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
             assert.isNull(message);
             assert.deepEqual(trailers.get("grpc-status"), ["12"]);
             assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
             done();
           }
         });
