@@ -15,6 +15,7 @@ import (
 // grpcWebResponse implements http.ResponseWriter.
 type grpcWebResponse struct {
 	wroteHeaders bool
+	wroteBody    bool
 	headers      http.Header
 	wrapped      http.ResponseWriter
 }
@@ -28,6 +29,7 @@ func (w *grpcWebResponse) Header() http.Header {
 }
 
 func (w *grpcWebResponse) Write(b []byte) (int, error) {
+	w.wroteBody = true
 	return w.wrapped.Write(b)
 }
 
@@ -64,7 +66,7 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 }
 
 func (w *grpcWebResponse) finishRequest(req *http.Request) {
-	if w.wroteHeaders {
+	if w.wroteHeaders || w.wroteBody {
 		w.copyTrailersToPayload()
 	} else {
 		w.copyTrailersAndHeadersToWrapped()
