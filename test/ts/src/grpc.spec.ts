@@ -38,175 +38,202 @@ const corsHostUrl = USE_HTTPS ? `https://${invalidHost}:9100` : `http://${invali
 const unavailableHost = `${USE_HTTPS ? "https" : "http"}://${validHost}:9999`;
 const emptyHost = USE_HTTPS ? `https://${invalidHost}:9105` : `http://${invalidHost}:9095`;
 
+function headerTrailerIterator(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
+  // cb(false, false, " - no headers - no footers");
+  // cb(true, false, " - with headers - no footers");
+  // cb(false, true, " - no headers - with footers");
+  cb(true, true, " - with headers - with footers");
+}
 
 describe("grpc-web-client", () => {
   describe("invoke", () => {
-    it("should make a unary request", (done) => {
-      let didGetOnHeaders = false;
-      let didGetOnMessage = false;
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should make a unary request" + name, (done) => {
 
-      const ping = new PingRequest();
-      ping.setValue("hello world");
+        let didGetOnHeaders = false;
+        let didGetOnMessage = false;
 
-      grpc.invoke(TestService.Ping, {
-        debug: DEBUG,
-        request: ping,
-        host: validHostUrl,
-        onHeaders: (headers: BrowserHeaders) => {
-          didGetOnHeaders = true;
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-        },
-        onMessage: (message: PingResponse) => {
-          didGetOnMessage = true;
-          assert.ok(message instanceof PingResponse);
-          assert.deepEqual(message.getValue(), "hello world");
-          assert.deepEqual(message.getCounter(), 252);
-        },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
-          DEBUG && console.debug("status", status, "statusMessage", statusMessage);
-          assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-          assert.strictEqual(statusMessage, undefined, "expected no message");
-          assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
-          assert.ok(didGetOnHeaders);
-          assert.ok(didGetOnMessage);
-          done();
-        }
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
+
+        grpc.invoke(TestService.Ping, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            didGetOnHeaders = true;
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+          },
+          onMessage: (message: PingResponse) => {
+            didGetOnMessage = true;
+            assert.ok(message instanceof PingResponse);
+            assert.deepEqual(message.getValue(), "hello world");
+            assert.deepEqual(message.getCounter(), 252);
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage);
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            assert.ok(didGetOnHeaders);
+            assert.ok(didGetOnMessage);
+            done();
+          }
+        });
       });
     });
 
-    it("should make a unary request with metadata", (done) => {
-      let didGetOnHeaders = false;
-      let didGetOnMessage = false;
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should make a unary request with metadata" + name, (done) => {
+        let didGetOnHeaders = false;
+        let didGetOnMessage = false;
 
-      const ping = new PingRequest();
-      ping.setValue("hello world");
-      ping.setCheckMetadata(true);
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setCheckMetadata(true);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.invoke(TestService.Ping, {
-        debug: DEBUG,
-        request: ping,
-        metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
-        host: validHostUrl,
-        onHeaders: (headers: BrowserHeaders) => {
-          DEBUG && console.debug("headers", headers);
-          didGetOnHeaders = true;
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-        },
-        onMessage: (message: PingResponse) => {
-          didGetOnMessage = true;
-          assert.ok(message instanceof PingResponse);
-          assert.deepEqual(message.getValue(), "hello world");
-          assert.deepEqual(message.getCounter(), 252);
-        },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
-          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-          assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-          assert.strictEqual(statusMessage, undefined, "expected no message");
-          assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
-          assert.ok(didGetOnHeaders);
-          assert.ok(didGetOnMessage);
-          done();
-        }
+        grpc.invoke(TestService.Ping, {
+          debug: DEBUG,
+          request: ping,
+          metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
+          host: validHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && console.debug("headers", headers);
+            didGetOnHeaders = true;
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+          },
+          onMessage: (message: PingResponse) => {
+            didGetOnMessage = true;
+            assert.ok(message instanceof PingResponse);
+            assert.deepEqual(message.getValue(), "hello world");
+            assert.deepEqual(message.getCounter(), 252);
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            assert.ok(didGetOnHeaders);
+            assert.ok(didGetOnMessage);
+            done();
+          }
+        });
       });
     });
 
-    it("should handle a streaming response of multiple messages", (done) => {
-      let didGetOnHeaders = false;
-      let onMessageId = 0;
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should handle a streaming response of multiple messages" + name, (done) => {
+        let didGetOnHeaders = false;
+        let onMessageId = 0;
 
-      const ping = new PingRequest();
-      ping.setValue("hello world");
-      ping.setResponseCount(3000);
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setResponseCount(3000);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.invoke(TestService.PingList, {
-        debug: DEBUG,
-        request: ping,
-        host: validHostUrl,
-        onHeaders: (headers: BrowserHeaders) => {
-          didGetOnHeaders = true;
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-        },
-        onMessage: (message: PingResponse) => {
-          assert.ok(message instanceof PingResponse);
-          assert.strictEqual(message.getCounter(), onMessageId++);
-        },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
-          assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-          assert.strictEqual(statusMessage, undefined, "expected no message");
-          assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
-          assert.ok(didGetOnHeaders);
-          assert.strictEqual(onMessageId, 3000);
-          done();
-        }
+        grpc.invoke(TestService.PingList, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            didGetOnHeaders = true;
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+          },
+          onMessage: (message: PingResponse) => {
+            assert.ok(message instanceof PingResponse);
+            assert.strictEqual(message.getCounter(), onMessageId++);
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            assert.ok(didGetOnHeaders);
+            assert.strictEqual(onMessageId, 3000);
+            done();
+          }
+        });
       });
     });
 
-    it("should handle a streaming response of no messages", (done) => {
-      let didGetOnHeaders = false;
-      let onMessageId = 0;
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should handle a streaming response of no messages" + name, (done) => {
+        let didGetOnHeaders = false;
+        let onMessageId = 0;
 
-      const ping = new PingRequest();
-      ping.setValue("hello world");
-      ping.setResponseCount(0);
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setResponseCount(0);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.invoke(TestService.PingList, {
-        debug: DEBUG,
-        request: ping,
-        host: validHostUrl,
-        onHeaders: (headers: BrowserHeaders) => {
-          didGetOnHeaders = true;
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-        },
-        onMessage: (message: PingResponse) => {
-          assert.ok(message instanceof PingResponse);
-          assert.strictEqual(message.getCounter(), onMessageId++);
-        },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
-          assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-          assert.strictEqual(statusMessage, undefined, "expected no message");
-          assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
-          assert.ok(didGetOnHeaders);
-          assert.strictEqual(onMessageId, 0);
-          done();
-        }
+        grpc.invoke(TestService.PingList, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            didGetOnHeaders = true;
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+          },
+          onMessage: (message: PingResponse) => {
+            assert.ok(message instanceof PingResponse);
+            assert.strictEqual(message.getCounter(), onMessageId++);
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            assert.ok(didGetOnHeaders);
+            assert.strictEqual(onMessageId, 0);
+            done();
+          }
+        });
       });
     });
 
-    it("should report status code for error with headers + trailers", (done) => {
-      let didGetOnHeaders = false;
-      let didGetOnMessage = false;
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should report status code for error with headers + trailers" + name, (done) => {
+        let didGetOnHeaders = false;
+        let didGetOnMessage = false;
 
-      const ping = new PingRequest();
-      ping.setFailureType(PingRequest.FailureType.CODE);
-      ping.setErrorCodeReturned(12);
+        const ping = new PingRequest();
+        ping.setFailureType(PingRequest.FailureType.CODE);
+        ping.setErrorCodeReturned(12);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.invoke(TestService.PingError, {
-        debug: DEBUG,
-        request: ping,
-        host: validHostUrl,
-        onHeaders: (headers: BrowserHeaders) => {
-          didGetOnHeaders = true;
-        },
-        onMessage: (message: Empty) => {
-          didGetOnMessage = true;
-        },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
-          assert.deepEqual(trailers.get("grpc-status"), ["12"]);
-          assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
-          assert.strictEqual(status, grpc.Code.Unimplemented);
-          assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
-          assert.ok(didGetOnHeaders);
-          assert.ok(!didGetOnMessage);
-          done();
-        }
+        grpc.invoke(TestService.PingError, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            didGetOnHeaders = true;
+          },
+          onMessage: (message: Empty) => {
+            didGetOnMessage = true;
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            assert.deepEqual(trailers.get("grpc-status"), ["12"]);
+            assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
+            assert.strictEqual(status, grpc.Code.Unimplemented);
+            assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
+            assert.ok(didGetOnHeaders);
+            assert.ok(!didGetOnMessage);
+            done();
+          }
+        });
       });
     });
 
@@ -274,7 +301,6 @@ describe("grpc-web-client", () => {
       let didGetOnMessage = false;
 
       const ping = new PingRequest();
-      ping.setFailureType(PingRequest.FailureType.DROP);
 
       grpc.invoke(TestService.Ping, {
         debug: DEBUG,
@@ -327,78 +353,90 @@ describe("grpc-web-client", () => {
   });
 
   describe("unary", () => {
-    it("should make a unary request", (done) => {
-      const ping = new PingRequest();
-      ping.setValue("hello world");
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should make a unary request" + name, (done) => {
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.unary(TestService.Ping, {
-        debug: DEBUG,
-        request: ping,
-        host: validHostUrl,
-        onEnd: ({status, statusMessage, headers, message, trailers}) => {
-          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-          assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-          assert.strictEqual(statusMessage, undefined, "expected no message");
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-          assert.ok(message instanceof PingResponse);
-          const asPingResponse: PingResponse = message as PingResponse;
-          assert.deepEqual(asPingResponse.getValue(), "hello world");
-          assert.deepEqual(asPingResponse.getCounter(), 252);
-          assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
-          done();
-        }
+        grpc.unary(TestService.Ping, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            assert.ok(message instanceof PingResponse);
+            const asPingResponse: PingResponse = message as PingResponse;
+            assert.deepEqual(asPingResponse.getValue(), "hello world");
+            assert.deepEqual(asPingResponse.getCounter(), 252);
+            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            done();
+          }
+        });
       });
     });
 
-    it("should make a unary request with metadata", (done) => {
-      const ping = new PingRequest();
-      ping.setValue("hello world");
-      ping.setCheckMetadata(true);
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should make a unary request with metadata" + name, (done) => {
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setCheckMetadata(true);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.unary(TestService.Ping, {
-        debug: DEBUG,
-        request: ping,
-        metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
-        host: validHostUrl,
-        onEnd: ({status, statusMessage, headers, message, trailers}) => {
-          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-          assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-          assert.strictEqual(statusMessage, undefined, "expected no message");
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-          assert.ok(message instanceof PingResponse);
-          const asPingResponse: PingResponse = message as PingResponse;
-          assert.deepEqual(asPingResponse.getValue(), "hello world");
-          assert.deepEqual(asPingResponse.getCounter(), 252);
-          assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
-          done();
-        }
+        grpc.unary(TestService.Ping, {
+          debug: DEBUG,
+          request: ping,
+          metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
+          host: validHostUrl,
+          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            assert.ok(message instanceof PingResponse);
+            const asPingResponse: PingResponse = message as PingResponse;
+            assert.deepEqual(asPingResponse.getValue(), "hello world");
+            assert.deepEqual(asPingResponse.getCounter(), 252);
+            assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            done();
+          }
+        });
       });
     });
 
-    it("should report status code for error with headers + trailers", (done) => {
-      const ping = new PingRequest();
-      ping.setFailureType(PingRequest.FailureType.CODE);
-      ping.setErrorCodeReturned(12);
+    headerTrailerIterator((withHeaders, withTrailers, name) => {
+      it("should report status code for error with headers + trailers" + name, (done) => {
+        const ping = new PingRequest();
+        ping.setFailureType(PingRequest.FailureType.CODE);
+        ping.setErrorCodeReturned(12);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
 
-      grpc.unary(TestService.PingError, {
-        debug: DEBUG,
-        request: ping,
-        host: validHostUrl,
-        onEnd: ({status, statusMessage, headers, message, trailers}) => {
-          DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-          assert.strictEqual(status, grpc.Code.Unimplemented);
-          assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
-          assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
-          assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
-          assert.isNull(message);
-          assert.deepEqual(trailers.get("grpc-status"), ["12"]);
-          assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
-          done();
-        }
+        grpc.unary(TestService.PingError, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
+            assert.strictEqual(status, grpc.Code.Unimplemented);
+            assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
+            assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+            assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            assert.isNull(message);
+            assert.deepEqual(trailers.get("grpc-status"), ["12"]);
+            assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
+            done();
+          }
+        });
       });
     });
 

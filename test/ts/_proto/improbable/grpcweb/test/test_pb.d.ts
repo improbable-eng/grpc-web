@@ -20,6 +20,12 @@ export class PingRequest extends jspb.Message {
   getCheckMetadata(): boolean;
   setCheckMetadata(value: boolean): void;
 
+  getSendHeaders(): boolean;
+  setSendHeaders(value: boolean): void;
+
+  getSendTrailers(): boolean;
+  setSendTrailers(value: boolean): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PingRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PingRequest): PingRequest.AsObject;
@@ -37,6 +43,8 @@ export namespace PingRequest {
     errorCodeReturned: number,
     failureType: PingRequest.FailureType,
     checkMetadata: boolean,
+    sendHeaders: boolean,
+    sendTrailers: boolean,
   }
 
   export enum FailureType {

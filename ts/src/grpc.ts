@@ -141,7 +141,7 @@ export namespace grpc {
                                                                                                                                         props: UnaryRpcOptions<M, TRequest, TResponse>) {
 
     let responseHeaders: BrowserHeaders | null = null;
-    let responseMessage: TResponse;
+    let responseMessage: TResponse | null = null;
     const rpcOpts: RpcOptions<TRequest, TResponse> = {
       host: props.host,
       request: props.request,
