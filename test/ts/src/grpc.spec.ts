@@ -38,7 +38,7 @@ const corsHostUrl = USE_HTTPS ? `https://${invalidHost}:9100` : `http://${invali
 const unavailableHost = `${USE_HTTPS ? "https" : "http"}://${validHost}:9999`;
 const emptyHost = USE_HTTPS ? `https://${invalidHost}:9105` : `http://${invalidHost}:9095`;
 
-function headerTrailerIterator(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
+function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
   cb(false, false, " - no headers - no trailers");
   cb(true, false, " - with headers - no trailers");
   cb(false, true, " - no headers - with trailers");
@@ -47,7 +47,7 @@ function headerTrailerIterator(cb: (withHeaders: boolean, withTrailers: boolean,
 
 describe("grpc-web-client", () => {
   describe("invoke", () => {
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request" + name, (done) => {
         let didGetOnHeaders = false;
         let didGetOnMessage = false;
@@ -91,7 +91,7 @@ describe("grpc-web-client", () => {
       });
     });
 
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request with metadata" + name, (done) => {
         let didGetOnHeaders = false;
         let didGetOnMessage = false;
@@ -137,7 +137,7 @@ describe("grpc-web-client", () => {
       });
     });
 
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should handle a streaming response of multiple messages" + name, (done) => {
         let didGetOnHeaders = false;
         let onMessageId = 0;
@@ -180,7 +180,7 @@ describe("grpc-web-client", () => {
       });
     });
 
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should handle a streaming response of no messages" + name, (done) => {
         let didGetOnHeaders = false;
         let onMessageId = 0;
@@ -223,7 +223,7 @@ describe("grpc-web-client", () => {
       });
     });
 
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should report status code for error with headers + trailers" + name, (done) => {
         let didGetOnHeaders = false;
         let didGetOnMessage = false;
@@ -383,7 +383,7 @@ describe("grpc-web-client", () => {
   });
 
   describe("unary", () => {
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request" + name, (done) => {
         const ping = new PingRequest();
         ping.setValue("hello world");
@@ -416,7 +416,7 @@ describe("grpc-web-client", () => {
       });
     });
 
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request with metadata" + name, (done) => {
         const ping = new PingRequest();
         ping.setValue("hello world");
@@ -451,7 +451,7 @@ describe("grpc-web-client", () => {
       });
     });
 
-    headerTrailerIterator((withHeaders, withTrailers, name) => {
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should report status code for error with headers + trailers" + name, (done) => {
         const ping = new PingRequest();
         ping.setFailureType(PingRequest.FailureType.CODE);
