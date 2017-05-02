@@ -49,7 +49,6 @@ describe("grpc-web-client", () => {
   describe("invoke", () => {
     headerTrailerIterator((withHeaders, withTrailers, name) => {
       it("should make a unary request" + name, (done) => {
-
         let didGetOnHeaders = false;
         let didGetOnMessage = false;
 
@@ -486,9 +485,6 @@ describe("grpc-web-client", () => {
     });
 
     it("should report failure for a CORS failure", (done) => {
-      let didGetOnHeaders = false;
-      let didGetOnMessage = false;
-
       const ping = new PingRequest();
 
       grpc.unary(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
@@ -504,7 +500,6 @@ describe("grpc-web-client", () => {
           // Some browsers return empty Headers for failed requests
           assert.strictEqual(statusMessage, "Response closed without headers");
           assert.strictEqual(status, grpc.Code.Internal);
-          assert.ok(!didGetOnMessage);
           done();
         }
       });
