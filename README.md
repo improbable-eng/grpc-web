@@ -139,6 +139,12 @@ This, however is useful for a lot of frontend functionality.
 
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
 
+## Known Limitations
+
+### Server-side streaming with XHR
+
+Browsers that don't support [Fetch](https://developer.mozilla.org/en/docs/Web/API/Fetch_API) use [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest). XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large server streaming if you intend to support browsers that do not support Fetch.
+
 ### Running the tests
 
 [See test README](test)
