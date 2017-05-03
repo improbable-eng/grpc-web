@@ -71,10 +71,14 @@ export class DefaultTransportFactory {
       return mozXhrRequest;
     }
 
+    if (XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")) {
+      return xhrRequest;
+    }
+
     if (xhrSupportsResponseType("ms-stream")) {
       return msStreamRequest;
     }
 
-    return xhrRequest;
+    throw new Error("No suitable transport found for gRPC-Web");
   }
 }
