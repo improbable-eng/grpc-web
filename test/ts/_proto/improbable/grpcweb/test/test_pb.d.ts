@@ -8,9 +8,6 @@ export class PingRequest extends jspb.Message {
   getValue(): string;
   setValue(value: string): void;
 
-  getSleepTimeMs(): number;
-  setSleepTimeMs(value: number): void;
-
   getResponseCount(): number;
   setResponseCount(value: number): void;
 
@@ -19,6 +16,9 @@ export class PingRequest extends jspb.Message {
 
   getFailureType(): PingRequest.FailureType;
   setFailureType(value: PingRequest.FailureType): void;
+
+  getCheckMetadata(): boolean;
+  setCheckMetadata(value: boolean): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PingRequest.AsObject;
@@ -33,10 +33,10 @@ export class PingRequest extends jspb.Message {
 export namespace PingRequest {
   export type AsObject = {
     value: string,
-    sleepTimeMs: number,
     responseCount: number,
     errorCodeReturned: number,
     failureType: PingRequest.FailureType,
+    checkMetadata: boolean,
   }
 
   export enum FailureType {

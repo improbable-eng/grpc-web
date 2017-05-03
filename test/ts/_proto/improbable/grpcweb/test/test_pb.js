@@ -60,10 +60,10 @@ proto.improbable.grpcweb.test.PingRequest.prototype.toObject = function(opt_incl
 proto.improbable.grpcweb.test.PingRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     value: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    sleepTimeMs: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    responseCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    errorCodeReturned: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    failureType: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    responseCount: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    errorCodeReturned: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    failureType: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    checkMetadata: jspb.Message.getFieldWithDefault(msg, 5, false)
   };
 
   if (includeInstance) {
@@ -106,19 +106,19 @@ proto.improbable.grpcweb.test.PingRequest.deserializeBinaryFromReader = function
       break;
     case 2:
       var value = /** @type {number} */ (reader.readInt32());
-      msg.setSleepTimeMs(value);
-      break;
-    case 3:
-      var value = /** @type {number} */ (reader.readInt32());
       msg.setResponseCount(value);
       break;
-    case 4:
+    case 3:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setErrorCodeReturned(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {!proto.improbable.grpcweb.test.PingRequest.FailureType} */ (reader.readEnum());
       msg.setFailureType(value);
+      break;
+    case 5:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setCheckMetadata(value);
       break;
     default:
       reader.skipField();
@@ -155,30 +155,30 @@ proto.improbable.grpcweb.test.PingRequest.serializeBinaryToWriter = function(mes
       f
     );
   }
-  f = message.getSleepTimeMs();
+  f = message.getResponseCount();
   if (f !== 0) {
     writer.writeInt32(
       2,
       f
     );
   }
-  f = message.getResponseCount();
-  if (f !== 0) {
-    writer.writeInt32(
-      3,
-      f
-    );
-  }
   f = message.getErrorCodeReturned();
   if (f !== 0) {
     writer.writeUint32(
-      4,
+      3,
       f
     );
   }
   f = message.getFailureType();
   if (f !== 0.0) {
     writer.writeEnum(
+      4,
+      f
+    );
+  }
+  f = message.getCheckMetadata();
+  if (f) {
+    writer.writeBool(
       5,
       f
     );
@@ -211,61 +211,63 @@ proto.improbable.grpcweb.test.PingRequest.prototype.setValue = function(value) {
 
 
 /**
- * optional int32 sleep_time_ms = 2;
+ * optional int32 response_count = 2;
  * @return {number}
  */
-proto.improbable.grpcweb.test.PingRequest.prototype.getSleepTimeMs = function() {
+proto.improbable.grpcweb.test.PingRequest.prototype.getResponseCount = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
 /** @param {number} value */
-proto.improbable.grpcweb.test.PingRequest.prototype.setSleepTimeMs = function(value) {
+proto.improbable.grpcweb.test.PingRequest.prototype.setResponseCount = function(value) {
   jspb.Message.setField(this, 2, value);
 };
 
 
 /**
- * optional int32 response_count = 3;
+ * optional uint32 error_code_returned = 3;
  * @return {number}
  */
-proto.improbable.grpcweb.test.PingRequest.prototype.getResponseCount = function() {
+proto.improbable.grpcweb.test.PingRequest.prototype.getErrorCodeReturned = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
 
 /** @param {number} value */
-proto.improbable.grpcweb.test.PingRequest.prototype.setResponseCount = function(value) {
+proto.improbable.grpcweb.test.PingRequest.prototype.setErrorCodeReturned = function(value) {
   jspb.Message.setField(this, 3, value);
 };
 
 
 /**
- * optional uint32 error_code_returned = 4;
- * @return {number}
- */
-proto.improbable.grpcweb.test.PingRequest.prototype.getErrorCodeReturned = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
-};
-
-
-/** @param {number} value */
-proto.improbable.grpcweb.test.PingRequest.prototype.setErrorCodeReturned = function(value) {
-  jspb.Message.setField(this, 4, value);
-};
-
-
-/**
- * optional FailureType failure_type = 5;
+ * optional FailureType failure_type = 4;
  * @return {!proto.improbable.grpcweb.test.PingRequest.FailureType}
  */
 proto.improbable.grpcweb.test.PingRequest.prototype.getFailureType = function() {
-  return /** @type {!proto.improbable.grpcweb.test.PingRequest.FailureType} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {!proto.improbable.grpcweb.test.PingRequest.FailureType} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
 
 /** @param {!proto.improbable.grpcweb.test.PingRequest.FailureType} value */
 proto.improbable.grpcweb.test.PingRequest.prototype.setFailureType = function(value) {
+  jspb.Message.setField(this, 4, value);
+};
+
+
+/**
+ * optional bool check_metadata = 5;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.improbable.grpcweb.test.PingRequest.prototype.getCheckMetadata = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 5, false));
+};
+
+
+/** @param {boolean} value */
+proto.improbable.grpcweb.test.PingRequest.prototype.setCheckMetadata = function(value) {
   jspb.Message.setField(this, 5, value);
 };
 
