@@ -18,6 +18,7 @@ import {
   BrowserHeaders,
 } from "../../../ts/src/index";
 import Code = grpc.Code;
+import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
 import {
   Empty,
 } from "google-protobuf/google/protobuf/empty_pb";
@@ -383,6 +384,23 @@ describe("grpc-web-client", () => {
   });
 
   describe("unary", () => {
+    it("should reject a streaming method", () => {
+      const ping = new PingRequest();
+      ping.setValue("hello world");
+
+      assert.throw(() => {
+        grpc.unary(TestService.PingList as any as UnaryMethodDefinition<PingRequest, PingResponse>, {
+          debug: DEBUG,
+          request: ping,
+          host: validHostUrl,
+          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
+          }
+        })
+        }, ".unary cannot be used with server-streaming methods. Use .invoke instead."
+      );
+    });
+
     headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request" + name, (done) => {
         const ping = new PingRequest();

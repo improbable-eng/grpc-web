@@ -138,6 +138,9 @@ export namespace grpc {
   }
 
   export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<M, TRequest, TResponse>) {
+    if (methodDescriptor.responseStream) {
+      throw new Error(".unary cannot be used with server-streaming methods. Use .invoke instead.");
+    }
     let responseHeaders: BrowserHeaders | null = null;
     let responseMessage: TResponse | null = null;
     const rpcOpts: RpcOptions<TRequest, TResponse> = {
