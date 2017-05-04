@@ -5,7 +5,8 @@ import {Transport,DefaultTransportFactory} from "./transports/Transport";
 import {debug} from "./debug";
 
 export {
-  BrowserHeaders
+  BrowserHeaders,
+  Transport
 };
 
 export namespace grpc {
@@ -83,6 +84,10 @@ export namespace grpc {
     responseType: ProtobufMessageClass<TResponse>;
   }
 
+  export interface UnaryMethodDefinition<TRequest extends jspb.Message, TResponse extends jspb.Message> extends MethodDefinition<TRequest, TResponse> {
+    responseStream: false;
+  }
+
   export type RpcOptions<TRequest extends jspb.Message, TResponse extends jspb.Message> = {
     host: string,
     request: TRequest,
@@ -90,6 +95,23 @@ export namespace grpc {
     onHeaders?: (headers: BrowserHeaders) => void,
     onMessage?: (res: TResponse) => void,
     onEnd: (code: Code, message: string, trailers: BrowserHeaders) => void,
+    transport?: Transport,
+    debug?: boolean,
+  }
+
+  export type UnaryOutput<TResponse> = {
+    status: Code,
+    statusMessage: string;
+    headers: BrowserHeaders;
+    message: TResponse | null;
+    trailers: BrowserHeaders;
+  }
+
+  export type UnaryRpcOptions<M extends UnaryMethodDefinition<TRequest, TResponse>, TRequest extends jspb.Message, TResponse extends jspb.Message> = {
+    host: string,
+    request: TRequest,
+    metadata?: BrowserHeaders.ConstructorArg,
+    onEnd: (output: UnaryOutput<TResponse>) => void,
     transport?: Transport,
     debug?: boolean,
   }
@@ -102,17 +124,46 @@ export namespace grpc {
     return new Uint8Array(frame);
   }
 
-  function getStatusFromHeaders(headers: BrowserHeaders): Code {
+  function getStatusFromHeaders(headers: BrowserHeaders): Code | null {
     const fromHeaders = headers.get("grpc-status") || [];
     if (fromHeaders.length > 0) {
       try {
         const asString = fromHeaders[0];
         return parseInt(asString, 10);
       } catch (e) {
-        return Code.Internal;
+        return null;
       }
     }
-    return Code.Internal;
+    return null;
+  }
+
+  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
+                                                                                                                                        props: UnaryRpcOptions<M, TRequest, TResponse>) {
+    let responseHeaders: BrowserHeaders | null = null;
+    let responseMessage: TResponse | null = null;
+    const rpcOpts: RpcOptions<TRequest, TResponse> = {
+      host: props.host,
+      request: props.request,
+      metadata: props.metadata,
+      onHeaders: (headers: BrowserHeaders) => {
+        responseHeaders = headers;
+      },
+      onMessage: (res: TResponse) => {
+        responseMessage = res;
+      },
+      onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
+        props.onEnd({
+          status: status,
+          statusMessage: statusMessage,
+          headers: responseHeaders ? responseHeaders : new BrowserHeaders(),
+          message: responseMessage,
+          trailers: trailers
+        });
+      },
+      transport: props.transport,
+      debug: props.debug,
+    };
+    grpc.invoke(methodDescriptor, rpcOpts);
   }
 
   export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
@@ -176,7 +227,7 @@ export namespace grpc {
           const gRPCMessage = headers.get("grpc-message") || [];
           props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
           if (code !== Code.OK) {
-            rawOnError(code, gRPCMessage[0] || "");
+            rawOnError(code, gRPCMessage[0]);
             return;
           }
 
@@ -219,7 +270,13 @@ export namespace grpc {
           // This was a headers/trailers-only response
           props.debug && debug("grpc.headers only response ", grpcStatus, grpcMessage);
 
-          rawOnEnd(grpcStatus, grpcMessage[0] || "Response closed without grpc-status (Headers only)", responseHeaders);
+          if (grpcStatus === null) {
+            rawOnEnd(Code.Internal, "Response closed without grpc-status (Headers only)", responseHeaders);
+            return;
+          }
+
+          // Return an empty trailers instance
+          rawOnEnd(grpcStatus, grpcMessage[0], responseHeaders);
           return;
         }
 
@@ -231,7 +288,7 @@ export namespace grpc {
         }
 
         const grpcMessage = responseTrailers.get("grpc-message");
-        rawOnEnd(grpcStatus, grpcMessage ? grpcMessage[0] : "", responseTrailers);
+        rawOnEnd(grpcStatus, grpcMessage[0], responseTrailers);
       }
     });
   }

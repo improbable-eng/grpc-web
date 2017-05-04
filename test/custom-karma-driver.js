@@ -99,20 +99,27 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           self.log.error("browser.init", err);
           throw err;
         }
-        const next = function(i){
-          const via = viaUrls[i];
-          if (!via) {
-            browser.get(testUrl, function() {
-              self.captured = true;
-              // This will just wait on the page until the browser is killed
-            });
-          } else {
-            browser.get(via, function() {
-              next(i+1);
-            });
-          }
+        const goToTest = function() {
+          browser.get(testUrl, function() {
+            self.captured = true;
+            // This will just wait on the page until the browser is killed
+          });
         };
-        next(0);
+        if (testUrl.substring(0, "https://".length) === "https://") {
+          const next = function (i) {
+            const via = viaUrls[i];
+            if (!via) {
+              goToTest();
+            } else {
+              browser.get(via, function () {
+                next(i + 1);
+              });
+            }
+          };
+          next(0);
+        } else {
+          goToTest();
+        }
       });
     });
   };

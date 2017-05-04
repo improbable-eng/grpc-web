@@ -16,6 +16,8 @@ message PingRequest {
   uint32 error_code_returned = 3;
   FailureType failure_type = 4;
   bool check_metadata = 5;
+  bool send_headers = 6;
+  bool send_trailers = 7;
 }
 
 message PingResponse {

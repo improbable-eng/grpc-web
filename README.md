@@ -139,6 +139,16 @@ This, however is useful for a lot of frontend functionality.
 
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
 
+## Known Limitations
+
+### Server-side streaming with XHR
+
+Browsers that don't support [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) (Currently only Edge 14+ and Chrome 43+ - full ReadableStream was added in Chrome 52, but only `body.getReader()` is used) or `XMLHttpRequest.responseType = moz-chunked-arraybuffer` (Firefox 38+) use [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest). XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large payload server streaming if you intend to support browsers that do not support Fetch.
+
+### MS-Stream (IE 10 + 11)
+
+IE 10 and 11 use [`ms-stream`](https://msdn.microsoft.com/en-us/library/hh772328(v=vs.85).aspx), which has a limited 16MB buffer for responses, causing any larger response to cause the transport to fail.
+
 ### Running the tests
 
 [See test README](test)
