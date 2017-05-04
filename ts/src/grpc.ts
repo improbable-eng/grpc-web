@@ -137,8 +137,7 @@ export namespace grpc {
     return null;
   }
 
-  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
-                                                                                                                                        props: UnaryRpcOptions<M, TRequest, TResponse>) {
+  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<M, TRequest, TResponse>) {
     let responseHeaders: BrowserHeaders | null = null;
     let responseMessage: TResponse | null = null;
     const rpcOpts: RpcOptions<TRequest, TResponse> = {
@@ -166,8 +165,7 @@ export namespace grpc {
     grpc.invoke(methodDescriptor, rpcOpts);
   }
 
-  export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
-                                                                                                                                         props: RpcOptions<TRequest, TResponse>) {
+  export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: RpcOptions<TRequest, TResponse>) {
     const requestHeaders = new BrowserHeaders(props.metadata ? props.metadata : {});
     requestHeaders.set("content-type", "application/grpc-web");
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
