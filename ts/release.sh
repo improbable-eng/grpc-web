@@ -7,12 +7,18 @@ if [ -z ${VERSION} ]; then
   exit 1
 fi
 
+TAG=${2}
+if [ -z ${TAG} ]; then
+  echo "TAG not set (e.g.\"latest\" or \"beta\")"
+  exit 1
+fi
+
 if [[ `git status --porcelain` ]]; then
   echo "There are pending changes, refusing to release."
   exit 1
 fi
 
-read -p "Release v${VERSION}? " -n 1 -r
+read -p "Release v${VERSION} with tag ${TAG}? " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -20,7 +26,7 @@ then
     npm run lib:build
 
     echo "Staring npm publish"
-    npm publish
+    npm publish --tag $TAG
 
     echo "Creating Github release branch release/v${VERSION}"
     git checkout -b release/v${VERSION}
