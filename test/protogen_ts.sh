@@ -19,7 +19,7 @@ function proto_build_dir {
     --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
     -I${PROTOBUF_DIR} \
     --js_out=import_style=commonjs,binary:${GENERATION_DIR} \
-    --ts_out=${GENERATION_DIR} \
+    --ts_out=service=true:${GENERATION_DIR} \
     ${DIR_FULL}/*.proto || exit $?
   echo "DONE"
 }
