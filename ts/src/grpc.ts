@@ -139,7 +139,6 @@ export namespace grpc {
 
   export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M,
                                                                                                                                         props: UnaryRpcOptions<M, TRequest, TResponse>) {
-
     let responseHeaders: BrowserHeaders | null = null;
     let responseMessage: TResponse | null = null;
     const rpcOpts: RpcOptions<TRequest, TResponse> = {
