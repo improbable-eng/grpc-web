@@ -20,7 +20,7 @@ then
     npm run lib:build
 
     echo "Staring npm publish"
-    npm publish
+    npm publish --tag beta
 
     echo "Creating Github release branch release/v${VERSION}"
     git checkout -b release/v${VERSION}
