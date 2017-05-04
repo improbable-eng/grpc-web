@@ -7,6 +7,13 @@ import mozXhrRequest from "./mozXhr";
 declare const Response: any;
 declare const Headers: any;
 
+export {
+  fetchRequest,
+  mozXhrRequest,
+  msStreamRequest,
+  xhrRequest
+}
+
 export interface Transport {
   (options: TransportOptions): void;
 }
@@ -64,10 +71,14 @@ export class DefaultTransportFactory {
       return mozXhrRequest;
     }
 
+    if (XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")) {
+      return xhrRequest;
+    }
+
     if (xhrSupportsResponseType("ms-stream")) {
       return msStreamRequest;
     }
 
-    return xhrRequest;
+    throw new Error("No suitable transport found for gRPC-Web");
   }
 }

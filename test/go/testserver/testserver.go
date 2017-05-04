@@ -111,8 +111,12 @@ func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testp
 			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
 		}
 	}
-	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
-	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
+	if (ping.GetSendHeaders()) {
+		grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	}
+	if (ping.GetSendTrailers()) {
+		grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
+	}
 	return &testproto.PingResponse{Value: ping.Value, Counter: 252}, nil
 }
 
@@ -123,14 +127,22 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 		return nil, grpc.Errorf(codes.Unavailable, "You got closed. You probably won't see this error")
 
 	}
-	grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
-	grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
+	if (ping.GetSendHeaders()) {
+		grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	}
+	if (ping.GetSendTrailers()) {
+		grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
+	}
 	return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
 }
 
 func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestService_PingListServer) error {
-	stream.SendHeader(metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
-	stream.SetTrailer(metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
+	if (ping.GetSendHeaders()) {
+		stream.SendHeader(metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
+	}
+	if (ping.GetSendTrailers()) {
+		stream.SetTrailer(metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
+	}
 	if ping.FailureType == testproto.PingRequest_DROP {
 		t, _ := transport.StreamFromContext(stream.Context())
 		t.ServerTransport().Close()

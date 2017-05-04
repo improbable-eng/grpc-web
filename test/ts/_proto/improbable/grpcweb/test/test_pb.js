@@ -63,7 +63,9 @@ proto.improbable.grpcweb.test.PingRequest.toObject = function(includeInstance, m
     responseCount: jspb.Message.getFieldWithDefault(msg, 2, 0),
     errorCodeReturned: jspb.Message.getFieldWithDefault(msg, 3, 0),
     failureType: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    checkMetadata: jspb.Message.getFieldWithDefault(msg, 5, false)
+    checkMetadata: jspb.Message.getFieldWithDefault(msg, 5, false),
+    sendHeaders: jspb.Message.getFieldWithDefault(msg, 6, false),
+    sendTrailers: jspb.Message.getFieldWithDefault(msg, 7, false)
   };
 
   if (includeInstance) {
@@ -119,6 +121,14 @@ proto.improbable.grpcweb.test.PingRequest.deserializeBinaryFromReader = function
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setCheckMetadata(value);
+      break;
+    case 6:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setSendHeaders(value);
+      break;
+    case 7:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setSendTrailers(value);
       break;
     default:
       reader.skipField();
@@ -180,6 +190,20 @@ proto.improbable.grpcweb.test.PingRequest.serializeBinaryToWriter = function(mes
   if (f) {
     writer.writeBool(
       5,
+      f
+    );
+  }
+  f = message.getSendHeaders();
+  if (f) {
+    writer.writeBool(
+      6,
+      f
+    );
+  }
+  f = message.getSendTrailers();
+  if (f) {
+    writer.writeBool(
+      7,
       f
     );
   }
@@ -269,6 +293,40 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getCheckMetadata = function(
 /** @param {boolean} value */
 proto.improbable.grpcweb.test.PingRequest.prototype.setCheckMetadata = function(value) {
   jspb.Message.setField(this, 5, value);
+};
+
+
+/**
+ * optional bool send_headers = 6;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.improbable.grpcweb.test.PingRequest.prototype.getSendHeaders = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 6, false));
+};
+
+
+/** @param {boolean} value */
+proto.improbable.grpcweb.test.PingRequest.prototype.setSendHeaders = function(value) {
+  jspb.Message.setField(this, 6, value);
+};
+
+
+/**
+ * optional bool send_trailers = 7;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.improbable.grpcweb.test.PingRequest.prototype.getSendTrailers = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 7, false));
+};
+
+
+/** @param {boolean} value */
+proto.improbable.grpcweb.test.PingRequest.prototype.setSendTrailers = function(value) {
+  jspb.Message.setField(this, 7, value);
 };
 
 

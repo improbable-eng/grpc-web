@@ -1,4 +1,5 @@
 export {
   grpc,
-  BrowserHeaders
+  BrowserHeaders,
+  Transport,
 } from "./grpc";
