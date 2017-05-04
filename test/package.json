@@ -10,7 +10,7 @@
     "build": "npm run build:proto && npm run build:testserver && npm run build:ts",
     "lint": "tslint -c ./ts/tslint.json ./ts/src/**/*.ts",
     "test": "npm run build && npm run test:https && npm run test:http",
-    "test:http": "./run-karma.sh ./http.karma.conf.js --single-run",
+    "test:http": "echo 'HTTP TESTS DISABLED PENDING BROWSERSTACK TUNNEL BUG RESOLUTION'#./run-karma.sh ./http.karma.conf.js --single-run",
     "test:https": "./run-karma.sh ./https.karma.conf.js --single-run",
     "test:dev:http": "./run-karma.sh ./http.karma.conf.js",
     "test:dev:https": "./run-karma.sh ./https.karma.conf.js"
