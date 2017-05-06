@@ -199,6 +199,63 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
     });
 
     headerTrailerCombos((withHeaders, withTrailers, name) => {
+      it("should receive individual cadenced messages" + name, (done) => {
+        let didGetOnHeaders = false;
+        let onMessageId = 0;
+
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setResponseCount(5);
+        ping.setMessageLatencyMs(200);
+        ping.setSendHeaders(withHeaders);
+        ping.setSendTrailers(withTrailers);
+
+        let lastMessageTime = 0;
+        DEBUG && console.debug("lastMessageTime", lastMessageTime);
+
+        grpc.invoke(TestService.PingList, {
+          debug: DEBUG,
+          request: ping,
+          host: testHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && console.debug("headers", headers);
+            didGetOnHeaders = true;
+            if (withHeaders) {
+              assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
+            }
+          },
+          onMessage: (message: PingResponse) => {
+            assert.ok(message instanceof PingResponse);
+            assert.strictEqual(message.getCounter(), onMessageId++);
+            const thisTime = new Date().getTime();
+            if (lastMessageTime !== 0) {
+              // Ignore time to first message
+              const diff = thisTime - lastMessageTime;
+              DEBUG && console.debug("diff", diff);
+              DEBUG && console.debug("thisTime", thisTime);
+              assert.isAtLeast(diff, 100);
+              assert.isAtMost(diff, 400);
+            }
+            lastMessageTime = thisTime;
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(statusMessage, undefined, "expected no message");
+            if (withTrailers) {
+              assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
+              assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
+            }
+            assert.ok(didGetOnHeaders);
+            assert.strictEqual(onMessageId, 5);
+            done();
+          }
+        });
+      }, 10000);//Set timeout to 10s
+    });
+
+    headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should handle a streaming response of no messages" + name, (done) => {
         let didGetOnHeaders = false;
         let onMessageId = 0;

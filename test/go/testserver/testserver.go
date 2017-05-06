@@ -19,6 +19,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/transport"
 	"crypto/tls"
+	"time"
 )
 
 var (
@@ -154,6 +155,7 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 
 	}
 	for i := int32(0); i < ping.ResponseCount; i++ {
+		time.Sleep(time.Duration(ping.GetMessageLatencyMs()) * time.Millisecond)
 		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
 	}
 	return nil

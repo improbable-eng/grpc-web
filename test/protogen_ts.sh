@@ -13,7 +13,7 @@ function proto_build_dir {
   DIR_FULL=${1}
   DIR_REL=${1##${PROTOBUF_DIR}}
   DIR_REL=${DIR_REL#/}
-  echo -n "proto_build: $DIR_REL "
+  echo -n "protogen_ts: $DIR_REL "
   mkdir -p ${GENERATION_DIR}/${DIR_REL} 2> /dev/null
   protoc \
     --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
