@@ -18,11 +18,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/transport"
+	"crypto/tls"
 )
 
 var (
-	http1Port       = flag.Int("http1_port", 9090, "Port to listen with HTTP1.1 on.")
-	http1EmptyPort  = flag.Int("http1_empty_port", 9095, "Port to listen with HTTP1.1 on with a grpc server that has no services.")
+	http1Port       = flag.Int("http1_port", 9090, "Port to listen with HTTP1.1 with TLS on.")
+	http1EmptyPort  = flag.Int("http1_empty_port", 9095, "Port to listen with HTTP1.1 with TLS on with a grpc server that has no services.")
 	http2Port       = flag.Int("http2_port", 9100, "Port to listen with HTTP2 with TLS on.")
 	http2EmptyPort  = flag.Int("http2_empty_port", 9105, "Port to listen with HTTP2 with TLS on with a grpc server that has no services.")
 	tlsCertFilePath = flag.String("tls_cert_file", "../../../misc/localhost.crt", "Path to the CRT/PEM file.")
@@ -51,12 +52,15 @@ func main() {
 		Addr:    fmt.Sprintf(":%d", *http1Port),
 		Handler: http.HandlerFunc(handler),
 	}
+	http1Server.TLSNextProto = map[string]func(*http.Server, *tls.Conn, http.Handler){}// Disable HTTP2
 	http1EmptyServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", *http1EmptyPort),
 		Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 			emptyHandler(res, req)
 		}),
 	}
+	http1EmptyServer.TLSNextProto = map[string]func(*http.Server, *tls.Conn, http.Handler){}// Disable HTTP2
+
 	http2Server := http.Server{
 		Addr:    fmt.Sprintf(":%d", *http2Port),
 		Handler: http.HandlerFunc(handler),
@@ -70,14 +74,14 @@ func main() {
 
 	// Start the empty Http1.1 server
 	go func() {
-		if err := http1EmptyServer.ListenAndServe(); err != nil {
+		if err := http1EmptyServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
 			grpclog.Fatalf("failed starting http1.1 empty server: %v", err)
 		}
 	}()
 
 	// Start the Http1.1 server
 	go func() {
-		if err := http1Server.ListenAndServe(); err != nil {
+		if err := http1Server.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
 			grpclog.Fatalf("failed starting http1.1 server: %v", err)
 		}
 	}()

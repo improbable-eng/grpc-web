@@ -9,11 +9,7 @@
     "build:dev": "cd ts && rm -rf build && webpack --watch",
     "build": "npm run build:proto && npm run build:testserver && npm run build:ts",
     "lint": "tslint -c ./ts/tslint.json ./ts/src/**/*.ts",
-    "test": "npm run build && npm run test:https && npm run test:http",
-    "test:http": "echo 'HTTP TESTS DISABLED PENDING BROWSERSTACK TUNNEL BUG RESOLUTION'#./run-karma.sh ./http.karma.conf.js --single-run",
-    "test:https": "./run-karma.sh ./https.karma.conf.js --single-run",
-    "test:dev:http": "./run-karma.sh ./http.karma.conf.js",
-    "test:dev:https": "./run-karma.sh ./https.karma.conf.js"
+    "test": "npm run build && ./run-karma.sh ./karma.conf.ts"
   },
   "license": "none",
   "dependencies": {
@@ -27,6 +23,7 @@
   "devDependencies": {
     "@types/chai": "^3.4.35",
     "@types/jasmine": "^2.5.46",
+    "@types/lodash": "^4.14.64",
     "assert": "^1.4.1",
     "babel-core": "^6.23.1",
     "babel-loader": "^6.3.2",
@@ -39,7 +36,9 @@
     "karma-jasmine": "^1.0.2",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.3",
+    "lodash": "^4.17.4",
     "ts-loader": "^2.0.1",
+    "ts-node": "^3.0.4",
     "ts-protoc-gen": "^0.3.0",
     "tslint": "^4.4.2",
     "typescript": "^2.2.1",

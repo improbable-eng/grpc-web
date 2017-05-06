@@ -12,8 +12,7 @@ function browser(browserName, browserVersion, os, osVersion) {
 
 // Browser versions that should not have any Fetch/XHR differences in functionality to other (tested) versions are
 // commented out.
-
-module.exports = {
+export default {
   edge14_win: browser("edge", "14", "Windows", "10"),
   edge13_win: browser('edge', "13", 'Windows', "10"),
   ie11_win: browser('ie',  "11", 'Windows', "7"),

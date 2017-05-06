@@ -1,5 +1,4 @@
 // Polyfills
-import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 if (typeof Uint8Array === "undefined") {
   (window as any).Uint8Array = require("typedarray").Uint8Array;
 }
@@ -13,12 +12,41 @@ if (typeof TextDecoder === "undefined") {
   (window as any).TextDecoder = require("text-encoding").TextDecoder;
 }
 
+// Test Config
+import {assert} from "chai";
+import {
+  testHost,
+  corsHost
+} from "../../hosts-config";
+type TestConfig = {
+  testHostUrl: string,
+  corsHostUrl: string,
+  unavailableHost: string,
+  emptyHost: string,
+}
+const http1Config: TestConfig = {
+  testHostUrl: `https://${testHost}:9100`,
+  corsHostUrl: `https://${corsHost}:9100`,
+  unavailableHost:  `https://${testHost}:9999`,
+  emptyHost:`https://${corsHost}:9105`,
+};
+const http2Config: TestConfig = {
+  testHostUrl: `https://${testHost}:9090`,
+  corsHostUrl: `https://${corsHost}:9090`,
+  unavailableHost:  `https://${testHost}:9999`,
+  emptyHost:`https://${corsHost}:9095`,
+};
+const DEBUG: boolean = (window as any).DEBUG;
+
+// gRPC-Web library
 import {
   grpc,
   BrowserHeaders,
 } from "../../../ts/src/index";
 import Code = grpc.Code;
 import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
+
+// Generated Test Classes
 import {
   Empty,
 } from "google-protobuf/google/protobuf/empty_pb";
@@ -26,18 +54,7 @@ import {
   PingRequest,
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
-const {
-  validHost,
-  invalidHost
-} = require("../../hosts-config");
-import {assert} from "chai";
-
-const DEBUG: boolean = (window as any).DEBUG;
-const USE_HTTPS: boolean = (window as any).USE_HTTPS;
-const validHostUrl = USE_HTTPS ? `https://${validHost}:9100` : `http://${validHost}:9090`;
-const corsHostUrl = USE_HTTPS ? `https://${invalidHost}:9100` : `http://${invalidHost}:9090`;
-const unavailableHost = `${USE_HTTPS ? "https" : "http"}://${validHost}:9999`;
-const emptyHost = USE_HTTPS ? `https://${invalidHost}:9105` : `http://${invalidHost}:9095`;
+import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 
 function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
   cb(false, false, " - no headers - no trailers");
@@ -46,7 +63,7 @@ function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, n
   cb(true, true, " - with headers - with trailers");
 }
 
-describe("grpc-web-client", () => {
+function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestConfig) {
   describe("invoke", () => {
     headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request" + name, (done) => {
@@ -61,7 +78,7 @@ describe("grpc-web-client", () => {
         grpc.invoke(TestService.Ping, {
           debug: DEBUG,
           request: ping,
-          host: validHostUrl,
+          host: testHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
@@ -107,7 +124,7 @@ describe("grpc-web-client", () => {
           debug: DEBUG,
           request: ping,
           metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
-          host: validHostUrl,
+          host: testHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
@@ -152,7 +169,7 @@ describe("grpc-web-client", () => {
         grpc.invoke(TestService.PingList, {
           debug: DEBUG,
           request: ping,
-          host: validHostUrl,
+          host: testHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
@@ -195,7 +212,7 @@ describe("grpc-web-client", () => {
         grpc.invoke(TestService.PingList, {
           debug: DEBUG,
           request: ping,
-          host: validHostUrl,
+          host: testHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
@@ -238,7 +255,7 @@ describe("grpc-web-client", () => {
         grpc.invoke(TestService.PingError, {
           debug: DEBUG,
           request: ping,
-          host: validHostUrl,
+          host: testHostUrl,
           onHeaders: (headers: BrowserHeaders) => {
             DEBUG && console.debug("headers", headers);
             didGetOnHeaders = true;
@@ -303,7 +320,7 @@ describe("grpc-web-client", () => {
       grpc.invoke(TestService.PingError, {
         debug: DEBUG,
         request: ping,
-        host: validHostUrl,
+        host: testHostUrl,
         onHeaders: (headers: BrowserHeaders) => {
           DEBUG && console.debug("headers", headers);
           didGetOnHeaders = true;
@@ -389,14 +406,14 @@ describe("grpc-web-client", () => {
       ping.setValue("hello world");
 
       assert.throw(() => {
-        grpc.unary(TestService.PingList as any as UnaryMethodDefinition<PingRequest, PingResponse>, {
-          debug: DEBUG,
-          request: ping,
-          host: validHostUrl,
-          onEnd: ({status, statusMessage, headers, message, trailers}) => {
-            DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-          }
-        })
+          grpc.unary(TestService.PingList as any as UnaryMethodDefinition<PingRequest, PingResponse>, {
+            debug: DEBUG,
+            request: ping,
+            host: testHostUrl,
+            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+              DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
+            }
+          })
         }, ".unary cannot be used with server-streaming methods. Use .invoke instead."
       );
     });
@@ -411,7 +428,7 @@ describe("grpc-web-client", () => {
         grpc.unary(TestService.Ping, {
           debug: DEBUG,
           request: ping,
-          host: validHostUrl,
+          host: testHostUrl,
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
@@ -446,7 +463,7 @@ describe("grpc-web-client", () => {
           debug: DEBUG,
           request: ping,
           metadata: new BrowserHeaders({"HeaderTestKey1": "ClientValue1"}),
-          host: validHostUrl,
+          host: testHostUrl,
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
@@ -480,7 +497,7 @@ describe("grpc-web-client", () => {
         grpc.unary(TestService.PingError, {
           debug: DEBUG,
           request: ping,
-          host: validHostUrl,
+          host: testHostUrl,
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(status, grpc.Code.Unimplemented);
@@ -530,7 +547,7 @@ describe("grpc-web-client", () => {
       grpc.unary(TestService.PingError, {
         debug: DEBUG,
         request: ping,
-        host: validHostUrl,
+        host: testHostUrl,
         onEnd: ({status, statusMessage, headers, message, trailers}) => {
           DEBUG && console.debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
@@ -580,5 +597,14 @@ describe("grpc-web-client", () => {
         }
       });
     });
+  });
+}
+
+describe("grpc-web-client", () => {
+  describe("http1", () => {
+    runTests(http1Config);
+  });
+  describe("http2", () => {
+    runTests(http2Config);
   });
 });

@@ -4,9 +4,9 @@ go:
 go_import_path: github.com/improbable-eng/grpc-web
 addons:
   hosts:
-    # These must match the hosts defined in test/hosts-config.js
-    - validhost
-    - invalidhost
+    # These must match the hosts defined in test/hosts-config.ts
+    - testhost
+    - corshost
 env:
 - PROTOBUF_VER="3.2.0"
 cache:
