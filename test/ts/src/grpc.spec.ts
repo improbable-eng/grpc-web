@@ -359,7 +359,6 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
           DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           // Some browsers return empty Headers for failed requests
-          console.log("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without headers");
           assert.strictEqual(status, grpc.Code.Internal);
           assert.ok(!didGetOnMessage);
