@@ -9,7 +9,8 @@
     "build:dev": "cd ts && rm -rf build && webpack --watch",
     "build": "npm run build:proto && npm run build:testserver && npm run build:ts",
     "lint": "tslint -c ./ts/tslint.json ./ts/src/**/*.ts",
-    "test": "npm run build && ./run-karma.sh ./karma.conf.ts"
+    "test": "npm run build && ./run-karma.sh ./karma.conf.ts --single-run",
+    "test:dev": "npm run build && ./run-karma.sh ./karma.conf.ts"
   },
   "license": "none",
   "dependencies": {

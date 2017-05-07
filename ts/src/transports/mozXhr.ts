@@ -1,6 +1,7 @@
 import {BrowserHeaders} from "browser-headers";
 import {TransportOptions} from "./Transport";
 import {debug} from "../debug";
+import detach from "../detach";
 
 /* mozXhrRequest uses XmlHttpRequest with responseType "moz-chunked-arraybuffer" to support binary streaming in Firefox.
  * Firefox's Fetch as of version 52 does not implement a ReadableStream interface. moz-chunked-arraybuffer enables
@@ -11,18 +12,25 @@ export default function mozXhrRequest(options: TransportOptions) {
 
   function onProgressEvent() {
     options.debug && debug("mozXhrRequest.onProgressEvent.length: ", xhr.response.length);
-    options.onChunk(new Uint8Array(xhr.response));
+    const resp = xhr.response;
+    detach(() => {
+      options.onChunk(new Uint8Array(resp));
+    });
   }
 
   function onLoadEvent() {
     options.debug && debug("mozXhrRequest.onLoadEvent");
-    options.onEnd();
+    detach(() => {
+      options.onEnd();
+    });
   }
 
   function onStateChange() {
     options.debug && debug("mozXhrRequest.onStateChange", this.readyState);
     if (this.readyState === this.HEADERS_RECEIVED) {
-      options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
+      detach(() => {
+        options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
+      });
     }
   }
 
@@ -36,7 +44,9 @@ export default function mozXhrRequest(options: TransportOptions) {
   xhr.addEventListener("loadend", onLoadEvent);
   xhr.addEventListener("error", (err: ErrorEvent) => {
     options.debug && debug("mozXhrRequest.error", err);
-    options.onEnd(err.error);
+    detach(() => {
+      options.onEnd(err.error);
+    });
   });
   xhr.send(options.body);
 }
