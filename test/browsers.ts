@@ -16,7 +16,6 @@ export default {
   edge14_win: browser("edge", "14", "Windows", "10"),
   edge13_win: browser('edge', "13", 'Windows', "10"),
   ie11_win: browser('ie',  "11", 'Windows', "7"),
-  ie10_win: browser('ie',  "10", 'Windows', "7"),
   firefox53_osx: browser('firefox', "53", 'OS X', "Sierra"),
   // firefox52_osx: browser('firefox', "52", 'OS X', "Sierra"),
   // firefox51_osx: browser('firefox', "51", 'OS X', "Sierra"),
