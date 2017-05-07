@@ -236,7 +236,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
               DEBUG && debug("diff", diff);
               DEBUG && debug("thisTime", thisTime);
               assert.isAtLeast(diff, 50);
-              assert.isAtMost(diff, 450);
+              assert.isAtMost(diff, 1500);
             }
             lastMessageTime = thisTime;
           },
