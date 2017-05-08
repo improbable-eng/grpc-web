@@ -14,9 +14,9 @@ import (
 	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/codes"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/transport"
 )
 
@@ -38,13 +38,13 @@ func main() {
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		wrappedServer.ServeHttp(resp, req)
+		wrappedServer.ServeHTTP(resp, req)
 	}
 
 	emptyGrpcServer := grpc.NewServer()
 	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
 	emptyHandler := func(resp http.ResponseWriter, req *http.Request) {
-		emptyWrappedServer.ServeHttp(resp, req)
+		emptyWrappedServer.ServeHTTP(resp, req)
 	}
 
 	http1Server := http.Server{
@@ -52,7 +52,7 @@ func main() {
 		Handler: http.HandlerFunc(handler),
 	}
 	http1EmptyServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", *http1EmptyPort),
+		Addr: fmt.Sprintf(":%d", *http1EmptyPort),
 		Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 			emptyHandler(res, req)
 		}),

@@ -155,12 +155,12 @@ func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool
 IsGrpcWebRequest determines if a request is a gRPC-Web request by checking that
 the "content-type" is "application/grpc-web" and that the method is POST.
 
-#### func (*WrappedGrpcServer) ServeHttp
+#### func (*WrappedGrpcServer) ServeHTTP
 
 ```go
-func (w *WrappedGrpcServer) ServeHttp(resp http.ResponseWriter, req *http.Request)
+func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Request)
 ```
-ServeHttp takes a HTTP request and if it is a gRPC-Web request wraps it with a
+ServeHTTP takes a HTTP request and if it is a gRPC-Web request wraps it with a
 compatibility layer to transform it to a standard gRPC request for the wrapped
 gRPC server and transforms the response to comply with the gRPC-Web protocol.
 

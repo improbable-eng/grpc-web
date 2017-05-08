@@ -47,14 +47,14 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 	}
 }
 
-// ServeHttp takes a HTTP request and if it is a gRPC-Web request wraps it with a compatibility layer to transform it to
+// ServeHTTP takes a HTTP request and if it is a gRPC-Web request wraps it with a compatibility layer to transform it to
 // a standard gRPC request for the wrapped gRPC server and transforms the response to comply with the gRPC-Web protocol.
 //
 // The gRPC-Web compatibility is only invoked if the request is a gRPC-Web request as determined by IsGrpcWebRequest or
 // the request is a pre-flight (CORS) request as determined by IsAcceptableGrpcCorsRequest.
 //
 // You can control the CORS behaviour using `With*` options in the WrapServer function.
-func (w *WrappedGrpcServer) ServeHttp(resp http.ResponseWriter, req *http.Request) {
+func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	if w.IsAcceptableGrpcCorsRequest(req) || w.IsGrpcWebRequest(req) {
 		w.corsWrapper.Handler(http.HandlerFunc(w.HandleGrpcWebRequest)).ServeHTTP(resp, req)
 		return
