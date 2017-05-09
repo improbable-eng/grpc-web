@@ -1,24 +1,28 @@
-const q = require('q');
 const wd = require('wd');
 const browserstack = require('browserstack-local');
-
-const hostsConfig = require("./hosts-config");
-
+import * as _ from "lodash";
+import {testHost, corsHost} from "./hosts-config";
 const username = process.env.BROWSER_STACK_USERNAME;
 const accessKey = process.env.BROWSER_STACK_ACCESS_KEY;
 const seleniumHost = 'hub-cloud.browserstack.com';
 const seleniumPort = 80;
 
 const viaUrls = [
-  "https://" + hostsConfig.validHost + ":9100",
-  "https://" + hostsConfig.validHost + ":9105",
-  "https://" + hostsConfig.invalidHost + ":9100",
-  "https://" + hostsConfig.invalidHost + ":9105"
+  // HTTP 1.1
+  "https://" + testHost + ":9090",
+  "https://" + testHost + ":9095",
+  "https://" + corsHost + ":9090",
+  "https://" + corsHost + ":9095",
+  // HTTP 2
+  "https://" + testHost + ":9100",
+  "https://" + testHost + ":9105",
+  "https://" + corsHost + ":9100",
+  "https://" + corsHost + ":9105"
 ];
 
-var tunnelId = null;
-var bs_local = null;
-var localCallbacks = [];
+let tunnelId = null;
+let bs_local = null;
+let localCallbacks = [];
 const localTunnels = [];
 function LocalTunnel(logger, cb) {
   localTunnels.push(this);
@@ -27,7 +31,7 @@ function LocalTunnel(logger, cb) {
     cb(null, tunnelId);
   } else {
     localCallbacks.push(cb);
-    const tunnelIdentifier = "tunnel-" + Math.random();
+    const tunnelIdentifier = `tunnel-${Math.random()}`;
     if (localCallbacks.length === 1) {
       bs_local = new browserstack.Local();
       bs_local.start({
@@ -35,9 +39,9 @@ function LocalTunnel(logger, cb) {
         'localIdentifier': tunnelIdentifier
       }, function (error) {
         tunnelId = tunnelIdentifier;
-        for (var i = 0; i < localCallbacks.length; i++) {
-          localCallbacks[i](error, tunnelIdentifier);
-        }
+        localCallbacks.forEach(cb => {
+          cb(error, tunnelIdentifier)
+        });
         localCallbacks = [];
       });
     }
@@ -63,11 +67,9 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   self.name = capabilities.browserName + ' - ' + capabilities.browserVersion + ' - ' + capabilities.os + ' ' + capabilities.os_version;
   self.log = logger.create('launcher.selenium-webdriver: ' + self.name);
   self.captured = false;
-
   self.id = id;
-
-  self._start = function (testUrl) {
-    self.localTunnel = new LocalTunnel(self.log, function(err, tunnelIdentifier) {
+  self._start = (testUrl) => {
+    self.localTunnel = new LocalTunnel(self.log, (err, tunnelIdentifier) => {
       if (err) {
         return self.log.error("Could not create local testing", err);
       }
@@ -84,7 +86,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       browser.on('http', function(meth, path, data) {
         self.log.debug(' > ' + meth, path, (data || ''));
       });
-      const bsCaps = Object.assign({
+      const bsCaps = _.assign({
         "project": process.env.TRAVIS_BRANCH || "dev",
         "acceptSslCerts": true,
         "defaultVideo": true,
@@ -99,27 +101,20 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           self.log.error("browser.init", err);
           throw err;
         }
-        const goToTest = function() {
-          browser.get(testUrl, function() {
-            self.captured = true;
-            // This will just wait on the page until the browser is killed
-          });
+        const next = (i) => {
+          const via = viaUrls[i];
+          if (!via) {
+            browser.get(testUrl, function() {
+              self.captured = true;
+              // This will wait on the page until the browser is killed
+            });
+          } else {
+            browser.get(via, function () {
+              next(i + 1);
+            });
+          }
         };
-        if (testUrl.substring(0, "https://".length) === "https://") {
-          const next = function (i) {
-            const via = viaUrls[i];
-            if (!via) {
-              goToTest();
-            } else {
-              browser.get(via, function () {
-                next(i + 1);
-              });
-            }
-          };
-          next(0);
-        } else {
-          goToTest();
-        }
+        next(0);
       });
     });
   };
@@ -138,8 +133,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   };
 }
 
-CustomWebdriverBrowser.$inject = [ 'id', 'baseBrowserDecorator', 'args', 'logger' ];
-
-module.exports = {
+export default {
   'launcher:CustomWebDriver': ['type', CustomWebdriverBrowser]
 };

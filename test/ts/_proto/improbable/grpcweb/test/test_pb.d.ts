@@ -26,6 +26,9 @@ export class PingRequest extends jspb.Message {
   getSendTrailers(): boolean;
   setSendTrailers(value: boolean): void;
 
+  getMessageLatencyMs(): number;
+  setMessageLatencyMs(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PingRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PingRequest): PingRequest.AsObject;
@@ -45,6 +48,7 @@ export namespace PingRequest {
     checkMetadata: boolean,
     sendHeaders: boolean,
     sendTrailers: boolean,
+    messageLatencyMs: number,
   }
 
   export enum FailureType {

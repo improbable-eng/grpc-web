@@ -3,6 +3,7 @@ import {BrowserHeaders} from "browser-headers";
 import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Transport,DefaultTransportFactory} from "./transports/Transport";
 import {debug} from "./debug";
+import detach from "./detach";
 
 export {
   BrowserHeaders,
@@ -179,27 +180,35 @@ export namespace grpc {
     function rawOnEnd(code: Code, message: string, trailers: BrowserHeaders) {
       if (completed) return;
       completed = true;
-      props.onEnd(code, message, trailers);
+      detach(() => {
+        props.onEnd(code, message, trailers);
+      });
     }
 
     function rawOnHeaders(headers: BrowserHeaders) {
       if (completed) return;
-      if (props.onHeaders) {
-        props.onHeaders(headers);
-      }
+      detach(() => {
+        if (props.onHeaders) {
+          props.onHeaders(headers);
+        }
+      });
     }
 
     function rawOnError(code: Code, msg: string) {
       if (completed) return;
       completed = true;
-      props.onEnd(code, msg, new BrowserHeaders());
+      detach(() => {
+        props.onEnd(code, msg, new BrowserHeaders());
+      });
     }
 
     function rawOnMessage(res: TResponse) {
       if (completed) return;
-      if (props.onMessage) {
-        props.onMessage(res);
-      }
+      detach(() => {
+        if (props.onMessage) {
+          props.onMessage(res);
+        }
+      });
     }
 
     let responseHeaders: BrowserHeaders;

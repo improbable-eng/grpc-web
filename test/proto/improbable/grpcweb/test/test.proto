@@ -18,6 +18,7 @@ message PingRequest {
   bool check_metadata = 5;
   bool send_headers = 6;
   bool send_trailers = 7;
+  int32 message_latency_ms = 8;
 }
 
 message PingResponse {

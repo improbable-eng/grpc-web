@@ -65,7 +65,8 @@ proto.improbable.grpcweb.test.PingRequest.toObject = function(includeInstance, m
     failureType: jspb.Message.getFieldWithDefault(msg, 4, 0),
     checkMetadata: jspb.Message.getFieldWithDefault(msg, 5, false),
     sendHeaders: jspb.Message.getFieldWithDefault(msg, 6, false),
-    sendTrailers: jspb.Message.getFieldWithDefault(msg, 7, false)
+    sendTrailers: jspb.Message.getFieldWithDefault(msg, 7, false),
+    messageLatencyMs: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -129,6 +130,10 @@ proto.improbable.grpcweb.test.PingRequest.deserializeBinaryFromReader = function
     case 7:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setSendTrailers(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setMessageLatencyMs(value);
       break;
     default:
       reader.skipField();
@@ -204,6 +209,13 @@ proto.improbable.grpcweb.test.PingRequest.serializeBinaryToWriter = function(mes
   if (f) {
     writer.writeBool(
       7,
+      f
+    );
+  }
+  f = message.getMessageLatencyMs();
+  if (f !== 0) {
+    writer.writeInt32(
+      8,
       f
     );
   }
@@ -327,6 +339,21 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getSendTrailers = function()
 /** @param {boolean} value */
 proto.improbable.grpcweb.test.PingRequest.prototype.setSendTrailers = function(value) {
   jspb.Message.setField(this, 7, value);
+};
+
+
+/**
+ * optional int32 message_latency_ms = 8;
+ * @return {number}
+ */
+proto.improbable.grpcweb.test.PingRequest.prototype.getMessageLatencyMs = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/** @param {number} value */
+proto.improbable.grpcweb.test.PingRequest.prototype.setMessageLatencyMs = function(value) {
+  jspb.Message.setField(this, 8, value);
 };
 
 
