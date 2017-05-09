@@ -17,7 +17,7 @@ var (
 		"",
 		"A host:port (IP or hostname) of the gRPC server to forward it to.")
 
-	flagBackendIsInsecure = pflag.Bool(
+	flagBackendIsUsingTls = pflag.Bool(
 		"backend_tls",
 		false,
 		"Whether the gRPC server of the backend is serving in plaintext (false) or over TLS (true).",
@@ -41,10 +41,10 @@ func dialBackendOrFail() *grpc.ClientConn {
 		logrus.Fatalf("flag 'backend_addr' must be set")
 	}
 	opt := []grpc.DialOption{}
-	if *flagBackendIsInsecure {
-		opt = append(opt, grpc.WithInsecure())
-	} else {
+	if *flagBackendIsUsingTls {
 		opt = append(opt, grpc.WithTransportCredentials(credentials.NewTLS(buildBackendTlsOrFail())))
+	} else {
+		opt = append(opt, grpc.WithInsecure())
 	}
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
