@@ -53,11 +53,7 @@ func main() {
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
-				wrappedGrpc.HandleGrpcWebRequest(resp, req)
-			}
-			//
-			http.DefaultServeMux.ServeHTTP(resp, req)
+		  wrappedGrpc.ServeHTTP(resp, req)
 		}),
 	}
 	http.Handle("/metrics", promhttp.Handler())
@@ -74,10 +70,7 @@ func main() {
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
-				wrappedGrpc.HandleGrpcWebRequest(resp, req)
-			}
-			resp.WriteHeader(http.StatusNotImplemented)
+      wrappedGrpc.ServeHTTP(resp, req)
 		}),
 	}
 	servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
