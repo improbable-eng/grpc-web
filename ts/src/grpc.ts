@@ -171,7 +171,7 @@ export namespace grpc {
 
   export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: RpcOptions<TRequest, TResponse>) {
     const requestHeaders = new BrowserHeaders(props.metadata ? props.metadata : {});
-    requestHeaders.set("content-type", "application/grpc-web");
+    requestHeaders.set("content-type", "application/grpc-web+proto");
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
     const framedRequest = frameRequest(props.request);
