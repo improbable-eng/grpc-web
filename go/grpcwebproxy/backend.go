@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/Sirupsen/logrus"
-  "github.com/mwitkow/grpc-proxy/proxy"
+	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,7 +18,7 @@ var (
 		"",
 		"A host:port (IP or hostname) of the gRPC server to forward it to.")
 
-	flagBackendIsInsecure = pflag.Bool(
+	flagBackendIsUsingTls = pflag.Bool(
 		"backend_tls",
 		false,
 		"Whether the gRPC server of the backend is serving in plaintext (false) or over TLS (true).",
@@ -42,11 +42,11 @@ func dialBackendOrFail() *grpc.ClientConn {
 		logrus.Fatalf("flag 'backend_addr' must be set")
 	}
 	opt := []grpc.DialOption{}
-  opt = append(opt, grpc.WithCodec(proxy.Codec()))
-	if *flagBackendIsInsecure {
-		opt = append(opt, grpc.WithInsecure())
-	} else {
+	opt = append(opt, grpc.WithCodec(proxy.Codec()))
+	if *flagBackendIsUsingTls {
 		opt = append(opt, grpc.WithTransportCredentials(credentials.NewTLS(buildBackendTlsOrFail())))
+	} else {
+		opt = append(opt, grpc.WithInsecure())
 	}
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
