@@ -129,11 +129,11 @@ This library is tested against:
 
 ### Client-side streaming
 
-It is very important to note that the gRPC-Web spec currently *does not support client-side streaming*. This is unlikely to change until until new whatwg fetch/[streams API](https://www.w3.org/TR/streams-api/) lands in browsers. As such, if you plan on using gRPC-Web you're limited to:
+It is very important to note that the gRPC-Web spec currently *does not support client-side streaming*. This is unlikely to change until new whatwg fetch/[streams API](https://www.w3.org/TR/streams-api/) lands in browsers. As such, if you plan on using gRPC-Web you're limited to:
  * unary RPCs (1 request 1 response)
  * server-side streaming RPCs (1 request N responses)
 
-This, however is useful for a lot of frontend functionality.
+This, however, is useful for a lot of frontend functionality.
 
 ## Status
 
