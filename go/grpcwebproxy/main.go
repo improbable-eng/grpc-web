@@ -12,12 +12,12 @@ import (
 	"crypto/tls"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	"github.com/mwitkow/grpc-proxy/proxy"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/mwitkow/go-conntrack"
+	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 	"golang.org/x/net/context"
@@ -53,11 +53,7 @@ func main() {
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
-				wrappedGrpc.HandleGrpcWebRequest(resp, req)
-			}
-			//
-			http.DefaultServeMux.ServeHTTP(resp, req)
+			wrappedGrpc.ServeHTTP(resp, req)
 		}),
 	}
 	http.Handle("/metrics", promhttp.Handler())
@@ -74,10 +70,7 @@ func main() {
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsAcceptableGrpcCorsRequest(req) {
-				wrappedGrpc.HandleGrpcWebRequest(resp, req)
-			}
-			resp.WriteHeader(http.StatusNotImplemented)
+			wrappedGrpc.ServeHTTP(resp, req)
 		}),
 	}
 	servingListener := buildListenerOrFail("http", *flagHttpTlsPort)

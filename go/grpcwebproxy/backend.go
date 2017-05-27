@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -41,6 +42,7 @@ func dialBackendOrFail() *grpc.ClientConn {
 		logrus.Fatalf("flag 'backend_addr' must be set")
 	}
 	opt := []grpc.DialOption{}
+	opt = append(opt, grpc.WithCodec(proxy.Codec()))
 	if *flagBackendIsUsingTls {
 		opt = append(opt, grpc.WithTransportCredentials(credentials.NewTLS(buildBackendTlsOrFail())))
 	} else {
