@@ -10,8 +10,8 @@ if [[ "$GOBIN" == "" ]]; then
     exit -1
   fi
 
-  echo "Optional env var GOBIN is not set; using default derived from GOPATH: '$GOPATH/bin'"
-  export GOBIN=$GOPATH/bin
+  echo "Optional env var GOBIN is not set; using default derived from GOPATH as: \"$GOPATH/bin\""
+  export GOBIN="$GOPATH/bin"
 fi
 
 protoc \
