@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "alwaysStrict": true,
     "sourceMap": true,
     "target": "es5",
@@ -9,7 +10,7 @@
     "strictNullChecks": true,
     "stripInternal": true,
     "noFallthroughCasesInSwitch": true,
-    "outDir": "build",
+    "outDir": "../build-node",
     "noEmitOnError": true
   },
   "types": [
@@ -17,6 +18,6 @@
     "node"
   ],
   "include": [
-    "./src"
+    "./node.spec.ts"
   ]
 }

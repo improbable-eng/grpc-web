@@ -77,7 +77,7 @@ export class PingResponse extends jspb.Message {
 
 export namespace PingResponse {
   export type AsObject = {
-    Value: string,
+    value: string,
     counter: number,
   }
 }

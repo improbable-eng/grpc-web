@@ -1,4 +1,5 @@
 import {BrowserHeaders} from "browser-headers";
+import * as TextEncoding from "text-encoding";
 
 const HEADER_SIZE = 5;
 
@@ -10,7 +11,8 @@ function isTrailerHeader(headerView: DataView) {
 }
 
 function parseTrailerData(msgData: Uint8Array): BrowserHeaders {
-  return new BrowserHeaders(new global.TextDecoder("utf-8").decode(msgData))
+  const decoder = global.TextDecoder !== undefined ? global.TextDecoder : TextEncoding.TextDecoder;
+  return new BrowserHeaders(new decoder("utf-8").decode(msgData))
 }
 
 function readLengthFromHeader(headerView: DataView) {

@@ -2,6 +2,7 @@ import {BrowserHeaders} from "browser-headers";
 import fetchRequest from "./fetch";
 import xhrRequest from "./xhr";
 import mozXhrRequest from "./mozXhr";
+import httpNodeTransport from "./nodeHttp";
 
 declare const Response: any;
 declare const Headers: any;
@@ -65,12 +66,18 @@ export class DefaultTransportFactory {
       return fetchRequest;
     }
 
-    if (xhrSupportsResponseType("moz-chunked-arraybuffer")) {
-      return mozXhrRequest;
+    if (typeof XMLHttpRequest !== "undefined") {
+      if (xhrSupportsResponseType("moz-chunked-arraybuffer")) {
+        return mozXhrRequest;
+      }
+
+      if (XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")) {
+        return xhrRequest;
+      }
     }
 
-    if (XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")) {
-      return xhrRequest;
+    if (typeof module !== "undefined" && module.exports) {
+      return httpNodeTransport;
     }
 
     throw new Error("No suitable transport found for gRPC-Web");

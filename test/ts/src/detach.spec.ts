@@ -1,5 +1,6 @@
 import {assert} from "chai";
 import detach from "../../../ts/src/detach";
+import {UncaughtExceptionListener} from "./util";
 
 describe("detach", () => {
   describe("basic execution ordering", () => {
@@ -46,19 +47,14 @@ describe("detach", () => {
   });
 
   describe("exception handling", () => {
-    let originalHandler = window.onerror;
-    let exceptionsCaught: string[] = [];
+    let uncaughtHandler: UncaughtExceptionListener;
     beforeEach(() => {
-      exceptionsCaught = [];
-      window.onerror = function(message: string) {
-        exceptionsCaught.push(message);
-      };
+      uncaughtHandler = new UncaughtExceptionListener();
+      uncaughtHandler.attach();
     });
-    function removeHandler() {
-      window.onerror = originalHandler;
-    }
+
     afterEach(() => {
-      removeHandler();
+      uncaughtHandler.detach();
     });
 
     it("should invoke remaining function when exceptions are thrown", (done) => {
@@ -78,9 +74,10 @@ describe("detach", () => {
         throw new Error("Third callback threw error");
       });
       detach(() => {
-        removeHandler();
+        uncaughtHandler.detach();
         assert.equal(index, 3);
         index++;
+        const exceptionsCaught = uncaughtHandler.getMessages();
         assert.lengthOf(exceptionsCaught, 2);
         assert.include(exceptionsCaught[0], "Second callback threw error");
         assert.include(exceptionsCaught[1], "Third callback threw error");
@@ -112,9 +109,10 @@ describe("detach", () => {
         throw new Error("Third callback threw error");
       });
       detach(() => {
-        removeHandler();
+        uncaughtHandler.detach();
         assert.equal(index, 5);
         index++;
+        const exceptionsCaught = uncaughtHandler.getMessages();
         assert.lengthOf(exceptionsCaught, 2);
         assert.include(exceptionsCaught[0], "Second callback threw error");
         assert.include(exceptionsCaught[1], "Third callback threw error");
