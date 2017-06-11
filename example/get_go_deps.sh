@@ -1,4 +1,4 @@
-go get github.com/Sirupsen/logrus
+go get github.com/sirupsen/logrus
 go get github.com/grpc-ecosystem/go-grpc-prometheus
 go get github.com/mwitkow/go-conntrack
 go get github.com/mwitkow/go-conntrack/connhelpers
