@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 
-	logrus "github.com/Sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 	"github.com/mwitkow/go-conntrack/connhelpers"
 	"github.com/spf13/pflag"
 
