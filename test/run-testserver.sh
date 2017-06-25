@@ -19,4 +19,4 @@ ps ${SERVER_PID} &> /dev/null
 trap killGoTestServer SIGINT
 trap killGoTestServer EXIT
 
-./node_modules/.bin/karma start $@
+$@

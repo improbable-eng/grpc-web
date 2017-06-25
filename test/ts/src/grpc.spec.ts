@@ -1,16 +1,16 @@
 // Polyfills
 import {debug} from "../../../ts/src/debug";
+
+const global = Function('return this')();
+
 if (typeof Uint8Array === "undefined") {
-  (window as any).Uint8Array = require("typedarray").Uint8Array;
+  (global as any).Uint8Array = require("typedarray").Uint8Array;
 }
 if (typeof ArrayBuffer === "undefined") {
-  (window as any).ArrayBuffer = require("typedarray").ArrayBuffer;
+  (global as any).ArrayBuffer = require("typedarray").ArrayBuffer;
 }
 if (typeof DataView === "undefined") {
-  (window as any).DataView = require("typedarray").DataView;
-}
-if (typeof TextDecoder === "undefined") {
-  (window as any).TextDecoder = require("text-encoding").TextDecoder;
+  (global as any).DataView = require("typedarray").DataView;
 }
 
 // Test Config
@@ -37,7 +37,7 @@ const http2Config: TestConfig = {
   unavailableHost: `https://${testHost}:9999`,
   emptyHost: `https://${corsHost}:9095`,
 };
-const DEBUG: boolean = (window as any).DEBUG;
+const DEBUG: boolean = (global as any).DEBUG;
 
 // gRPC-Web library
 import {
@@ -56,6 +56,7 @@ import {
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
+import {UncaughtExceptionListener} from "./util";
 
 function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
   cb(false, false, " - no headers - no trailers");
@@ -335,37 +336,39 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
       });
     });
 
-    it("should report failure for a CORS failure", (done) => {
-      let didGetOnHeaders = false;
-      let didGetOnMessage = false;
+    if (!process.env.DISABLE_CORS_TESTS) {
+      it("should report failure for a CORS failure", (done) => {
+        let didGetOnHeaders = false;
+        let didGetOnMessage = false;
 
-      const ping = new PingRequest();
+        const ping = new PingRequest();
 
-      grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
-        debug: DEBUG,
-        request: ping,
-        // This test is actually calling the same server as the other tests, but the server should reject the OPTIONS call
-        // because the service isn't registered. This could be the same host as all other tests (that should be CORS
-        // requests because they differ by port from the page the tests are run from), but IE treats different ports on
-        // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
-        host: corsHostUrl,
-        onHeaders: (headers: BrowserHeaders) => {
-          DEBUG && debug("headers", headers);
-          didGetOnHeaders = true;
-        },
-        onMessage: (message: Empty) => {
-          didGetOnMessage = true;
-        },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
-          DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-          // Some browsers return empty Headers for failed requests
-          assert.strictEqual(statusMessage, "Response closed without headers");
-          assert.strictEqual(status, grpc.Code.Internal);
-          assert.ok(!didGetOnMessage);
-          done();
-        }
+        grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
+          debug: DEBUG,
+          request: ping,
+          // This test is actually calling the same server as the other tests, but the server should reject the OPTIONS call
+          // because the service isn't registered. This could be the same host as all other tests (that should be CORS
+          // requests because they differ by port from the page the tests are run from), but IE treats different ports on
+          // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
+          host: corsHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && debug("headers", headers);
+            didGetOnHeaders = true;
+          },
+          onMessage: (message: Empty) => {
+            didGetOnMessage = true;
+          },
+          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+            // Some browsers return empty Headers for failed requests
+            assert.strictEqual(statusMessage, "Response closed without headers");
+            assert.strictEqual(status, grpc.Code.Internal);
+            assert.ok(!didGetOnMessage);
+            done();
+          }
+        });
       });
-    });
+    }
 
     it("should report failure for a dropped response after headers", (done) => {
       let didGetOnHeaders = false;
@@ -457,24 +460,17 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
     });
 
     describe("exception handling", () => {
-      let originalHandler = window.onerror;
-      let exceptionsCaught: string[] = [];
+      let uncaughtHandler: UncaughtExceptionListener;
       beforeEach(() => {
-        exceptionsCaught = [];
-        window.onerror = function(message: string) {
-          exceptionsCaught.push(message);
-        };
+        uncaughtHandler = new UncaughtExceptionListener();
+        uncaughtHandler.attach();
       });
-
-      function detachHandler() {
-        window.onerror = originalHandler;
-      }
 
       afterEach(() => {
-        detachHandler();
+        uncaughtHandler.detach();
       });
 
-      it("should not suppress exceptions" + name, (done) => {
+      it("should not suppress exceptions", (done) => {
         const ping = new PingRequest();
         ping.setValue("hello world");
 
@@ -490,7 +486,8 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           },
           onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
             setTimeout(() => {
-              detachHandler();
+              uncaughtHandler.detach();
+              const exceptionsCaught = uncaughtHandler.getMessages();
               assert.lengthOf(exceptionsCaught, 3);
               assert.include(exceptionsCaught[0], "onHeaders exception");
               assert.include(exceptionsCaught[1], "onMessage exception");
@@ -623,26 +620,28 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
       });
     });
 
-    it("should report failure for a CORS failure", (done) => {
-      const ping = new PingRequest();
+    if (!process.env.DISABLE_CORS_TESTS) {
+      it("should report failure for a CORS failure", (done) => {
+        const ping = new PingRequest();
 
-      grpc.unary(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
-        debug: DEBUG,
-        request: ping,
-        // This test is actually calling the same server as the other tests, but the server should reject the OPTIONS call
-        // because the service isn't registered. This could be the same host as all other tests (that should be CORS
-        // requests because they differ by port from the page the tests are run from), but IE treats different ports on
-        // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
-        host: corsHostUrl,
-        onEnd: ({status, statusMessage, headers, message, trailers}) => {
-          DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-          // Some browsers return empty Headers for failed requests
-          assert.strictEqual(statusMessage, "Response closed without headers");
-          assert.strictEqual(status, grpc.Code.Internal);
-          done();
-        }
+        grpc.unary(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
+          debug: DEBUG,
+          request: ping,
+          // This test is actually calling the same server as the other tests, but the server should reject the OPTIONS call
+          // because the service isn't registered. This could be the same host as all other tests (that should be CORS
+          // requests because they differ by port from the page the tests are run from), but IE treats different ports on
+          // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
+          host: corsHostUrl,
+          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
+            // Some browsers return empty Headers for failed requests
+            assert.strictEqual(statusMessage, "Response closed without headers");
+            assert.strictEqual(status, grpc.Code.Internal);
+            done();
+          }
+        });
       });
-    });
+    }
 
     it("should report failure for a dropped response after headers", (done) => {
       const ping = new PingRequest();
@@ -703,24 +702,17 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
     });
 
     describe("exception handling", () => {
-      let originalHandler = window.onerror;
-      let exceptionsCaught: string[] = [];
+      let uncaughtHandler: UncaughtExceptionListener;
       beforeEach(() => {
-        exceptionsCaught = [];
-        window.onerror = function(message: string) {
-          exceptionsCaught.push(message);
-        };
+        uncaughtHandler = new UncaughtExceptionListener();
+        uncaughtHandler.attach();
       });
-
-      function detachHandler() {
-        window.onerror = originalHandler;
-      }
 
       afterEach(() => {
-        detachHandler();
+        uncaughtHandler.detach();
       });
 
-      it("should not suppress exceptions" + name, (done) => {
+      it("should not suppress exceptions", (done) => {
         const ping = new PingRequest();
         ping.setValue("hello world");
 
@@ -731,7 +723,8 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             setTimeout(() => {
-              detachHandler();
+              uncaughtHandler.detach();
+              const exceptionsCaught = uncaughtHandler.getMessages();
               assert.lengthOf(exceptionsCaught, 1);
               assert.include(exceptionsCaught[0], "onEnd exception");
               done();

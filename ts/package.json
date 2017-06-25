@@ -30,12 +30,15 @@
     "google-protobuf": "^3.2.0"
   },
   "dependencies": {
-    "browser-headers": "^0.2.1"
+    "@types/text-encoding": "0.0.30",
+    "browser-headers": "^0.2.1",
+    "text-encoding": "^0.6.4"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.2.5",
+    "@types/node": "^7.0.29",
+    "google-protobuf": "^3.2.0",
     "tslint": "^4.5.1",
-    "typescript": "^2.2.1",
-    "google-protobuf": "^3.2.0"
+    "typescript": "^2.2.1"
   }
 }
