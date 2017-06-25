@@ -18,7 +18,7 @@ separate http.Server that serves over TLS:
     grpcServer := grpc.Server()
     wrappedGrpc := grpcweb.WrapServer(grpcServer)
     tlsHttpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-    	if grpcweb.IsGrpcRequest(req) {
+    	if grpcweb.IsGrpcWebRequest(req) {
     		wrappedGrpc.ServeHTTP(resp, req)
     	}
     	// Fall back to other servers.
