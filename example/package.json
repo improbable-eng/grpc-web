@@ -5,11 +5,15 @@
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
     "build:proto": "./protogen.sh",
+    "build:cpp": "./cpp/build.sh",
     "get_go_deps": "./get_go_deps.sh",
     "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack-dev-server --colors --watch --hot --inline --port 8082 --host 0.0.0.0 --output-public-path=https://localhost:8082/build/ --https --cert=../../misc/localhost.crt --key=../../misc/localhost.key",
     "webpack-dev": "cd ts && webpack-dev-server --colors --watch --hot --inline --port 8081 --host 0.0.0.0 --output-public-path=http://localhost:8081/build/",
     "start:tls": "npm run build:proto && concurrently --kill-others \"go run go/exampleserver/exampleserver.go --enable_tls=true\" \"npm run webpack-dev:tls\"",
-    "start": "npm run build:proto && concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\""
+    "start": "npm run build:proto && concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\"",
+    "proxy": "$GOPATH/bin/grpcwebproxy --server_http_debug_port 9090 --server_http_tls_port 9091 --server_tls_cert_file=../misc/localhost.crt --server_tls_key_file=../misc/localhost.key --backend_tls_noverify --backend_tls=false --backend_addr localhost:50051",
+    "start:proxy": "npm run build:proto && concurrently --kill-others \"npm run proxy\" \"./cpp/build/exampleserver\" \"npm run webpack-dev\"",
+    "start:proxy:tls": "npm run build:proto && concurrently --kill-others \"npm run proxy\" \"./cpp/build/exampleserver\" \"npm run webpack-dev:tls\""
   },
   "license": "none",
   "dependencies": {
