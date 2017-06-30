@@ -26,6 +26,7 @@ export default function fetchRequest(options: TransportOptions) {
     headers: options.headers.toHeaders(),
     method: "POST",
     body: options.body,
+    credentials: "same-origin",
   }).then((res: Response) => {
     options.debug && debug("fetchRequest.response", res);
     detach(() => {
