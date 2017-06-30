@@ -15,7 +15,7 @@ Here's an example of how to use it inside an existing gRPC Go server on a separa
 	grpcServer := grpc.Server()
 	wrappedGrpc := grpcweb.WrapServer(grpcServer)
 	tlsHttpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		if grpcweb.IsGrpcRequest(req) {
+		if wrappedGrpc.IsGrpcWebRequest(req) {
 			wrappedGrpc.ServeHTTP(resp, req)
 		}
 		// Fall back to other servers.
