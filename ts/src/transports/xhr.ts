@@ -1,4 +1,4 @@
-import {BrowserHeaders} from "browser-headers";
+import {Metadata} from "../grpc";
 import {TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
@@ -31,7 +31,7 @@ export default function xhrRequest(options: TransportOptions) {
     options.debug && debug("xhrRequest.onStateChange", this.readyState);
     if (this.readyState === this.HEADERS_RECEIVED) {
       detach(() => {
-        options.onHeaders(new BrowserHeaders(this.getAllResponseHeaders()), this.status);
+        options.onHeaders(new Metadata(this.getAllResponseHeaders()), this.status);
       });
     }
   }

@@ -1,4 +1,4 @@
-import {BrowserHeaders} from "browser-headers";
+import {Metadata} from "../grpc";
 import {TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
@@ -13,7 +13,7 @@ export default function fetchRequest(options: TransportOptions) {
           detach(() => {
             options.onEnd();
           });
-          return {};
+          return res;
         }
         detach(() => {
           options.onChunk(result.value);
@@ -30,7 +30,7 @@ export default function fetchRequest(options: TransportOptions) {
   }).then((res: Response) => {
     options.debug && debug("fetchRequest.response", res);
     detach(() => {
-      options.onHeaders(new BrowserHeaders(res.headers as any), res.status);
+      options.onHeaders(new Metadata(res.headers as any), res.status);
     });
     if (res.body) {
       return pump(res.body.getReader(), res)

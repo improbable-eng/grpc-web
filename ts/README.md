@@ -21,11 +21,11 @@ There is an [example project available here](https://github.com/improbable-eng/g
 * Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes. `ts-protoc-gen` can also generate gRPC service definitions with the `service=true` argument.
 * Make a request:
 ```ts
-import {grpc, BrowserHeaders} from "grpc-web-client";
+import {grpc, Code, Metadata} from "grpc-web-client";
 
 // Import code-generated data structures.
 import {BookService} from "./generated/proto/examplecom/library/book_service_pb_service";
-import {QueryBooksRequest, Book, GetBookRequest} from "./generated/proto/examplecom/library/book_service_pb";
+import {GetBookRequest, QueryBooksRequest, Book} from "./generated/proto/examplecom/library/book_service_pb";
 
 const queryBooksRequest = new QueryBooksRequest();
 queryBooksRequest.setAuthorPrefix("Geor");
@@ -35,11 +35,27 @@ grpc.invoke(BookService.QueryBooks, {
   onMessage: (message: Book) => {
     console.log("got book: ", message.toObject());
   },
-  onEnd: (code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) => {
+  onEnd: (code: grpc.Code, msg: string | undefined, trailers: Metadata) => {
     if code == grpc.Code.OK {
-      console.log("all ok")
+      console.log("all ok");
     } else {
       console.log("hit an error", code, msg, trailers);
+    }
+  }
+});
+```
+
+* You can use the `.unary()` convenience function for unary requests and get a single callback:
+```ts
+const getBookRequest = new GetBookRequest();
+getBookRequest.setIsbn(60929871);
+grpc.unary(BookService.GetBook, {
+  request: getBookRequest,
+  host: host,
+  onEnd: res => {
+    const { status, statusMessage, headers, message, trailers } = res;
+    if (status === Code.OK && message) {
+      console.log("all ok. got book: ", message.toObject());
     }
   }
 });

@@ -1,4 +1,4 @@
-import {grpc, BrowserHeaders} from "grpc-web-client";
+import {grpc, Code, Metadata} from "grpc-web-client";
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
@@ -8,18 +8,17 @@ const host = USE_TLS ? "https://localhost:9091" : "http://localhost:9090";
 function getBook() {
   const getBookRequest = new GetBookRequest();
   getBookRequest.setIsbn(60929871);
-  grpc.invoke(BookService.GetBook, {
+  grpc.unary(BookService.GetBook, {
     request: getBookRequest,
     host: host,
-    onHeaders: (headers: BrowserHeaders) => {
-      console.log("getBook.onHeaders", headers);
-    },
-    onMessage: (message: Book) => {
-      console.log("getBook.onMessage", message.toObject());
-    },
-    onEnd: (code: grpc.Code, msg: string, trailers: BrowserHeaders) => {
-      console.log("getBook.onEnd", code, msg, trailers);
-
+    onEnd: res => {
+      const { status, statusMessage, headers, message, trailers } = res;
+      console.log("getBook.onEnd.status", status, statusMessage);
+      console.log("getBook.onEnd.headers", headers);
+      if (status === Code.OK && message) {
+        console.log("getBook.onEnd.message", message.toObject());
+      }
+      console.log("getBook.onEnd.trailers", trailers);
       queryBooks();
     }
   });
@@ -33,13 +32,13 @@ function queryBooks() {
   grpc.invoke(BookService.QueryBooks, {
     request: queryBooksRequest,
     host: host,
-    onHeaders: (headers: BrowserHeaders) => {
+    onHeaders: (headers: Metadata) => {
       console.log("queryBooks.onHeaders", headers);
     },
     onMessage: (message: Book) => {
       console.log("queryBooks.onMessage", message.toObject());
     },
-    onEnd: (code: grpc.Code, msg: string, trailers: BrowserHeaders) => {
+    onEnd: (code: Code, msg: string, trailers: Metadata) => {
       console.log("queryBooks.onEnd", code, msg, trailers);
     }
   });
