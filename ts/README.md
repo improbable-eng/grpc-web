@@ -32,6 +32,9 @@ queryBooksRequest.setAuthorPrefix("Geor");
 grpc.invoke(BookService.QueryBooks, {
   request: queryBooksRequest,
   host: "https://example.com",
+  onHeaders: (headers: Metadata) => {
+    console.log("got headers: ", headers);
+  },
   onMessage: (message: Book) => {
     console.log("got book: ", message.toObject());
   },
