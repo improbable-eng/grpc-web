@@ -1,11 +1,13 @@
 # grpc-web-client
 > Library for making gRPC-Web requests from a Browser
 
-This library is intended for both JavaScript and TypeScript usage.
+This library is intended for both JavaScript and TypeScript usage from either a browser or Node.js.
 
 *Note: This only works if the server supports [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md)*
 
 A Golang gRPC-Web middleware and a Golang-based gRPC-Web proxy are [available here](https://github.com/improbable-eng/grpc-web).
+
+Please see the full [gRPC-Web README](https://github.com/improbable-eng/grpc-web) for known limitations.
 
 ## Installation
 
