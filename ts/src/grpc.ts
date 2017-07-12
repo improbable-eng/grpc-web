@@ -69,8 +69,7 @@ export namespace grpc {
   }
 
   export type UnaryMethodDefinition<TRequest extends jspb.Message, TResponse extends jspb.Message> = MethodDefinition<TRequest, TResponse> & {
-    // Disabled boolean literal check due to https://github.com/Microsoft/TypeScript/issues/17102
-    // responseStream: false;
+    responseStream: false;
   }
 
   export type RpcOptions<TRequest extends jspb.Message, TResponse extends jspb.Message> = {

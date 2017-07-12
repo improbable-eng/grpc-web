@@ -44,7 +44,7 @@
     "lodash": "^4.17.4",
     "ts-loader": "^2.0.1",
     "ts-node": "^3.0.4",
-    "ts-protoc-gen": "^0.3.0",
+    "ts-protoc-gen": "0.3.2",
     "tslint": "^4.4.2",
     "typescript": "2.4.1",
     "wd": "^1.2.0",

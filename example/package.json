@@ -20,7 +20,7 @@
   "devDependencies": {
     "concurrently": "^3.4.0",
     "ts-loader": "^2.0.1",
-    "ts-protoc-gen": "^0.2.2",
+    "ts-protoc-gen": "0.3.2",
     "typescript": "^2.4.1",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.4.2"
