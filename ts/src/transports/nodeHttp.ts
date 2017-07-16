@@ -2,7 +2,7 @@ import * as http from 'http';
 import * as https from 'https';
 import * as url from 'url';
 import {TransportOptions} from "./Transport";
-import {BrowserHeaders} from "browser-headers";
+import {Metadata} from "../grpc";
 
 /* nodeHttpRequest uses the node http and https modules */
 export default function nodeHttpRequest(options: TransportOptions) {
@@ -25,7 +25,7 @@ export default function nodeHttpRequest(options: TransportOptions) {
 
   const responseCallback = (response: http.IncomingMessage) => {
     options.debug && console.log('httpNodeTransport.response', response.statusCode);
-    options.onHeaders(new BrowserHeaders(response.headers), response.statusCode!);
+    options.onHeaders(new Metadata(response.headers), response.statusCode!);
 
     response.on('data', chunk => {
       options.debug && console.log('httpNodeTransport.data', chunk);

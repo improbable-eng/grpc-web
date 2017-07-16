@@ -1,4 +1,4 @@
-import {BrowserHeaders} from "browser-headers";
+import {Metadata} from "../grpc";
 import fetchRequest from "./fetch";
 import xhrRequest from "./xhr";
 import mozXhrRequest from "./mozXhr";
@@ -20,9 +20,9 @@ export interface Transport {
 export type TransportOptions = {
   debug: boolean,
   url: string,
-  headers: BrowserHeaders,
+  headers: Metadata,
   body: ArrayBufferView,
-  onHeaders: (headers: BrowserHeaders, status: number) => void,
+  onHeaders: (headers: Metadata, status: number) => void,
   onChunk: (chunkBytes: Uint8Array, flush?: boolean) => void,
   onEnd: (err?: Error) => void,
 }

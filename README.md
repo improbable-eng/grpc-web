@@ -12,6 +12,8 @@
 
 [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) is a cutting-edge spec that enables invoking gRPC services from *modern* browsers.
 
+*__Please note - Whilst this package supports Node.js, there is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc) that does not require the server to support gRPC-Web__*
+
 Components of the stack are based on Golang and TypeScript:
  * [`grpcweb`](go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1
  * [`grpcwebproxy`](go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers
@@ -133,7 +135,7 @@ This library is tested against:
 
 `grpc-web-client` also supports Node.js through a transport that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
-*__Please note - There is an [official Node.js gRPC library](https://github.com/grpc/grpc/tree/9a69478498232b6b42169f8a1a389b51fb4e03ec/src/node) that does not require the server to support gRPC-Web__*
+*__Please note - There is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc) that does not require the server to support gRPC-Web__*
 
 ### Client-side streaming
 

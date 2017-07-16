@@ -42,9 +42,9 @@ const DEBUG: boolean = (global as any).DEBUG;
 // gRPC-Web library
 import {
   grpc,
+  Code,
   BrowserHeaders,
 } from "../../../ts/src/index";
-import Code = grpc.Code;
 import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
 
 // Generated Test Classes
@@ -95,9 +95,9 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             assert.deepEqual(message.getValue(), "hello world");
             assert.deepEqual(message.getCounter(), 252);
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
               assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
@@ -141,9 +141,9 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             assert.deepEqual(message.getValue(), "hello world");
             assert.deepEqual(message.getCounter(), 252);
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
               assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
@@ -184,9 +184,9 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             assert.ok(message instanceof PingResponse);
             assert.strictEqual(message.getCounter(), onMessageId++);
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
               assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
@@ -241,9 +241,9 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             }
             lastMessageTime = thisTime;
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
               assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
@@ -284,9 +284,9 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             assert.ok(message instanceof PingResponse);
             assert.strictEqual(message.getCounter(), onMessageId++);
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withTrailers) {
               assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
@@ -322,11 +322,11 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           onMessage: (message: Empty) => {
             didGetOnMessage = true;
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.deepEqual(trailers.get("grpc-status"), ["12"]);
             assert.deepEqual(trailers.get("grpc-message"), ["Intentionally returning error for PingError"]);
-            assert.strictEqual(status, grpc.Code.Unimplemented);
+            assert.strictEqual(status, Code.Unimplemented);
             assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
             assert.ok(didGetOnHeaders);
             assert.ok(!didGetOnMessage);
@@ -358,11 +358,11 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           onMessage: (message: Empty) => {
             didGetOnMessage = true;
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             // Some browsers return empty Headers for failed requests
             assert.strictEqual(statusMessage, "Response closed without headers");
-            assert.strictEqual(status, grpc.Code.Internal);
+            assert.strictEqual(status, Code.Internal);
             assert.ok(!didGetOnMessage);
             done();
           }
@@ -390,10 +390,10 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         onMessage: (message: Empty) => {
           didGetOnMessage = true;
         },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+        onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
           DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-          assert.strictEqual(status, grpc.Code.Internal);
+          assert.strictEqual(status, Code.Internal);
           assert.ok(!didGetOnMessage);
           done();
         }
@@ -417,10 +417,10 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         onMessage: (message: Empty) => {
           didGetOnMessage = true;
         },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+        onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
           DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without headers");
-          assert.strictEqual(status, grpc.Code.Internal);
+          assert.strictEqual(status, Code.Internal);
           assert.ok(!didGetOnMessage);
           done();
         }
@@ -446,7 +446,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         onMessage: (message: Empty) => {
           didGetOnMessage = true;
         },
-        onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+        onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
           DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
           assert.strictEqual(statusMessage, "unknown service improbable.grpcweb.test.FailService");
           assert.strictEqual(status, 12);
@@ -484,7 +484,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           onMessage: (message: PingResponse) => {
             throw new Error("onMessage exception");
           },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: BrowserHeaders) => {
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             setTimeout(() => {
               uncaughtHandler.detach();
               const exceptionsCaught = uncaughtHandler.getMessages();
@@ -532,7 +532,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           host: testHostUrl,
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
@@ -567,7 +567,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           host: testHostUrl,
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(status, Code.OK, "expected OK (0)");
             assert.strictEqual(statusMessage, undefined, "expected no message");
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
@@ -601,7 +601,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
           host: testHostUrl,
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-            assert.strictEqual(status, grpc.Code.Unimplemented);
+            assert.strictEqual(status, Code.Unimplemented);
             assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
@@ -636,7 +636,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             // Some browsers return empty Headers for failed requests
             assert.strictEqual(statusMessage, "Response closed without headers");
-            assert.strictEqual(status, grpc.Code.Internal);
+            assert.strictEqual(status, Code.Internal);
             done();
           }
         });
@@ -654,7 +654,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         onEnd: ({status, statusMessage, headers, message, trailers}) => {
           DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-          assert.strictEqual(status, grpc.Code.Internal);
+          assert.strictEqual(status, Code.Internal);
           assert.deepEqual(headers.get("grpc-status"), []);
           assert.deepEqual(headers.get("grpc-message"), []);
           done();
@@ -673,7 +673,7 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         onEnd: ({status, statusMessage, headers, message, trailers}) => {
           DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
           assert.strictEqual(statusMessage, "Response closed without headers");
-          assert.strictEqual(status, grpc.Code.Internal);
+          assert.strictEqual(status, Code.Internal);
           assert.isNull(message);
           done();
         }
