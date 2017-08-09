@@ -32,6 +32,7 @@ import {GetBookRequest, QueryBooksRequest, Book} from "./generated/proto/example
 const queryBooksRequest = new QueryBooksRequest();
 queryBooksRequest.setAuthorPrefix("Geor");
 grpc.invoke(BookService.QueryBooks, {
+  debug: false,// optional - enable to output events to console.log
   request: queryBooksRequest,
   host: "https://example.com",
   onHeaders: (headers: Metadata) => {
@@ -55,6 +56,7 @@ grpc.invoke(BookService.QueryBooks, {
 const getBookRequest = new GetBookRequest();
 getBookRequest.setIsbn(60929871);
 grpc.unary(BookService.GetBook, {
+  debug: false,// optional - enable to output events to console.log
   request: getBookRequest,
   host: host,
   onEnd: res => {
