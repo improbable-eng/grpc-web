@@ -11,7 +11,6 @@ import (
 
 	"crypto/tls"
 
-	"github.com/sirupsen/logrus"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -19,6 +18,7 @@ import (
 	"github.com/mwitkow/go-conntrack"
 	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"golang.org/x/net/context"
 	_ "golang.org/x/net/trace" // register in DefaultServerMux
@@ -45,8 +45,11 @@ func main() {
 	grpcServer := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
 
-	// gRPC-Web compatibility layer with CORS configured to accept on every
-	wrappedGrpc := grpcweb.WrapServer(grpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	// gRPC-Web compatibility layer with CORS configured to accept on every request
+	wrappedGrpc := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+		grpcweb.WithOriginFunc(func(origin string) bool { return true }),
+	)
 
 	// Debug server.
 	debugServer := http.Server{

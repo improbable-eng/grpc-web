@@ -5,8 +5,8 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 
-	"github.com/sirupsen/logrus"
 	"github.com/mwitkow/grpc-proxy/proxy"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

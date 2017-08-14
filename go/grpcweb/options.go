@@ -7,7 +7,7 @@ var (
 	defaultOptions = &options{
 		allowedRequestHeaders:          []string{"*"},
 		corsForRegisteredEndpointsOnly: true,
-		originFunc:                     func(origin string) bool { return true },
+		originFunc:                     func(origin string) bool { return false },
 	}
 )
 
@@ -34,7 +34,7 @@ type Option func(*options)
 // availability of the APIs based on the domain name of the calling website (Origin). You can provide a function that
 // filters the allowed Origin values.
 //
-// The default behaviour is `*`, i.e. to allow all calling websites.
+// The default behaviour is to deny all requests from remote origins.
 //
 // The relevant CORS pre-flight docs:
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
