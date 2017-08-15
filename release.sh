@@ -29,8 +29,17 @@ fi
 PKG_JSON_PATH="${SCRIPT_PATH}/ts/package.json"
 echo "Reading version from ${PKG_JSON_PATH}."
 
-VERSION=$(jq --raw-output '.version' ${PKG_JSON_PATH})
-read -p "Build v${VERSION}? " -n 1 -r
+# Grab the version from the package.json file and strip any trailing suffix from the version.
+RAW_VERSION=$(jq --raw-output '.version' ${PKG_JSON_PATH})
+VERSION=$(echo ${RAW_VERSION} | sed -e 's/-[A-z]*//')
+
+# Figure out if this is a beta release.
+BETA_SUFFIX=""
+if [[ ${RAW_VERSION} =~ -beta$ ]]; then
+  BETA_SUFFIX=" (beta)"
+fi
+
+read -p "Build v${VERSION}${BETA_SUFFIX}? " -n 1 -r
 echo
 if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
   exit 1
@@ -55,14 +64,18 @@ cd "${SCRIPT_PATH}/ts" \
 echo "Github Release Notes (terminate with ctrl-d):"
 RELEASE_NOTES=$(cat)
 
-read -p "Release v${VERSION}? " -n 1 -r
+read -p "Release v${VERSION}${BETA_SUFFIX}? " -n 1 -r
 echo
 if [[ ! ${REPLY} =~ ^[Yy]$ ]]; then
   exit 1
+fi
+
+if [[ "${BETA_SUFFIX}" != "" ]]; then
+  NPM_TAG_ARG="--tag beta"
 fi
 
 echo "Creating Github Release"
 github-release "improbable-eng/grpc-web" "${VERSION}" master "${RELEASE_NOTES}" "${DIST_PATH}/*"
 
 echo "Publishing to npm"
-cd "${SCRIPT_PATH}/ts" && npm publish
+cd "${SCRIPT_PATH}/ts" && npm publish "${NPM_TAG_ARG}"
