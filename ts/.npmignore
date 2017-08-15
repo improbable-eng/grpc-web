@@ -2,4 +2,3 @@ test/
 src/
 build/
 .*
-release.sh
