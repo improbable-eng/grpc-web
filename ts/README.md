@@ -41,7 +41,7 @@ grpc.invoke(BookService.QueryBooks, {
   onMessage: (message: Book) => {
     console.log("got book: ", message.toObject());
   },
-  onEnd: (code: grpc.Code, msg: string | undefined, trailers: Metadata) => {
+  onEnd: (code: Code, msg: string | undefined, trailers: Metadata) => {
     if (code == Code.OK) {
       console.log("all ok");
     } else {
