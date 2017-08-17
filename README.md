@@ -94,7 +94,7 @@ func (s *bookService) QueryBooks(bookQuery *pb_library.QueryBooksRequest, stream
 You will be able to access it in a browser using TypeScript (and equally JavaScript after transpiling):
 
 ```ts
-import {grpc, BrowserHeaders} from "grpc-web-client";
+import {grpc, BrowserHeaders, Code} from "grpc-web-client";
 
 // Import code-generated data structures.
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
@@ -108,8 +108,8 @@ grpc.invoke(BookService.QueryBooks, {
   onMessage: (message: Book) => {
     console.log("got book: ", message.toObject());
   },
-  onEnd: (code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) => {
-    if (code == grpc.Code.OK) {
+  onEnd: (code: Code, msg: string | undefined, trailers: BrowserHeaders) => {
+    if (code == Code.OK) {
       console.log("all ok")
     } else {
       console.log("hit an error", code, msg, trailers);
