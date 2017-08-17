@@ -100,6 +100,10 @@ export namespace grpc {
     debug?: boolean,
   }
 
+  export type Client = {
+    abort: () => void
+  }
+
   function frameRequest(request: jspb.Message): ArrayBufferView {
     const bytes = request.serializeBinary();
     const frame = new ArrayBuffer(bytes.byteLength + 5);
@@ -121,7 +125,7 @@ export namespace grpc {
     return null;
   }
 
-  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<M, TRequest, TResponse>) {
+  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<M, TRequest, TResponse>): Client {
     if (methodDescriptor.responseStream) {
       throw new Error(".unary cannot be used with server-streaming methods. Use .invoke instead.");
     }
@@ -149,10 +153,10 @@ export namespace grpc {
       transport: props.transport,
       debug: props.debug,
     };
-    grpc.invoke(methodDescriptor, rpcOpts);
+    return grpc.invoke(methodDescriptor, rpcOpts);
   }
 
-  export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: RpcOptions<TRequest, TResponse>) {
+  export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: RpcOptions<TRequest, TResponse>): Client {
     const requestHeaders = new Metadata(props.metadata ? props.metadata : {});
     requestHeaders.set("content-type", "application/grpc-web+proto");
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
@@ -194,6 +198,7 @@ export namespace grpc {
       });
     }
 
+    let aborted = false;
     let responseHeaders: Metadata;
     let responseTrailers: Metadata;
     const parser = new ChunkParser();
@@ -203,13 +208,19 @@ export namespace grpc {
     if (!transport) {
       transport = DefaultTransportFactory.getTransport();
     }
-    transport({
+    const cancelFunc = transport({
       debug: props.debug || false,
       url: `${props.host}/${methodDescriptor.service.serviceName}/${methodDescriptor.methodName}`,
       headers: requestHeaders,
       body: framedRequest,
       onHeaders: (headers: Metadata, status: number) => {
         props.debug && debug("onHeaders", headers, status);
+
+        if (aborted) {
+          props.debug && debug("grpc.onHeaders received after request was aborted - ignoring");
+          return;
+        }
+
         if (status === 0) {
           // The request has failed due to connectivity issues. Do not capture the headers
         } else {
@@ -228,6 +239,11 @@ export namespace grpc {
         }
       },
       onChunk: (chunkBytes: Uint8Array) => {
+        if (aborted) {
+          props.debug && debug("grpc.onChunk received after request was aborted - ignoring");
+          return;
+        }
+
         let data: Chunk[] = [];
         try {
           data = parser.parse(chunkBytes);
@@ -249,6 +265,11 @@ export namespace grpc {
       },
       onEnd: () => {
         props.debug && debug("grpc.onEnd");
+
+        if (aborted) {
+          props.debug && debug("grpc.onEnd received after request was aborted - ignoring");
+          return;
+        }
 
         if (responseTrailers === undefined) {
           if (responseHeaders === undefined) {
@@ -284,5 +305,18 @@ export namespace grpc {
         rawOnEnd(grpcStatus, grpcMessage[0], responseTrailers);
       }
     });
+
+    const client = {
+      abort() {
+        if (!aborted) {
+          aborted = true;
+          props.debug && debug("client.abort aborting request");
+          cancelFunc();
+        }
+
+      }
+    };
+
+    return client;
   }
 }
