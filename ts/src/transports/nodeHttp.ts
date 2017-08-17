@@ -1,11 +1,11 @@
 import * as http from 'http';
 import * as https from 'https';
 import * as url from 'url';
-import {TransportOptions} from "./Transport";
+import {CancelFunc, TransportOptions} from "./Transport";
 import {Metadata} from "../grpc";
 
 /* nodeHttpRequest uses the node http and https modules */
-export default function nodeHttpRequest(options: TransportOptions) {
+export default function nodeHttpRequest(options: TransportOptions): CancelFunc {
   options.debug && console.log('httpNodeTransport', options);
 
   const headers: { [key: string]: string } = {};
@@ -38,7 +38,7 @@ export default function nodeHttpRequest(options: TransportOptions) {
     });
   };
 
-  let request;
+  let request: http.ClientRequest;
   if (parsedUrl.protocol === "https:") {
     request = https.request(httpOptions, responseCallback);
   } else {
@@ -50,6 +50,10 @@ export default function nodeHttpRequest(options: TransportOptions) {
   });
   request.write(toBuffer(options.body));
   request.end();
+
+  return () => {
+    request.abort();
+  }
 }
 
 function toArrayBuffer(buf: Buffer): Uint8Array {
