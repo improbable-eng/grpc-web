@@ -42,7 +42,7 @@ grpc.invoke(BookService.QueryBooks, {
     console.log("got book: ", message.toObject());
   },
   onEnd: (code: grpc.Code, msg: string | undefined, trailers: Metadata) => {
-    if code == grpc.Code.OK {
+    if (code == Code.OK) {
       console.log("all ok");
     } else {
       console.log("hit an error", code, msg, trailers);
