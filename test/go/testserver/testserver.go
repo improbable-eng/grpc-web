@@ -111,7 +111,7 @@ func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*tes
 
 func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testproto.PingResponse, error) {
 	if ping.GetCheckMetadata() {
-		md, ok := metadata.FromContext(ctx)
+		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok || md["headertestkey1"][0] != "ClientValue1" {
 			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
 		}
