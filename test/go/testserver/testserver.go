@@ -111,7 +111,7 @@ func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*tes
 
 func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testproto.PingResponse, error) {
 	if ping.GetCheckMetadata() {
-		md, ok := metadata.FromContext(ctx)
+		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok || md["headertestkey1"][0] != "ClientValue1" {
 			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
 		}
@@ -164,7 +164,8 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 			if !ok {
 				return grpc.Errorf(codes.Internal, "lowLevelServerStream does not exist in context")
 			}
-			lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, make([]byte,0), &transport.Options{
+			zeroBytes := make([]byte,0)
+			lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, zeroBytes, &transport.Options{
 				Delay: false,
 			})
 		}

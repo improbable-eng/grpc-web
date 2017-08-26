@@ -348,7 +348,7 @@ func (s *testServiceImpl) Ping(ctx context.Context, ping *testproto.PingRequest)
 }
 
 func (s *testServiceImpl) PingError(ctx context.Context, ping *testproto.PingRequest) (*google_protobuf.Empty, error) {
-	md, _ := metadata.FromContext(ctx)
+	md, _ := metadata.FromIncomingContext(ctx)
 	if _, exists := md[useFlushForHeaders]; exists {
 		grpc.SendHeader(ctx, expectedHeaders)
 		grpclog.Printf("Handling PingError with flushed headers")
