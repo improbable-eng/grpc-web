@@ -43,6 +43,7 @@ const DEBUG: boolean = (global as any).DEBUG;
 import {
   grpc,
   Code,
+  Request,
   BrowserHeaders,
 } from "../../../ts/src/index";
 import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
@@ -52,10 +53,12 @@ import {
   Empty,
 } from "google-protobuf/google/protobuf/empty_pb";
 import {
+  CheckStreamClosedRequest, CheckStreamClosedResponse,
+  ContinueStreamRequest,
   PingRequest,
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
-import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
+import {FailService, TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {UncaughtExceptionListener} from "./util";
 
 function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
@@ -66,6 +69,20 @@ function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, n
 }
 
 function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestConfig) {
+
+  function continueStream(streamIdentifier: string, cb: (status: Code) => void) {
+    const req = new ContinueStreamRequest();
+    req.setStreamIdentifier(streamIdentifier);
+    grpc.unary(TestUtilService.ContinueStream, {
+      debug: DEBUG,
+      request: req,
+      host: testHostUrl,
+      onEnd: ({status}) => {
+        cb(status);
+      },
+    })
+  }
+
   describe("invoke", () => {
     headerTrailerCombos((withHeaders, withTrailers, name) => {
       it("should make a unary request" + name, (done) => {
@@ -205,15 +222,14 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         let didGetOnHeaders = false;
         let onMessageId = 0;
 
+        const streamIdentifier = `rpc-${Math.random()}`;
+
         const ping = new PingRequest();
         ping.setValue("hello world");
         ping.setResponseCount(5);
-        ping.setMessageLatencyMs(300);
         ping.setSendHeaders(withHeaders);
         ping.setSendTrailers(withTrailers);
-
-        let lastMessageTime = 0;
-        DEBUG && debug("lastMessageTime", lastMessageTime);
+        ping.setStreamIdentifier(streamIdentifier);
 
         grpc.invoke(TestService.PingList, {
           debug: DEBUG,
@@ -228,18 +244,11 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
             }
           },
           onMessage: (message: PingResponse) => {
+            continueStream(streamIdentifier, (status) => {
+              DEBUG && debug("continueStream.status", status);
+            });
             assert.ok(message instanceof PingResponse);
             assert.strictEqual(message.getCounter(), onMessageId++);
-            const thisTime = new Date().getTime();
-            if (lastMessageTime !== 0) {
-              // Ignore time to first message
-              const diff = thisTime - lastMessageTime;
-              DEBUG && debug("diff", diff);
-              DEBUG && debug("thisTime", thisTime);
-              assert.isAtLeast(diff, 50);
-              assert.isAtMost(diff, 1500);
-            }
-            lastMessageTime = thisTime;
           },
           onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
@@ -734,33 +743,117 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         });
       });
     });
+  });
 
-    describe("cancellation handling", () => {
-      it('should allow the caller to abort an rpc before it completes', () => {
-        let transportCancelFuncInvoked = false;
+  describe("cancellation handling", () => {
+    it('should allow the caller to abort an rpc before it completes', () => {
+      let transportCancelFuncInvoked = false;
 
-        const cancellationSpyTransport = () => {
-          return () => {
-            transportCancelFuncInvoked = true;
-          }
-        };
+      const cancellationSpyTransport = () => {
+        return () => {
+          transportCancelFuncInvoked = true;
+        }
+      };
 
-        const ping = new PingRequest();
-        ping.setValue("hello world");
+      const ping = new PingRequest();
+      ping.setValue("hello world");
 
-        const client = grpc.invoke(TestService.Ping, {
-          debug: DEBUG,
-          request: ping,
-          host: testHostUrl,
-          transport: cancellationSpyTransport,
-          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => { },
-        });
-
-        client.abort();
-
-        assert.equal(transportCancelFuncInvoked, true, "transport's cancel func must be invoked");
+      const reqObj = grpc.invoke(TestService.Ping, {
+        debug: DEBUG,
+        request: ping,
+        host: testHostUrl,
+        transport: cancellationSpyTransport,
+        onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => { },
       });
+
+      reqObj.abort();
+
+      assert.equal(transportCancelFuncInvoked, true, "transport's cancel func must be invoked");
     });
+
+    it("should handle aborting a streaming response mid-stream with propagation of the disconnection to the server", (done) => {
+      let onMessageId = 0;
+
+      const streamIdentifier = `rpc-${Math.random()}`;
+
+      const ping = new PingRequest();
+      ping.setValue("hello world");
+      ping.setResponseCount(100); // Request more messages than the client will accept before cancelling
+      ping.setStreamIdentifier(streamIdentifier);
+
+      let reqObj: Request;
+
+      // Checks are performed every 1s = 15s total wait
+      const maxAbortChecks = 15;
+
+      const numMessagesBeforeAbort = 5;
+
+      const doAbort = () => {
+        DEBUG && debug("doAbort");
+        reqObj.abort();
+
+        function checkAbort(attempt: number) {
+          DEBUG && debug("checkAbort", attempt);
+          continueStream(streamIdentifier, (status) => {
+            DEBUG && debug("checkAbort.continueStream.status", status);
+
+            const checkStreamClosedRequest = new CheckStreamClosedRequest();
+            checkStreamClosedRequest.setStreamIdentifier(streamIdentifier);
+            grpc.unary(TestUtilService.CheckStreamClosed, {
+              debug: DEBUG,
+              request: checkStreamClosedRequest,
+              host: testHostUrl,
+              onEnd: ({message}) => {
+                const closed = (message as CheckStreamClosedResponse).getClosed();
+                DEBUG && debug("closed", closed);
+                if (closed) {
+                  done();
+                } else {
+                  if (attempt >= maxAbortChecks) {
+                    assert.ok(closed, `server did not observe connection closure within ${maxAbortChecks} seconds`);
+                    done();
+                  } else {
+                    setTimeout(() => {
+                      checkAbort(attempt + 1);
+                    }, 1000);
+                  }
+                }
+              },
+            })
+          });
+        }
+
+        checkAbort(0);
+      };
+
+      reqObj = grpc.invoke(TestService.PingList, {
+        debug: DEBUG,
+        request: ping,
+        host: testHostUrl,
+        onHeaders: (headers: BrowserHeaders) => {
+          DEBUG && debug("headers", headers);
+        },
+        onMessage: (message: PingResponse) => {
+          assert.ok(message instanceof PingResponse);
+          DEBUG && debug("onMessage.message.getCounter()", message.getCounter());
+          assert.strictEqual(message.getCounter(), onMessageId++);
+          if (message.getCounter() === numMessagesBeforeAbort) {
+            // Abort after receiving numMessagesBeforeAbort messages
+            doAbort();
+          } else if (message.getCounter() < numMessagesBeforeAbort) {
+            // Only request the next message if not yet aborted
+            continueStream(streamIdentifier, (status) => {
+              DEBUG && debug("onMessage.continueStream.status", status);
+            });
+          }
+        },
+        onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
+          DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+          // onEnd shouldn't be called if abort is called prior to the response ending
+          assert.fail();
+        }
+      });
+    }, 20000);
   });
 }
 

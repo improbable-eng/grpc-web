@@ -52,6 +52,7 @@ export default function nodeHttpRequest(options: TransportOptions): CancelFunc {
   request.end();
 
   return () => {
+    options.debug && console.log("httpNodeTransport.abort");
     request.abort();
   }
 }

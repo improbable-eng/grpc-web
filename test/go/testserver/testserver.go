@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/transport"
 	"crypto/tls"
-	"time"
+	"sync"
 )
 
 var (
@@ -35,7 +35,12 @@ func main() {
 	flag.Parse()
 
 	grpcServer := grpc.NewServer()
-	testproto.RegisterTestServiceServer(grpcServer, &testSrv{})
+	testServer := &testSrv{
+		streamsMutex: &sync.Mutex{},
+		streams:      map[string]chan bool{},
+	}
+	testproto.RegisterTestServiceServer(grpcServer, testServer)
+	testproto.RegisterTestUtilServiceServer(grpcServer, testServer)
 	grpclog.SetLogger(log.New(os.Stdout, "testserver: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
@@ -101,6 +106,8 @@ func main() {
 }
 
 type testSrv struct {
+	streamsMutex *sync.Mutex
+	streams      map[string]chan bool
 }
 
 func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*testproto.PingResponse, error) {
@@ -111,7 +118,7 @@ func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*tes
 
 func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testproto.PingResponse, error) {
 	if ping.GetCheckMetadata() {
-		md, ok := metadata.FromIncomingContext(ctx)
+		md, ok := metadata.FromContext(ctx)
 		if !ok || md["headertestkey1"][0] != "ClientValue1" {
 			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
 		}
@@ -141,6 +148,31 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 	return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
 }
 
+func (s *testSrv) ContinueStream(ctx context.Context, req *testproto.ContinueStreamRequest) (*google_protobuf.Empty, error) {
+	s.streamsMutex.Lock()
+	defer s.streamsMutex.Unlock()
+	channel, ok := s.streams[req.GetStreamIdentifier()]
+	if !ok {
+		return nil, grpc.Errorf(codes.NotFound, "stream identifier not found")
+	}
+	channel <- true
+	return &google_protobuf.Empty{}, nil
+}
+
+func (s *testSrv) CheckStreamClosed(ctx context.Context, req *testproto.CheckStreamClosedRequest) (*testproto.CheckStreamClosedResponse, error) {
+	s.streamsMutex.Lock()
+	defer s.streamsMutex.Unlock()
+	_, ok := s.streams[req.GetStreamIdentifier()]
+	if !ok {
+		return &testproto.CheckStreamClosedResponse{
+			Closed: true,
+		}, nil
+	}
+	return &testproto.CheckStreamClosedResponse{
+		Closed: false,
+	}, nil
+}
+
 func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestService_PingListServer) error {
 	if (ping.GetSendHeaders()) {
 		stream.SendHeader(metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
@@ -152,23 +184,47 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 		t, _ := transport.StreamFromContext(stream.Context())
 		t.ServerTransport().Close()
 		return nil
-
 	}
+
+	var channel chan bool
+	useChannel := ping.GetStreamIdentifier() != ""
+	if useChannel {
+		channel = make(chan bool)
+		s.streamsMutex.Lock()
+		s.streams[ping.GetStreamIdentifier()] = channel
+		s.streamsMutex.Unlock()
+
+		defer func() {
+			// When this stream has ended
+			s.streamsMutex.Lock()
+			delete(s.streams, ping.GetStreamIdentifier())
+			close(channel)
+			s.streamsMutex.Unlock()
+		}()
+	}
+
 	for i := int32(0); i < ping.ResponseCount; i++ {
-		sleepDuration := ping.GetMessageLatencyMs()
-		time.Sleep(time.Duration(sleepDuration) * time.Millisecond)
-		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
-		if sleepDuration != 0 {
-			// Flush the stream
-			lowLevelServerStream, ok := transport.StreamFromContext(stream.Context())
-			if !ok {
-				return grpc.Errorf(codes.Internal, "lowLevelServerStream does not exist in context")
+		if i != 0 && useChannel {
+			shouldContinue := <- channel
+			if !shouldContinue {
+				return grpc.Errorf(codes.OK, "stream was cancelled by side-channel")
 			}
-			zeroBytes := make([]byte,0)
-			lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, zeroBytes, &transport.Options{
-				Delay: false,
-			})
 		}
+		err := stream.Context().Err()
+		if err != nil {
+			return grpc.Errorf(codes.Canceled, "client cancelled stream")
+		}
+		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
+
+		// Flush the stream
+		lowLevelServerStream, ok := transport.StreamFromContext(stream.Context())
+		if !ok {
+			return grpc.Errorf(codes.Internal, "lowLevelServerStream does not exist in context")
+		}
+		zeroBytes := make([]byte,0)
+		lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, &transport.Options{
+			Delay: false,
+		})
 	}
 	return nil
 }

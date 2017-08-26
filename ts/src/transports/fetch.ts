@@ -6,9 +6,13 @@ import detach from "../detach";
 /* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
 export default function fetchRequest(options: TransportOptions): CancelFunc {
   let cancelled = false;
+  let reader: ReadableStreamReader;
   options.debug && debug("fetchRequest", options);
-  function pump(reader: ReadableStreamReader, res: Response): Promise<void|Response> {
+  function pump(readerArg: ReadableStreamReader, res: Response): Promise<void|Response> {
+    reader = readerArg;
     if (cancelled) {
+      // If the request was cancelled before the first pump then cancel it here
+      options.debug && debug("fetchRequest.pump.cancel");
       return reader.cancel();
     }
     return reader.read()
@@ -51,6 +55,11 @@ export default function fetchRequest(options: TransportOptions): CancelFunc {
     });
   });
   return () => {
+    if (reader) {
+      // If the reader has already been received in the pump then it can be cancelled immediately
+      options.debug && debug("fetchRequest.abort.cancel");
+      reader.cancel();
+    }
     cancelled = true;
   }
 }

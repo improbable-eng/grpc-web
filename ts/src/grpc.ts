@@ -13,6 +13,10 @@ export {
   Code,
 };
 
+export type Request = {
+  abort: () => void
+}
+
 export namespace grpc {
 
   export interface ProtobufMessageClass<T extends jspb.Message> {
@@ -100,10 +104,6 @@ export namespace grpc {
     debug?: boolean,
   }
 
-  export type Client = {
-    abort: () => void
-  }
-
   function frameRequest(request: jspb.Message): ArrayBufferView {
     const bytes = request.serializeBinary();
     const frame = new ArrayBuffer(bytes.byteLength + 5);
@@ -125,7 +125,7 @@ export namespace grpc {
     return null;
   }
 
-  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<M, TRequest, TResponse>): Client {
+  export function unary<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<M, TRequest, TResponse>): Request {
     if (methodDescriptor.responseStream) {
       throw new Error(".unary cannot be used with server-streaming methods. Use .invoke instead.");
     }
@@ -156,7 +156,7 @@ export namespace grpc {
     return grpc.invoke(methodDescriptor, rpcOpts);
   }
 
-  export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: RpcOptions<TRequest, TResponse>): Client {
+  export function invoke<TRequest extends jspb.Message, TResponse extends jspb.Message, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: RpcOptions<TRequest, TResponse>): Request {
     const requestHeaders = new Metadata(props.metadata ? props.metadata : {});
     requestHeaders.set("content-type", "application/grpc-web+proto");
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
@@ -306,17 +306,17 @@ export namespace grpc {
       }
     });
 
-    const client = {
+    const requestObj = {
       abort() {
         if (!aborted) {
           aborted = true;
-          props.debug && debug("client.abort aborting request");
+          props.debug && debug("request.abort aborting request");
           cancelFunc();
         }
 
       }
     };
 
-    return client;
+    return requestObj;
   }
 }

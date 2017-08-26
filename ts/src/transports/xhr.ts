@@ -56,6 +56,7 @@ export default function xhrRequest(options: TransportOptions): CancelFunc {
   });
   xhr.send(options.body);
   return () => {
+    options.debug && debug("xhrRequest.abort");
     xhr.abort();
   }
 }

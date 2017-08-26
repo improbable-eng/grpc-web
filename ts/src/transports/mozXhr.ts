@@ -50,6 +50,7 @@ export default function mozXhrRequest(options: TransportOptions): CancelFunc {
   });
   xhr.send(options.body);
   return () => {
+    options.debug && debug("mozXhrRequest.abort");
     xhr.abort();
   }
 }

@@ -40,6 +40,27 @@ export namespace TestService {
     static readonly responseType = improbable_grpcweb_test_test_pb.PingResponse;
   }
 }
+export class TestUtilService {
+  static serviceName = "improbable.grpcweb.test.TestUtilService";
+}
+export namespace TestUtilService {
+  export class ContinueStream {
+    static readonly methodName = "ContinueStream";
+    static readonly service = TestUtilService;
+    static readonly requestStream = false;
+    static readonly responseStream = false;
+    static readonly requestType = improbable_grpcweb_test_test_pb.ContinueStreamRequest;
+    static readonly responseType = google_protobuf_empty_pb.Empty;
+  }
+  export class CheckStreamClosed {
+    static readonly methodName = "CheckStreamClosed";
+    static readonly service = TestUtilService;
+    static readonly requestStream = false;
+    static readonly responseStream = false;
+    static readonly requestType = improbable_grpcweb_test_test_pb.CheckStreamClosedRequest;
+    static readonly responseType = improbable_grpcweb_test_test_pb.CheckStreamClosedResponse;
+  }
+}
 export class FailService {
   static serviceName = "improbable.grpcweb.test.FailService";
 }

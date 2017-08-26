@@ -26,8 +26,8 @@ export class PingRequest extends jspb.Message {
   getSendTrailers(): boolean;
   setSendTrailers(value: boolean): void;
 
-  getMessageLatencyMs(): number;
-  setMessageLatencyMs(value: number): void;
+  getStreamIdentifier(): string;
+  setStreamIdentifier(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PingRequest.AsObject;
@@ -48,7 +48,7 @@ export namespace PingRequest {
     checkMetadata: boolean,
     sendHeaders: boolean,
     sendTrailers: boolean,
-    messageLatencyMs: number,
+    streamIdentifier: string,
   }
 
   export enum FailureType {
@@ -79,6 +79,66 @@ export namespace PingResponse {
   export type AsObject = {
     value: string,
     counter: number,
+  }
+}
+
+export class ContinueStreamRequest extends jspb.Message {
+  getStreamIdentifier(): string;
+  setStreamIdentifier(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ContinueStreamRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ContinueStreamRequest): ContinueStreamRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ContinueStreamRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ContinueStreamRequest;
+  static deserializeBinaryFromReader(message: ContinueStreamRequest, reader: jspb.BinaryReader): ContinueStreamRequest;
+}
+
+export namespace ContinueStreamRequest {
+  export type AsObject = {
+    streamIdentifier: string,
+  }
+}
+
+export class CheckStreamClosedRequest extends jspb.Message {
+  getStreamIdentifier(): string;
+  setStreamIdentifier(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CheckStreamClosedRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: CheckStreamClosedRequest): CheckStreamClosedRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: CheckStreamClosedRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CheckStreamClosedRequest;
+  static deserializeBinaryFromReader(message: CheckStreamClosedRequest, reader: jspb.BinaryReader): CheckStreamClosedRequest;
+}
+
+export namespace CheckStreamClosedRequest {
+  export type AsObject = {
+    streamIdentifier: string,
+  }
+}
+
+export class CheckStreamClosedResponse extends jspb.Message {
+  getClosed(): boolean;
+  setClosed(value: boolean): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CheckStreamClosedResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: CheckStreamClosedResponse): CheckStreamClosedResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: CheckStreamClosedResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CheckStreamClosedResponse;
+  static deserializeBinaryFromReader(message: CheckStreamClosedResponse, reader: jspb.BinaryReader): CheckStreamClosedResponse;
+}
+
+export namespace CheckStreamClosedResponse {
+  export type AsObject = {
+    closed: boolean,
   }
 }
 
