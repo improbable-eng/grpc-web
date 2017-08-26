@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/rs/cors"
-	"google.golang.org/grpc"
 )
 
 var (
@@ -20,7 +19,7 @@ var (
 )
 
 type WrappedGrpcServer struct {
-	server      *grpc.Server
+	server      http.Handler
 	opts        *options
 	corsWrapper *cors.Cors
 }
@@ -31,7 +30,7 @@ type WrappedGrpcServer struct {
 // http.ResponseWriter, i.e. mostly the re-encoding of Trailers (that carry gRPC status).
 //
 // You can control the behaviour of the wrapper (e.g. modifying CORS behaviour) using `With*` options.
-func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
+func WrapServer(server http.Handler, options ...Option) *WrappedGrpcServer {
 	opts := evaluateOptions(options)
 	corsWrapper := cors.New(cors.Options{
 		AllowOriginFunc:  opts.originFunc,
