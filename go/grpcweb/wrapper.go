@@ -19,9 +19,14 @@ var (
 )
 
 type WrappedGrpcServer struct {
-	server      http.Handler
+	server      GrpcServer
 	opts        *options
 	corsWrapper *cors.Cors
+}
+
+type GrpcServer interface {
+	http.Handler
+	GetServiceInfo() map[string]ServiceInfo
 }
 
 // WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that provides gRPC-Web Compatibility.
@@ -30,7 +35,7 @@ type WrappedGrpcServer struct {
 // http.ResponseWriter, i.e. mostly the re-encoding of Trailers (that carry gRPC status).
 //
 // You can control the behaviour of the wrapper (e.g. modifying CORS behaviour) using `With*` options.
-func WrapServer(server http.Handler, options ...Option) *WrappedGrpcServer {
+func WrapServer(server GrpcServer, options ...Option) *WrappedGrpcServer {
 	opts := evaluateOptions(options)
 	corsWrapper := cors.New(cors.Options{
 		AllowOriginFunc:  opts.originFunc,
