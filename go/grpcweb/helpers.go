@@ -5,8 +5,6 @@ package grpcweb
 
 import (
 	"fmt"
-
-	"google.golang.org/grpc"
 )
 
 // ListGRPCResources is a helper function that lists all URLs that are registered on gRPC server.
