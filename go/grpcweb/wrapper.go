@@ -23,6 +23,7 @@ type WrappedGrpcServer struct {
 	server      *grpc.Server
 	opts        *options
 	corsWrapper *cors.Cors
+	endpoints   []string
 }
 
 // WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that provides gRPC-Web Compatibility.
@@ -40,10 +41,12 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 		AllowCredentials: true,                                // always allow credentials, otherwise :authorization headers won't work
 		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
 	})
+	endpoints := ListGRPCResources(server)
 	return &WrappedGrpcServer{
 		server:      server,
 		opts:        opts,
 		corsWrapper: corsWrapper,
+		endpoints:   endpoints,
 	}
 }
 
@@ -94,9 +97,8 @@ func (w *WrappedGrpcServer) IsAcceptableGrpcCorsRequest(req *http.Request) bool 
 }
 
 func (w *WrappedGrpcServer) isRequestForRegisteredEndpoint(req *http.Request) bool {
-	registeredEndpoints := ListGRPCResources(w.server)
 	requestedEndpoint := req.URL.Path
-	for _, v := range registeredEndpoints {
+	for _, v := range w.endpoints {
 		if v == requestedEndpoint {
 			return true
 		}
