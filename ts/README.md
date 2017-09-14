@@ -70,6 +70,6 @@ grpc.unary(BookService.GetBook, {
 
 * Requests can be aborted before they complete:
 ```ts
-const client = grpc.unary(BookService.GetBook, { ... });
-client.abort();
+const request = grpc.unary(BookService.GetBook, { ... });
+request.abort();
 ```

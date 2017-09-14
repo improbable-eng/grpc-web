@@ -792,6 +792,9 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         DEBUG && debug("doAbort");
         reqObj.abort();
 
+        // To ensure that the transport is successfully closing the connection, poll the server every 1s until
+        // it confirms the connection was closed. Connection closure is immediate in some browser/transport combinations,
+        // but can take several seconds in others.
         function checkAbort(attempt: number) {
           DEBUG && debug("checkAbort", attempt);
           continueStream(streamIdentifier, (status) => {
