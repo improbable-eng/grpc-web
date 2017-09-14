@@ -222,7 +222,7 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 			return grpc.Errorf(codes.Internal, "lowLevelServerStream does not exist in context")
 		}
 		zeroBytes := make([]byte,0)
-		lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, &transport.Options{
+		lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, zeroBytes, &transport.Options{
 			Delay: false,
 		})
 	}
