@@ -734,6 +734,33 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
         });
       });
     });
+
+    describe("cancellation handling", () => {
+      it('should allow the caller to abort an rpc before it completes', () => {
+        let transportCancelFuncInvoked = false;
+
+        const cancellationSpyTransport = () => {
+          return () => {
+            transportCancelFuncInvoked = true;
+          }
+        };
+
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+
+        const client = grpc.invoke(TestService.Ping, {
+          debug: DEBUG,
+          request: ping,
+          host: testHostUrl,
+          transport: cancellationSpyTransport,
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => { },
+        });
+
+        client.abort();
+
+        assert.equal(transportCancelFuncInvoked, true, "transport's cancel func must be invoked");
+      });
+    });
   });
 }
 

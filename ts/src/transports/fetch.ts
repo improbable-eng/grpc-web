@@ -1,12 +1,16 @@
 import {Metadata} from "../grpc";
-import {TransportOptions} from "./Transport";
+import {CancelFunc, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
 /* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
-export default function fetchRequest(options: TransportOptions) {
+export default function fetchRequest(options: TransportOptions): CancelFunc {
+  let cancelled = false;
   options.debug && debug("fetchRequest", options);
-  function pump(reader: ReadableStreamReader, res: Response): Promise<Response> {
+  function pump(reader: ReadableStreamReader, res: Response): Promise<void|Response> {
+    if (cancelled) {
+      return reader.cancel();
+    }
     return reader.read()
       .then((result: { done: boolean, value: Uint8Array}) => {
         if (result.done) {
@@ -37,9 +41,16 @@ export default function fetchRequest(options: TransportOptions) {
     }
     return res;
   }).catch(err => {
+    if (cancelled) {
+      options.debug && debug("fetchRequest.catch - request cancelled");
+      return;
+    }
     options.debug && debug("fetchRequest.catch", err.message);
     detach(() => {
       options.onEnd(err);
     });
   });
+  return () => {
+    cancelled = true;
+  }
 }
