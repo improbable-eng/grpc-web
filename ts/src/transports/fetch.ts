@@ -1,12 +1,20 @@
 import {Metadata} from "../grpc";
-import {TransportOptions} from "./Transport";
+import {CancelFunc, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
 /* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
-export default function fetchRequest(options: TransportOptions) {
+export default function fetchRequest(options: TransportOptions): CancelFunc {
+  let cancelled = false;
+  let reader: ReadableStreamReader;
   options.debug && debug("fetchRequest", options);
-  function pump(reader: ReadableStreamReader, res: Response): Promise<Response> {
+  function pump(readerArg: ReadableStreamReader, res: Response): Promise<void|Response> {
+    reader = readerArg;
+    if (cancelled) {
+      // If the request was cancelled before the first pump then cancel it here
+      options.debug && debug("fetchRequest.pump.cancel");
+      return reader.cancel();
+    }
     return reader.read()
       .then((result: { done: boolean, value: Uint8Array}) => {
         if (result.done) {
@@ -37,9 +45,21 @@ export default function fetchRequest(options: TransportOptions) {
     }
     return res;
   }).catch(err => {
+    if (cancelled) {
+      options.debug && debug("fetchRequest.catch - request cancelled");
+      return;
+    }
     options.debug && debug("fetchRequest.catch", err.message);
     detach(() => {
       options.onEnd(err);
     });
   });
+  return () => {
+    if (reader) {
+      // If the reader has already been received in the pump then it can be cancelled immediately
+      options.debug && debug("fetchRequest.abort.cancel");
+      reader.cancel();
+    }
+    cancelled = true;
+  }
 }

@@ -13,8 +13,12 @@ export {
   xhrRequest
 }
 
+export interface CancelFunc {
+  (): void
+}
+
 export interface Transport {
-  (options: TransportOptions): void;
+  (options: TransportOptions): CancelFunc;
 }
 
 export type TransportOptions = {

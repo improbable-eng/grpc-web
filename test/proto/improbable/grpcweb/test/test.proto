@@ -18,7 +18,8 @@ message PingRequest {
   bool check_metadata = 5;
   bool send_headers = 6;
   bool send_trailers = 7;
-  int32 message_latency_ms = 8;
+
+  string stream_identifier = 8;
 }
 
 message PingResponse {
@@ -34,6 +35,24 @@ service TestService {
   rpc PingError(PingRequest) returns (google.protobuf.Empty) {}
 
   rpc PingList(PingRequest) returns (stream PingResponse) {}
+}
+
+message ContinueStreamRequest {
+  string stream_identifier = 1;
+}
+
+message CheckStreamClosedRequest {
+  string stream_identifier = 1;
+}
+
+message CheckStreamClosedResponse {
+  bool closed = 1;
+}
+
+service TestUtilService {
+  rpc ContinueStream(ContinueStreamRequest) returns (google.protobuf.Empty) {}
+
+  rpc CheckStreamClosed(CheckStreamClosedRequest) returns (CheckStreamClosedResponse) {}
 }
 
 service FailService {
