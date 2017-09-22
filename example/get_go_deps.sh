@@ -1,3 +1,4 @@
+go get github.com/improbable-eng/grpc-web/go/grpcweb
 go get github.com/sirupsen/logrus
 go get github.com/grpc-ecosystem/go-grpc-prometheus
 go get github.com/mwitkow/go-conntrack
