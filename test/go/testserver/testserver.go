@@ -42,13 +42,17 @@ func main() {
 	testproto.RegisterTestUtilServiceServer(grpcServer, testServer)
 	grpclog.SetLogger(log.New(os.Stdout, "testserver: ", log.LstdFlags))
 
-	wrappedServer := grpcweb.WrapServer(grpcServer)
+	websocketOriginFunc := grpcweb.WithWebsocketOriginFunc(func(req *http.Request) bool {
+		return true
+	})
+
+	wrappedServer := grpcweb.WrapServer(grpcServer, grpcweb.WithWebsockets(true), websocketOriginFunc)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 
 	emptyGrpcServer := grpc.NewServer()
-	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithWebsockets(true), websocketOriginFunc, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
 	emptyHandler := func(resp http.ResponseWriter, req *http.Request) {
 		emptyWrappedServer.ServeHTTP(resp, req)
 	}
@@ -118,7 +122,7 @@ func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*tes
 func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testproto.PingResponse, error) {
 	if ping.GetCheckMetadata() {
 		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok || md["headertestkey1"][0] != "ClientValue1" {
+		if !ok || md["headertestkey1"][0] != "ClientValue1" || md["headertestkey2"][0] != "ClientValue2" {
 			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
 		}
 	}

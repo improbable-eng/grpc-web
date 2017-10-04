@@ -15,6 +15,7 @@ export namespace grpc {
   export interface TransportOptions extends impTransport.TransportOptions{}
   export interface TransportConstructor extends impTransport.TransportConstructor{}
   export const DefaultTransportFactory = impTransport.DefaultTransportFactory;
+  export const WebsocketTransportFactory = impTransport.WebsocketTransportFactory;
 
   export interface UnaryMethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.UnaryMethodDefinition<TRequest, TResponse>{}
   export interface MethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.MethodDefinition<TRequest, TResponse>{}
