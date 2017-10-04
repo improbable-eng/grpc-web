@@ -13,7 +13,9 @@
     "test": "npm run build && npm run test:node && npm run test:browser",
     "test:browser": "./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
     "test:node": "./run-with-testserver.sh jasmine ts/build-node/test/ts/node-src/node.spec.js",
-    "test:dev": "npm run build && ./run-with-testserver.sh karma start ./karma.conf.ts"
+    "test:dev": "npm run build && ./run-with-testserver.sh karma start ./karma.conf.ts",
+    "test:karma-single-run": "karma start ./karma.conf.ts --single-run",
+    "test:karma-dev": "karma start ./karma.conf.ts"
   },
   "license": "none",
   "dependencies": {
@@ -21,7 +23,8 @@
     "@types/node": "^7.0.5",
     "browser-headers": "^0.3.2",
     "google-protobuf": "^3.2.0",
-    "typedarray": "0.0.6"
+    "typedarray": "0.0.6",
+    "text-encoding-utf-8": "^1.0.2"
   },
   "devDependencies": {
     "@types/chai": "^3.4.35",

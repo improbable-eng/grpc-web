@@ -1,4 +1,4 @@
-import {grpc, Code, Metadata} from "grpc-web-client";
+import {grpc} from "grpc-web-client";
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
@@ -15,7 +15,7 @@ function getBook() {
       const { status, statusMessage, headers, message, trailers } = res;
       console.log("getBook.onEnd.status", status, statusMessage);
       console.log("getBook.onEnd.headers", headers);
-      if (status === Code.OK && message) {
+      if (status === grpc.Code.OK && message) {
         console.log("getBook.onEnd.message", message.toObject());
       }
       console.log("getBook.onEnd.trailers", trailers);
@@ -29,17 +29,18 @@ getBook();
 function queryBooks() {
   const queryBooksRequest = new QueryBooksRequest();
   queryBooksRequest.setAuthorPrefix("Geor");
-  grpc.invoke(BookService.QueryBooks, {
-    request: queryBooksRequest,
+  const client = grpc.client(BookService.QueryBooks, {
     host: host,
-    onHeaders: (headers: Metadata) => {
-      console.log("queryBooks.onHeaders", headers);
-    },
-    onMessage: (message: Book) => {
-      console.log("queryBooks.onMessage", message.toObject());
-    },
-    onEnd: (code: Code, msg: string, trailers: Metadata) => {
-      console.log("queryBooks.onEnd", code, msg, trailers);
-    }
   });
+  client.onHeaders((headers: grpc.Metadata) => {
+    console.log("queryBooks.onHeaders", headers);
+  });
+  client.onMessage((message: Book) => {
+    console.log("queryBooks.onMessage", message.toObject());
+  });
+  client.onEnd((code: grpc.Code, msg: string, trailers: grpc.Metadata) => {
+    console.log("queryBooks.onEnd", code, msg, trailers);
+  });
+  client.start();
+  client.send(queryBooksRequest);
 }

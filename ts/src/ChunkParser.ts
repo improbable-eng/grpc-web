@@ -1,4 +1,4 @@
-import {Metadata} from "./grpc";
+import {Metadata} from "./metadata";
 
 const HEADER_SIZE = 5;
 
@@ -36,7 +36,7 @@ function hasEnoughBytes(buffer: Uint8Array, position: number, byteCount: number)
   return buffer.byteLength - position >= byteCount;
 }
 
-export function sliceUint8Array(buffer: Uint8Array, from: number, to?: number) {
+function sliceUint8Array(buffer: Uint8Array, from: number, to?: number) {
   if (buffer.slice) {
     return buffer.slice(from, to);
   }

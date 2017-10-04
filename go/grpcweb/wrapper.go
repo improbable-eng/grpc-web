@@ -20,9 +20,10 @@ var (
 )
 
 type WrappedGrpcServer struct {
-	server      *grpc.Server
-	opts        *options
-	corsWrapper *cors.Cors
+	server              *grpc.Server
+	opts                *options
+	corsWrapper         *cors.Cors
+	originFunc          func(origin string) bool
 }
 
 // WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that provides gRPC-Web Compatibility.
@@ -41,9 +42,10 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
 	})
 	return &WrappedGrpcServer{
-		server:      server,
-		opts:        opts,
-		corsWrapper: corsWrapper,
+		server:              server,
+		opts:                opts,
+		corsWrapper:         corsWrapper,
+		originFunc:          opts.originFunc,
 	}
 }
 

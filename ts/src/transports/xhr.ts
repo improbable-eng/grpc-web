@@ -1,63 +1,88 @@
-import {Metadata} from "../grpc";
-import {CancelFunc, TransportOptions} from "./Transport";
+import {Metadata} from "../metadata";
+import {Transport, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
 /* xhrRequest uses XmlHttpRequest with overrideMimeType combined with a byte decoding method that decodes the UTF-8
  * text response to bytes. */
-export default function xhrRequest(options: TransportOptions): CancelFunc {
+export default function xhrRequest(options: TransportOptions): Transport {
   options.debug && debug("xhrRequest", options);
-  const xhr = new XMLHttpRequest();
-  let index = 0;
 
-  function onProgressEvent() {
-    options.debug && debug("xhrRequest.onProgressEvent.length: ", xhr.response.length);
-    const rawText = xhr.response.substr(index);
-    index = xhr.response.length;
+  return new XHR(options);
+}
+
+class XHR implements Transport {
+  options: TransportOptions;
+  xhr: XMLHttpRequest;
+  metadata: Metadata;
+  index: 0;
+
+  constructor(transportOptions: TransportOptions) {
+    this.options = transportOptions;
+  }
+
+  onProgressEvent() {
+    this.options.debug && debug("XHR.onProgressEvent.length: ", this.xhr.response.length);
+    const rawText = this.xhr.response.substr(this.index);
+    this.index = this.xhr.response.length;
     const asArrayBuffer = stringToArrayBuffer(rawText);
     detach(() => {
-      options.onChunk(asArrayBuffer);
+      this.options.onChunk(asArrayBuffer);
     });
   }
 
-  function onLoadEvent() {
-    options.debug && debug("xhrRequest.onLoadEvent");
+  onLoadEvent() {
+    this.options.debug && debug("XHR.onLoadEvent");
     detach(() => {
-      options.onEnd();
+      this.options.onEnd();
     });
   }
 
-  function onStateChange() {
-    options.debug && debug("xhrRequest.onStateChange", this.readyState);
-    if (this.readyState === this.HEADERS_RECEIVED) {
+  onStateChange() {
+    this.options.debug && debug("XHR.onStateChange", this.xhr.readyState);
+    if (this.xhr.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
       detach(() => {
-        options.onHeaders(new Metadata(this.getAllResponseHeaders()), this.status);
+        this.options.onHeaders(new Metadata(this.xhr.getAllResponseHeaders()), this.xhr.status);
       });
     }
   }
 
-  xhr.open("POST", options.url);
-  (xhr as any).responseType = "text";
+  sendMessage(msgBytes: ArrayBufferView) {
+    this.xhr.send(msgBytes);
+  }
 
-  // overriding the mime type causes a response that has a code point per byte, which can be decoded using the
-  // stringToArrayBuffer function.
-  xhr.overrideMimeType("text/plain; charset=x-user-defined");
-  options.headers.forEach((key, values) => {
-    xhr.setRequestHeader(key, values.join(", "));
-  });
-  xhr.addEventListener("readystatechange", onStateChange);
-  xhr.addEventListener("progress", onProgressEvent);
-  xhr.addEventListener("loadend", onLoadEvent);
-  xhr.addEventListener("error", (err: ErrorEvent) => {
-    options.debug && debug("xhrRequest.error", err);
-    detach(() => {
-      options.onEnd(err.error);
+  finishSend() {
+
+  }
+
+  start(metadata: Metadata) {
+    this.metadata = metadata;
+
+    const xhr = new XMLHttpRequest();
+    this.xhr = xhr;
+    xhr.open("POST", this.options.url);
+    (xhr as any).responseType = "text";
+
+    // overriding the mime type causes a response that has a code point per byte, which can be decoded using the
+    // stringToArrayBuffer function.
+    xhr.overrideMimeType("text/plain; charset=x-user-defined");
+    this.metadata.forEach((key, values) => {
+      xhr.setRequestHeader(key, values.join(", "));
     });
-  });
-  xhr.send(options.body);
-  return () => {
-    options.debug && debug("xhrRequest.abort");
-    xhr.abort();
+    xhr.addEventListener("readystatechange", this.onStateChange.bind(this));
+    xhr.addEventListener("progress", this.onProgressEvent.bind(this));
+    xhr.addEventListener("loadend", this.onLoadEvent.bind(this));
+    xhr.addEventListener("error", (err: ErrorEvent) => {
+      this.options.debug && debug("XHR.error", err);
+      detach(() => {
+        this.options.onEnd(err.error);
+      });
+    });
+  }
+
+  cancel() {
+    this.options.debug && debug("XHR.abort");
+    this.xhr.abort();
   }
 }
 
@@ -80,4 +105,8 @@ export function stringToArrayBuffer(str: string): Uint8Array {
     asArray[arrayIndex++] = codePoint & 0xFF;
   }
   return asArray;
+}
+
+export function detectXHRSupport(): boolean {
+  return typeof XMLHttpRequest !== "undefined" && XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")
 }

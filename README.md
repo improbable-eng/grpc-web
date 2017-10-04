@@ -12,31 +12,38 @@
 
 [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) is a cutting-edge spec that enables invoking gRPC services from *modern* browsers.
 
-*__Please note - Whilst this package supports Node.js, there is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc) that does not require the server to support gRPC-Web__*
+*__If you are looking for gRPC support for Node.js there is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc). This package supports Node.js, but requires that the server has the gRPC-Web compatibility layer (read on to understand more).__*
 
 Components of the stack are based on Golang and TypeScript:
- * [`grpcweb`](go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1
- * [`grpcwebproxy`](go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers
- * [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) - a TypeScript plugin for the protocol buffers compiler that provides strongly typed message classes and method definitions
- * [`grpc-web-client`](ts) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
 
+ * [`grpcweb`](go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1.
+ * [`grpcwebproxy`](go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers.
+ * [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) - a TypeScript plugin for the protocol buffers compiler that provides strongly typed message classes and method definitions.
+ * [`grpc-web-client`](ts) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
  
 ## Why?
 
 With gRPC-Web, it is extremely easy to build well-defined, easy to reason about APIs between browser frontend code and microservices. Frontend development changes significantly:
- * no more hunting down API documentation - `.proto` is the canonical format for API contracts
- * no more hand-crafted JSON call objects - all requests and responses are strongly typed and code-generated, with hints available in the IDE
- * no more dealing with methods, headers, body and low level networking - everything is handled by `grpc.invoke`
- * no more second-guessing the meaning of error codes - [gRPC status codes](https://godoc.org/google.golang.org/grpc/codes) are a canonical way of representing issues in APIs
- * no more one-off server-side request handlers to avoid concurrent connections - gRPC-Web is based on HTTP2, with multiplexes multiple streams over the [same connection](https://hpbn.co/http2/#streams-messages-and-frames)
- * no more problems streaming data from a server -  gRPC-Web supports both *1:1* RPCs and *1:many* streaming requests
- * no more data parse errors when rolling out new binaries - backwards and forwards-[compatibility](https://developers.google.com/protocol-buffers/docs/gotutorial#extending-a-protocol-buffer) of requests and responses
 
-In short, gRPC-Web moves the interaction between frontend code and microservices from the sphere of hand-crafted HTTP requests to well-defined user-logic methods. 
+ * no more hunting down API documentation - `.proto` is the canonical format for API contracts.
+ * no more hand-crafted JSON call objects - all requests and responses are strongly typed and code-generated, with hints available in the IDE.
+ * no more dealing with methods, headers, body and low level networking - everything is handled by `grpc.invoke`.
+ * no more second-guessing the meaning of error codes - [gRPC status codes](https://godoc.org/google.golang.org/grpc/codes) are a canonical way of representing issues in APIs.
+ * no more one-off server-side request handlers to avoid concurrent connections - gRPC-Web is based on HTTP2, with multiplexes multiple streams over the [same connection](https://hpbn.co/http2/#streams-messages-and-frames).
+ * no more problems streaming data from a server -  gRPC-Web supports both *1:1* RPCs and *1:many* streaming requests.
+ * no more data parse errors when rolling out new binaries - [backwards and forwards-compatibility](https://developers.google.com/protocol-buffers/docs/gotutorial#extending-a-protocol-buffer) of requests and responses.
+
+In short, gRPC-Web moves the interaction between frontend code and microservices from the sphere of hand-crafted HTTP requests to well-defined user-logic methods.
+
+## Client-side (grpc-web-client) Docs
+
+**Note: You'll need to add gRPC-Web compatibility to your server through either [`grpcweb`](go/grpcweb) or [`grpcwebproxy`](go/grpcwebproxy).**
+
+[API Docs for `grpc-web-client` can be found here](ts)
 
 ## Example 
 
-For a self-contained demo of a Golang gRPC service called from a TypeScript projects, see [example](example). It contains most of the initialization code that performs the magic. Here's the application code extracted from the example:
+For a self-contained demo of a Golang gRPC service called from a TypeScript project, see [example](example). It contains most of the initialization code that performs the magic. Here's the application code extracted from the example:
 
 You use `.proto` files to define your service. In this example, one normal RPC (`GetBook`) and one server-streaming RPC (`QueryBooks`):
 
@@ -93,8 +100,8 @@ func (s *bookService) QueryBooks(bookQuery *pb_library.QueryBooksRequest, stream
 
 You will be able to access it in a browser using TypeScript (and equally JavaScript after transpiling):
 
-```ts
-import {grpc, BrowserHeaders, Code} from "grpc-web-client";
+```typescript
+import {grpc} from "grpc-web-client";
 
 // Import code-generated data structures.
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
@@ -108,8 +115,8 @@ grpc.invoke(BookService.QueryBooks, {
   onMessage: (message: Book) => {
     console.log("got book: ", message.toObject());
   },
-  onEnd: (code: Code, msg: string | undefined, trailers: BrowserHeaders) => {
-    if (code == Code.OK) {
+  onEnd: (code: grpc.Code, msg: string | undefined, trailers: grpc.Metadata) => {
+    if (code == grpc.Code.OK) {
       console.log("all ok")
     } else {
       console.log("hit an error", code, msg, trailers);
@@ -126,14 +133,14 @@ The gRPC semantics encourage you to make multiple requests at once. With most mo
 
 This library is tested against:
   * Chrome >= 41
-  * Firefox >= 38
+  * Firefox >= 21
   * Edge >= 13
   * IE >= 11
-  * Safari >= 8
+  * Safari >= 6
   
 ## Node.js Support
 
-`grpc-web-client` also supports Node.js through a transport that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
+`grpc-web-client` also [supports Node.js through a transport](ts/docs/transport#Node-HTTP) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
 *__Please note - There is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc) that does not require the server to support gRPC-Web__*
 
@@ -153,7 +160,11 @@ The code here is `alpha` quality. It is being used for a subset of Improbable's 
 
 ### Server-side streaming with XHR
 
-Browsers that don't support [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) (Currently only Edge 14+ and Chrome 43+ - full ReadableStream was added in Chrome 52, but only `body.getReader()` is used) or `XMLHttpRequest.responseType = moz-chunked-arraybuffer` (Firefox 38+) use [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest). XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large payload server streaming if you intend to support browsers that do not support Fetch.
+Browsers that don't support [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) (Currently only supported by Edge 14+, Chrome 43+ - full ReadableStream was added in Chrome 52, but only `body.getReader()` is used) or `XMLHttpRequest.responseType = moz-chunked-arraybuffer` (Firefox 38+) use [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest).
+
+XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large payload server streaming if you intend to support browsers that do not support Fetch.
+
+You can read more about how grpc-web-client determines and uses transports [here](ts/docs/transport).
 
 ### Running the tests
 

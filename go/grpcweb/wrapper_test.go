@@ -245,12 +245,40 @@ func (s *GrpcWebWrapperTestSuite) TestPingList_NormalGrpcWorks() {
 	}
 	conn := s.getStandardGrpcClient()
 	client := testproto.NewTestServiceClient(conn)
-	headerMd := metadata.Pairs()
-	trailerMd := metadata.Pairs()
-	_, err := client.Ping(s.ctxForTest(), &testproto.PingRequest{Value: "foo", ResponseCount: 10}, grpc.Header(&headerMd), grpc.Trailer(&trailerMd))
+	pingListClient, err := client.PingList(s.ctxForTest(), &testproto.PingRequest{Value: "foo", ResponseCount: 10})
 	require.NoError(s.T(), err, "no error during execution")
-	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(headerMd), "expected headers must be received")
-	assert.EqualValues(s.T(), expectedTrailers, trailerMd, "expected trailers must be received")
+	for {
+		_, err := pingListClient.Recv()
+		if err == io.EOF {
+			break
+		}
+		require.NoError(s.T(), err, "no error during execution")
+	}
+	recvHeaders, err := pingListClient.Header()
+	require.NoError(s.T(), err, "no error during execution")
+	recvTrailers := pingListClient.Trailer()
+	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
+	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
+}
+
+func (s *GrpcWebWrapperTestSuite) TestPingStream_NormalGrpcWorks() {
+	if s.httpMajorVersion < 2 {
+		s.T().Skipf("Standard gRPC interop only works over HTTP2")
+		return
+	}
+	conn := s.getStandardGrpcClient()
+	client := testproto.NewTestServiceClient(conn)
+	bidiClient, err := client.PingStream(s.ctxForTest())
+	require.NoError(s.T(), err, "no error during execution")
+	bidiClient.Send(&testproto.PingRequest{Value: "one"})
+	bidiClient.Send(&testproto.PingRequest{Value: "two"})
+	resp, err := bidiClient.CloseAndRecv()
+	assert.Equal(s.T(), "one,two", resp.GetValue(), "expected concatenated value must be received")
+	recvHeaders, err := bidiClient.Header()
+	require.NoError(s.T(), err, "no error during execution")
+	recvTrailers := bidiClient.Trailer()
+	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
+	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 
 func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
@@ -367,6 +395,73 @@ func (s *testServiceImpl) PingList(ping *testproto.PingRequest, stream testproto
 	grpclog.Printf("Handling PingList")
 	for i := int32(0); i < int32(expectedListResponses); i++ {
 		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
+	}
+	return nil
+}
+
+func (s *testServiceImpl) PingStream(stream testproto.TestService_PingStreamServer) error {
+	stream.SendHeader(expectedHeaders)
+	stream.SetTrailer(expectedTrailers)
+	grpclog.Printf("Handling PingStream")
+	allValues := ""
+	for {
+		in, err := stream.Recv()
+		if err == io.EOF {
+			stream.SendAndClose(&testproto.PingResponse{
+				Value: allValues,
+			})
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if allValues == "" {
+			allValues = in.GetValue()
+		} else {
+			allValues = allValues + "," + in.GetValue()
+		}
+		if in.FailureType == testproto.PingRequest_CODE {
+			if in.ErrorCodeReturned == 0 {
+				stream.SendAndClose(&testproto.PingResponse{
+					Value: allValues,
+				})
+				return nil
+			} else {
+				return grpc.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
+			}
+		}
+	}
+}
+
+func (s *testServiceImpl) Echo(ctx context.Context, text *testproto.TextMessage) (*testproto.TextMessage, error) {
+	grpc.SendHeader(ctx, expectedHeaders)
+	grpclog.Printf("Handling Echo")
+	grpc.SetTrailer(ctx, expectedTrailers)
+	return text, nil
+}
+
+func (s *testServiceImpl) PingPongBidi(stream testproto.TestService_PingPongBidiServer) error {
+	stream.SendHeader(expectedHeaders)
+	stream.SetTrailer(expectedTrailers)
+	grpclog.Printf("Handling PingPongBidi")
+	for {
+		in, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if in.FailureType == testproto.PingRequest_CODE {
+			if in.ErrorCodeReturned == 0 {
+				stream.Send(&testproto.PingResponse{
+					Value: in.Value,
+				})
+				return nil
+			} else {
+				return grpc.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
+			}
+		}
 	}
 	return nil
 }

@@ -15,7 +15,7 @@
   "dependencies": {
     "@types/google-protobuf": "^3.2.5",
     "google-protobuf": "^3.2.0",
-    "grpc-web-client": "0.3.0"
+    "grpc-web-client": "0.4.0"
   },
   "devDependencies": {
     "concurrently": "^3.4.0",

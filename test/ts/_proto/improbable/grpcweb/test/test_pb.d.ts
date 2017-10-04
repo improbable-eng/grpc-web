@@ -82,6 +82,34 @@ export namespace PingResponse {
   }
 }
 
+export class TextMessage extends jspb.Message {
+  getText(): string;
+  setText(value: string): void;
+
+  getSendHeaders(): boolean;
+  setSendHeaders(value: boolean): void;
+
+  getSendTrailers(): boolean;
+  setSendTrailers(value: boolean): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TextMessage.AsObject;
+  static toObject(includeInstance: boolean, msg: TextMessage): TextMessage.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: TextMessage, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TextMessage;
+  static deserializeBinaryFromReader(message: TextMessage, reader: jspb.BinaryReader): TextMessage;
+}
+
+export namespace TextMessage {
+  export type AsObject = {
+    text: string,
+    sendHeaders: boolean,
+    sendTrailers: boolean,
+  }
+}
+
 export class ContinueStreamRequest extends jspb.Message {
   getStreamIdentifier(): string;
   setStreamIdentifier(value: string): void;
