@@ -2,7 +2,7 @@ import * as jspb from "google-protobuf";
 import {BrowserHeaders as Metadata} from "browser-headers";
 import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Transport, TransportOptions, DefaultTransportFactory} from "./transports/Transport";
-import {debug} from "./debug";
+import {debug, DebuggerDispatch} from "./debug";
 import detach from "./detach";
 import {Code} from "./Code";
 
@@ -18,6 +18,8 @@ export type Request = {
 }
 
 export namespace grpc {
+
+  let requestId = 0;
 
   export interface ProtobufMessageClass<T extends jspb.Message> {
     new(): T;
@@ -162,6 +164,7 @@ export namespace grpc {
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
     const framedRequest = frameRequest(props.request);
+    const debuggers = new DebuggerDispatch(requestId);
 
     let completed = false;
     function rawOnEnd(code: Code, message: string, trailers: Metadata) {
@@ -208,34 +211,42 @@ export namespace grpc {
     if (!transport) {
       transport = DefaultTransportFactory.getTransport();
     }
-    const cancelFunc = transport({
+
+
+
+    debuggers.onRequestStart(props.host, methodDescriptor);
+    debuggers.onRequestHeaders(requestHeaders);
+    debuggers.onRequestMessage(props.request);
+
+    const request = {
       debug: props.debug || false,
       url: `${props.host}/${methodDescriptor.service.serviceName}/${methodDescriptor.methodName}`,
       headers: requestHeaders,
       body: framedRequest,
       onHeaders: (headers: Metadata, status: number) => {
-        props.debug && debug("onHeaders", headers, status);
-
         if (aborted) {
           props.debug && debug("grpc.onHeaders received after request was aborted - ignoring");
           return;
         }
 
+        // props.debug && debug("onHeaders", headers, status);
         if (status === 0) {
           // The request has failed due to connectivity issues. Do not capture the headers
         } else {
           responseHeaders = headers;
           props.debug && debug("onHeaders.responseHeaders", JSON.stringify(responseHeaders, null, 2));
           const code = httpStatusToCode(status);
-          props.debug && debug("onHeaders.code", code);
+          // props.debug && debug("onHeaders.code", code);
           const gRPCMessage = headers.get("grpc-message") || [];
-          props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
+          // props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
           if (code !== Code.OK) {
             rawOnError(code, gRPCMessage[0]);
+            debuggers.onResponseEnd(code, new Error(gRPCMessage[0]));
             return;
           }
 
           rawOnHeaders(headers);
+          debuggers.onRequestHeaders(headers);
         }
       },
       onChunk: (chunkBytes: Uint8Array) => {
@@ -248,8 +259,9 @@ export namespace grpc {
         try {
           data = parser.parse(chunkBytes);
         } catch (e) {
-          props.debug && debug("onChunk.parsing error", e, e.message);
+          // props.debug && debug("onChunk.parsing error", e, e.message);
           rawOnError(Code.Internal, `parsing error: ${e.message}`);
+          debuggers.onResponseEnd(Code.Internal, e);
           return;
         }
 
@@ -257,24 +269,28 @@ export namespace grpc {
           if (d.chunkType === ChunkType.MESSAGE) {
             const deserialized = methodDescriptor.responseType.deserializeBinary(d.data!);
             rawOnMessage(deserialized);
+            debuggers.onResponseMessage(deserialized);
           } else if (d.chunkType === ChunkType.TRAILERS) {
             responseTrailers = new Metadata(d.trailers);
-            props.debug && debug("onChunk.trailers", responseTrailers);
+            // props.debug && debug("onChunk.trailers", responseTrailers);
+            debuggers.onResponseTrailers(responseTrailers);
           }
         });
       },
       onEnd: () => {
-        props.debug && debug("grpc.onEnd");
+        // props.debug && debug("grpc.onEnd");
 
         if (aborted) {
-          props.debug && debug("grpc.onEnd received after request was aborted - ignoring");
+          // props.debug && debug("grpc.onEnd received after request was aborted - ignoring");
           return;
         }
 
         if (responseTrailers === undefined) {
           if (responseHeaders === undefined) {
             // The request was unsuccessful - it did not receive any headers
-            rawOnError(Code.Internal, "Response closed without headers");
+            const errorMessage = "Response closed without headers";
+            rawOnError(Code.Internal, errorMessage);
+            debuggers.onResponseEnd(Code.Internal, new Error(errorMessage));
             return;
           }
 
@@ -285,26 +301,34 @@ export namespace grpc {
           props.debug && debug("grpc.headers only response ", grpcStatus, grpcMessage);
 
           if (grpcStatus === null) {
-            rawOnEnd(Code.Internal, "Response closed without grpc-status (Headers only)", responseHeaders);
+            const errorMessage = "Response closed without grpc-status (Headers only)";
+            rawOnEnd(Code.Internal, errorMessage, responseHeaders);
+            debuggers.onResponseEnd(Code.Internal, new Error(errorMessage))
+
             return;
           }
 
           // Return an empty trailers instance
           rawOnEnd(grpcStatus, grpcMessage[0], responseHeaders);
+          debuggers.onResponseEnd(grpcStatus, null);
           return;
         }
 
         // There were trailers - get the status from them
         const grpcStatus = getStatusFromHeaders(responseTrailers);
         if (grpcStatus === null) {
-          rawOnError(Code.Internal, "Response closed without grpc-status (Trailers provided)");
+          const errorMessage = "Response closed without grpc-status (Trailers provided)";
+          rawOnError(Code.Internal, errorMessage);
+          debuggers.onResponseEnd(Code.Internal, new Error(errorMessage));
           return;
         }
 
         const grpcMessage = responseTrailers.get("grpc-message");
         rawOnEnd(grpcStatus, grpcMessage[0], responseTrailers);
+        debuggers.onResponseEnd(grpcStatus, null);
       }
-    });
+    }
+    const cancelFunc = transport(request);
 
     const requestObj = {
       abort() {
@@ -312,11 +336,13 @@ export namespace grpc {
           aborted = true;
           props.debug && debug("request.abort aborting request");
           cancelFunc();
+          debuggers.onResponseEnd(Code.Aborted, new Error("Aborting request"));
         }
 
       }
     };
 
+    requestId++;
     return requestObj;
   }
 }

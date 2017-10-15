@@ -7,3 +7,14 @@ export {
   Transport,
   TransportOptions,
 } from "./grpc";
+
+export {
+  Debugger,
+  DebuggerFactory,
+  ConsoleDebugger,
+  ConsoleDebuggerFactory,
+  registerDebugger,
+  getDebuggers,
+  removeDebugger,
+  MessageMethodDefinition,
+} from './debug';
