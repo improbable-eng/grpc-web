@@ -12,19 +12,18 @@ import {Metadata, BrowserHeaders} from "../../../ts/src/index";
 import { Message } from 'google-protobuf';
 import {Code} from "../../../ts/src/Code";
 import {
-  CheckStreamClosedRequest, CheckStreamClosedResponse,
-  ContinueStreamRequest,
   PingRequest,
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
-import {FailService, TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
+import {TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {grpc} from "../../../ts/src/grpc";
 import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
 import detach from "../../../ts/src/detach";
 
 const TestDebuggerFactory: DebuggerFactory = (id: number) => TestDebugger;
 const TestDebugger: sinon.SinonStubbedInstance<ConsoleDebugger> = sinon.createStubInstance(ConsoleDebugger);
-const MockDebuggerFacotry: DebuggerFactory = (id: number) => new MockDebugger(id);
+const MockDebuggerFactory: DebuggerFactory = (id: number) => new MockDebugger(id);
+const ThrowingDebuggerFactory :DebuggerFactory = (id: number) => new ThrowingDebugger();
 
 const REQUEST_ID = 123;
 const HOST = 'http://test.host.here';
@@ -90,20 +89,18 @@ describe('debug', () => {
     });
 
     it('should retain ordering of debuggers when one is removed', () => {
-      registerDebugger(TestDebuggerFactory, ConsoleDebuggerFactory, MockDebuggerFacotry);
+      registerDebugger(TestDebuggerFactory, ConsoleDebuggerFactory, MockDebuggerFactory);
       assert.equal(getDebuggers().length, 3)
 
       const outcome = removeDebugger(ConsoleDebuggerFactory);
       assert.isTrue(outcome);
       assert.equal(getDebuggers()[0], TestDebuggerFactory);
-      assert.equal(getDebuggers()[1], MockDebuggerFacotry);
+      assert.equal(getDebuggers()[1], MockDebuggerFactory);
     });
 
   });
 
   describe('Debugger Dispatch', () => {
-
-
 
     it('should gracefully handle no debuggers', () => {
       const dispatch = new DebuggerDispatch(REQUEST_ID);
@@ -161,8 +158,8 @@ describe('debug', () => {
       assert.doesNotThrow(() => dispatch.onResponseEnd(Code.OK, null));
     });
 
-    it('should gracefully handle errors in debugger methods', () => {
-      registerDebugger(MockDebuggerFacotry);
+    it('should gracefully handle a debugger with errors', () => {
+      registerDebugger(ThrowingDebuggerFactory);
 
       const dispatch = new DebuggerDispatch(REQUEST_ID);
 
@@ -173,7 +170,7 @@ describe('debug', () => {
       assert.doesNotThrow(() => dispatch.onResponseMessage(PONG));
       assert.doesNotThrow(() => dispatch.onResponseTrailers(RESPONSE_TRAILERS));
       assert.doesNotThrow(() => dispatch.onResponseEnd(Code.OK, null));
-    })
+    });
 
   });
 
@@ -273,16 +270,3 @@ class MockDebugger implements Debugger {
   }
 
 }
-
-// function buildDebuggerMock(): sinon.SinonMock {
-//   const mockDebugger = sinon.mock(new ThrowingDebugger());
-//   mockDebugger.expects('onRequestStart').once().withArgs(HOST, METHOD).returns(true);
-//   mockDebugger.expects('onRequestHeaders').once().withArgs(REQUEST_HEADERS).returns(true);
-//   mockDebugger.expects('onRequestMessage').once().withArgs(PING).returns(true);
-//   mockDebugger.expects('onResponseHeaders').once().withArgs(RESPONSE_HEADERS, 200).returns(true);
-//   mockDebugger.expects('onResponseMessage').once().withArgs(PONG).returns(true);
-//   mockDebugger.expects('onResponseTrailers').once().withArgs(RESPONSE_TRAILERS).returns(true);
-//   mockDebugger.expects('onResponseEnd').once().withArgs(Code.OK, null).returns(true);
-//
-//   return mockDebugger;
-// }
