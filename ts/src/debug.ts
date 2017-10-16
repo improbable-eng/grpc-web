@@ -97,10 +97,18 @@ export class ConsoleDebugger implements Debugger {
 
 export class DebuggerDispatch implements Debugger {
 
-  private readonly debuggers: Debugger[] = [];
+  readonly debuggers: Debugger[] = [];
 
   constructor(requestId: number) {
-    this.debuggers = getDebuggers().map(dbg => dbg(requestId));
+    this.debuggers = [];
+    const dbgs = getDebuggers();
+    for (let i = 0; i < dbgs.length; i++) {
+      try {
+        this.debuggers.push(dbgs[i](requestId))
+      } catch (e) {
+        console && (console.error || console.log) && console.error('Failed to create a debugger. The debugger will be ignored.', e);
+      }
+    }
   }
 
   onRequestStart(host: string, method: MessageMethodDefinition): void {
