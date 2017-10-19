@@ -30,9 +30,9 @@ const HOST = 'http://test.host.here';
 const METHOD = TestService.PingList as any as UnaryMethodDefinition<PingRequest, PingResponse>;
 const PING = new PingRequest();
 const PONG = new PingResponse();
-const REQUEST_HEADERS = new BrowserHeaders({'Request-Header-Key': 'Request Value'});
-const RESPONSE_HEADERS = new BrowserHeaders({'Response-Header-Key': 'Response Header Value'});
-const RESPONSE_TRAILERS = new BrowserHeaders({'Response-Trailer-Key': 'Response Trailer Value'});
+const REQUEST_HEADERS: Metadata = new BrowserHeaders({'Request-Header-Key': 'Request Value'});
+const RESPONSE_HEADERS: Metadata = new BrowserHeaders({'Response-Header-Key': 'Response Header Value'});
+const RESPONSE_TRAILERS: Metadata = new BrowserHeaders({'Response-Trailer-Key': 'Response Trailer Value'});
 
 const TestDebuggerFactory: DebuggerFactory = (id: number) => new TestDebugger(id);
 
@@ -137,8 +137,20 @@ describe('debug', () => {
 
       // Must detach since dispatch also detaches from the cycle
       detach(() => {
-        TestDebuggerA.verify();
-        TestDebuggerB.verify();
+        const expected = {
+          host: HOST,
+          method: METHOD,
+          requestHeaders: REQUEST_HEADERS,
+          requestMessage: PING,
+          responseHeaders: RESPONSE_HEADERS,
+          responseMessage: PONG,
+          responseTrailers: RESPONSE_TRAILERS,
+          httpStatus: 200,
+          grpcStatus: Code.OK,
+          error: null,
+        };
+        TestDebuggerA.verify(expected);
+        TestDebuggerB.verify(expected);
         done();
       })
 
@@ -209,10 +221,23 @@ class ThrowingDebugger implements Debugger {
 
 }
 
-class MockDebugger implements Debugger {
+interface GrpcInvocation {
+  host: string;
+  method: MessageMethodDefinition;
+  requestHeaders: Metadata;
+  requestMessage: Message;
+  responseHeaders: Metadata;
+  responseMessage: Message;
+  responseTrailers: Metadata;
+  httpStatus: number;
+  grpcStatus: Code;
+  error: Error | null;
+}
+
+export class MockDebugger implements Debugger {
 
   id: number;
-  method: any;
+  method: MessageMethodDefinition;
   host: string;
   requestHeaders: Metadata;
   requestMessage: Message;
@@ -258,17 +283,17 @@ class MockDebugger implements Debugger {
     this.err = err;
   }
 
-  verify() {
-    assert.deepEqual(this.host, HOST);
-    assert.deepEqual(this.method, METHOD);
-    assert.deepEqual(this.requestHeaders, REQUEST_HEADERS);
-    assert.deepEqual(this.requestMessage, PING);
-    assert.deepEqual(this.responseHeaders, RESPONSE_HEADERS);
-    assert.deepEqual(this.responseMessage, PONG);
-    assert.deepEqual(this.responseTrailers, RESPONSE_TRAILERS);
-    assert.deepEqual(this.httpStatus, 200);
-    assert.deepEqual(this.grpcStatus, Code.OK);
-    assert.deepEqual(this.err, null);
+  verify(attributes: GrpcInvocation): void {
+    assert.deepEqual(this.host, attributes.host);
+    assert.deepEqual(this.method, attributes.method);
+    assert.deepEqual(this.requestHeaders, attributes.requestHeaders);
+    assert.deepEqual(this.requestMessage, attributes.requestMessage);
+    assert.deepEqual(this.responseHeaders, attributes.responseHeaders);
+    assert.deepEqual(this.responseMessage, attributes.responseMessage);
+    assert.deepEqual(this.responseTrailers, attributes.responseTrailers);
+    assert.deepEqual(this.httpStatus, attributes.httpStatus);
+    assert.deepEqual(this.grpcStatus, attributes.grpcStatus);
+    assert.deepEqual(this.err, attributes.error);
   }
 
 }
