@@ -7,5 +7,9 @@
     "test": "npm run test:golang && npm run test:integration"
   },
   "author": "Improbable",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/sinon": "^2.3.6",
+    "sinon": "^4.0.1"
+  }
 }
