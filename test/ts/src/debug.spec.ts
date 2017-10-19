@@ -7,7 +7,7 @@ import {
   registerDebugger,
   removeDebugger
 } from "../../../ts/src/debug";
-import * as sinon from "Sinon";
+import * as sinon from "sinon";
 import {Metadata, BrowserHeaders} from "../../../ts/src/index";
 import { Message } from 'google-protobuf';
 import {Code} from "../../../ts/src/Code";
