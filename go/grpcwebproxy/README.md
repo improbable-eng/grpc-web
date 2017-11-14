@@ -11,13 +11,13 @@ Features:
  * TLS 1.2 serving (default on port `8443`):
    * with option to enable client side certificate validation
  * both secure (plaintext) and TLS gRPC backend connectivity:
-   * with customizeable CA certificates for connections
+   * with customizable CA certificates for connections
 
-The indented use is as a companion process for gRPC server contianers.
+The indented use is as a companion process for gRPC server containers.
 
 ## Installing
 
-You need Go >= 1.8. To install install you should:
+To install, you need to have Go >= 1.8, and call `go get`:
 
 ```
 go get -u github.com/improbable-eng/grpc-web/go/grpcwebproxy
