@@ -8,9 +8,10 @@ addons:
     - testhost
     - corshost
 env:
-- PROTOBUF_VER="3.2.0"
-# global_testserver is used to skip starting the testserver in start-testserver.sh
-- global_testserver=true
+  global:
+    - PROTOBUF_VER="3.2.0"
+    # global_testserver is used to skip starting the testserver in start-testserver.sh
+    - global_testserver=true
   matrix:
     - BROWSER=edge14_win
     - BROWSER=edge13_win
