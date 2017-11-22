@@ -25,7 +25,8 @@ export default function nodeHttpRequest(options: TransportOptions): CancelFunc {
 
   const responseCallback = (response: http.IncomingMessage) => {
     options.debug && console.log('httpNodeTransport.response', response.statusCode);
-    options.onHeaders(new Metadata(response.headers), response.statusCode!);
+    const headers = filterHeadersForUndefined(response.headers);
+    options.onHeaders(new Metadata(headers), response.statusCode!);
 
     response.on('data', chunk => {
       options.debug && console.log('httpNodeTransport.data', chunk);
@@ -55,6 +56,21 @@ export default function nodeHttpRequest(options: TransportOptions): CancelFunc {
     options.debug && console.log("httpNodeTransport.abort");
     request.abort();
   }
+}
+
+function filterHeadersForUndefined(headers: {[key: string]: string | string[] | undefined}): {[key: string]: string | string[]} {
+  const filteredHeaders: {[key: string]: string | string[]} = {};
+
+  for (let key in headers) {
+    const value = headers[key];
+    if (headers.hasOwnProperty(key)) {
+      if (value !== undefined) {
+        filteredHeaders[key] = value;
+      }
+    }
+  }
+
+  return filteredHeaders;
 }
 
 function toArrayBuffer(buf: Buffer): Uint8Array {

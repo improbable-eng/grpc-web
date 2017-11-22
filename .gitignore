@@ -162,3 +162,4 @@ ENV/
 .ropeproject
 
 node_modules
+vendor
