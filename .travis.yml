@@ -44,4 +44,4 @@ install:
 before_script:
   - ./test/start-testserver.sh &
 script:
-  - npm run test
+  - travis_retry npm run test
