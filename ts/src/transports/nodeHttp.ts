@@ -63,8 +63,10 @@ function filterHeadersForUndefined(headers: {[key: string]: string | string[] | 
 
   for (let key in headers) {
     const value = headers[key];
-    if (value !== undefined) {
-      filteredHeaders[key] = value;
+    if (headers.hasOwnProperty(key)) {
+      if (value !== undefined) {
+        filteredHeaders[key] = value;
+      }
     }
   }
 
