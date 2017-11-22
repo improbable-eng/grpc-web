@@ -58,17 +58,17 @@ export default function nodeHttpRequest(options: TransportOptions): CancelFunc {
   }
 }
 
-function filterHeadersForUndefined(incoming: {[key: string]: string | string[] | undefined}): {[key: string]: string | string[]} {
-  const filtereHeaders: {[key: string]: string | string[]} = {};
+function filterHeadersForUndefined(headers: {[key: string]: string | string[] | undefined}): {[key: string]: string | string[]} {
+  const filteredHeaders: {[key: string]: string | string[]} = {};
 
-  for (let key in incoming) {
-    const value = incoming[key];
+  for (let key in headers) {
+    const value = headers[key];
     if (value !== undefined) {
-      filtereHeaders[key] = value;
+      filteredHeaders[key] = value;
     }
   }
 
-  return filtereHeaders;
+  return filteredHeaders;
 }
 
 function toArrayBuffer(buf: Buffer): Uint8Array {
