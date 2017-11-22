@@ -21,7 +21,7 @@ export default (config) => {
     preprocessors: {
       '**/*.js': ['sourcemap', 'config-inject']
     },
-    reporters: ['dots'],
+    reporters: ['mocha'],
     protocol: 'https',
     hostname: testHost,
     port: 9876,
@@ -44,6 +44,7 @@ export default (config) => {
             done(`window.DEBUG = ${DEBUG};\n${content}`)
       ]},
       'karma-sourcemap-loader',
+      'karma-mocha-reporter',
       'karma-jasmine'
     ],
     autoWatch: true,

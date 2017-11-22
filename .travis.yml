@@ -10,8 +10,8 @@ addons:
 env:
   global:
     - PROTOBUF_VER="3.2.0"
-    # global_testserver is used to skip starting the testserver in start-testserver.sh
-    - global_testserver=true
+    # GLOBAL_TESTSERVER is used to skip starting the testserver in start-testserver.sh
+    - GLOBAL_TESTSERVER=true
   matrix:
     - BROWSER=edge14_win
     - BROWSER=edge13_win

@@ -2,8 +2,8 @@
 set -e
 set -x
 
-if [ "$global_testserver" = true ] ; then
-  echo "Not starting testserver as global_testserver is set"
+if [ "$GLOBAL_TESTSERVER" = true ] ; then
+  echo "Not starting testserver as GLOBAL_TESTSERVER is set"
 else
   function killGoTestServer {
     echo "Killing Go Test server..."
