@@ -8,12 +8,12 @@
     "build:ts": "cd ts && rm -rf build && webpack",
     "build:dev": "cd ts && rm -rf build && webpack --watch",
     "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp _proto/improbable/grpcweb/test/test_pb.js build-node/test/ts/_proto/improbable/grpcweb/test/test_pb.js)",
-    "build": "npm run build:proto && npm run build:testserver && npm run build:ts && npm run build:node",
+    "build": "npm run build:proto && npm run build:ts && npm run build:node",
     "lint": "tslint -c ./ts/tslint.json ./ts/src/**/*.ts",
     "test": "npm run build && npm run test:node && npm run test:browser",
-    "test:browser": "./run-testserver.sh karma start ./karma.conf.ts --single-run",
-    "test:node": "./run-testserver.sh jasmine ts/build-node/test/ts/node-src/node.spec.js",
-    "test:dev": "npm run build && ./run-testserver.sh karma start ./karma.conf.ts"
+    "test:browser": "./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
+    "test:node": "./run-with-testserver.sh jasmine ts/build-node/test/ts/node-src/node.spec.js",
+    "test:dev": "npm run build && ./run-with-testserver.sh karma start ./karma.conf.ts"
   },
   "license": "none",
   "dependencies": {

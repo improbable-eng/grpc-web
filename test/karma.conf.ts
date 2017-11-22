@@ -1,9 +1,10 @@
 import * as fs from 'fs';
-import customLaunchers from './browsers';
+import customLaunchersGenerator from './browsers';
 import customKarmaDriver from './custom-karma-driver';
 import {testHost} from './hosts-config';
 
 export default (config) => {
+  const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
   const useBrowserStack = process.env.BROWSER_STACK_USERNAME !== undefined;
   const browsers = useBrowserStack ? Object.keys(customLaunchers) : [];
