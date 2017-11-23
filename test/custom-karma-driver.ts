@@ -6,6 +6,7 @@ const username = process.env.BROWSER_STACK_USERNAME;
 const accessKey = process.env.BROWSER_STACK_ACCESS_KEY;
 const seleniumHost = 'hub-cloud.browserstack.com';
 const seleniumPort = 80;
+const buildName = process.env.TRAVIS_BUILD_NUMBER ? `travis_${process.env.TRAVIS_BUILD_NUMBER}` : `local_${new Date().getTime()}`;
 
 const viaUrls = [
   // HTTP 1.1
@@ -88,6 +89,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       });
       const bsCaps = _.assign({
         "project": process.env.TRAVIS_BRANCH || "dev",
+        "build": buildName,
         "acceptSslCerts": true,
         "defaultVideo": true,
         "browserstack.local": true,
