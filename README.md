@@ -2,7 +2,7 @@
 
 
 [![Master Build](https://travis-ci.org/improbable-eng/grpc-web.svg)](https://travis-ci.org/improbable-eng/grpc-web)
-![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=dU1qVEJGU3NUWmJJblNDTUtSd2h5MkZaYkkzd0t5R0NkRlVkN3dGYTl4dz0tLUpPc0dGOEYycmp1MU5Hems0c0ppNXc9PQ==--b8a3bcd29378150e1ebec92ebc7933f8710b516e)
+![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=L0k3QjhiNnByd3hWVVhtS0FxTmNrZERwbDBqR053OFJKV01veUpkL1FqOD0tLXZyS0d2WC9TaGEzeTBjbXZ6L1JNa2c9PQ==--b460187586f63fc2a48f557a515f9900f5639d10)
 [![NPM](https://img.shields.io/npm/v/grpc-web-client.svg)](https://www.npmjs.com/package/grpc-web-client)
 [![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/improbable-eng/grpc-web/go/grpcweb) 
 [![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
