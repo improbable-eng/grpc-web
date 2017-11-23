@@ -12,10 +12,10 @@ function browser(browserName, browserVersion, os, osVersion) {
 
 // Browser versions that should not have any Fetch/XHR differences in functionality to other (tested) versions are
 // commented out.
-export default {
+const browsers = {
   edge14_win: browser("edge", "14", "Windows", "10"),
   edge13_win: browser('edge', "13", 'Windows', "10"),
-  ie11_win: browser('ie',  "11", 'Windows', "7"),
+  ie11_win: browser('ie', "11", 'Windows', "7"),
   firefox53_osx: browser('firefox', "53", 'OS X', "Sierra"),
   // firefox52_osx: browser('firefox', "52", 'OS X', "Sierra"),
   // firefox51_osx: browser('firefox', "51", 'OS X', "Sierra"),
@@ -53,4 +53,18 @@ export default {
   // safari10: browser("safari", "10", "OS X", "Sierra"),
   safari9_1: browser("safari", "9.1", "OS X", "El Capitan"),
   safari8: browser("safari", "8", "OS X", "Yosemite")
+};
+
+export default () => {
+  const browserEnv = process.env.BROWSER;
+  if (browserEnv) {
+    const foundBrowser = browsers[browserEnv];
+    if (!foundBrowser) {
+      throw new Error(`BROWSER env var set to "${browserEnv}", but there is no browser with that identifier`);
+    }
+    return {
+      [browserEnv]: foundBrowser,
+    }
+  }
+  return browsers
 };

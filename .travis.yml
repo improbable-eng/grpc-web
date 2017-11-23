@@ -8,7 +8,24 @@ addons:
     - testhost
     - corshost
 env:
-- PROTOBUF_VER="3.2.0"
+  global:
+    - PROTOBUF_VER="3.2.0"
+    # GLOBAL_TESTSERVER is used to skip starting the testserver in start-testserver.sh
+    - GLOBAL_TESTSERVER=true
+  matrix:
+    - BROWSER=edge14_win
+    - BROWSER=edge13_win
+    - BROWSER=ie11_win
+    - BROWSER=firefox53_osx
+    - BROWSER=firefox39_osx
+    - BROWSER=firefox38_osx
+    - BROWSER=chrome_57
+    - BROWSER=chrome_52
+    - BROWSER=chrome_43
+    - BROWSER=chrome_42
+    - BROWSER=chrome_41
+    - BROWSER=safari9_1
+    - BROWSER=safari8
 cache:
   directories:
     - node_modules
@@ -24,5 +41,7 @@ install:
   - export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
   - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 6
   - npm install
+before_script:
+  - ./test/start-testserver.sh &
 script:
-  - npm run test
+  - travis_retry npm run test
