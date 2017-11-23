@@ -9,7 +9,7 @@ import {
 } from "../../../ts/src/debug";
 import * as sinon from "sinon";
 import {Metadata, BrowserHeaders} from "../../../ts/src/index";
-import { Message } from 'google-protobuf';
+import { Message } from "google-protobuf";
 import {Code} from "../../../ts/src/Code";
 import {
   PingRequest,
@@ -19,11 +19,11 @@ import {TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {grpc} from "../../../ts/src/grpc";
 import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
 import detach from "../../../ts/src/detach";
+import {UncaughtExceptionListener} from "./util";
 
-const TestDebuggerFactory: DebuggerFactory = (id: number) => TestDebugger;
-const TestDebugger: sinon.SinonStubbedInstance<ConsoleDebugger> = sinon.createStubInstance(ConsoleDebugger);
+// const TestDebugger: sinon.SinonStubbedInstance<ConsoleDebugger> = sinon.createStubInstance(ConsoleDebugger);
 const MockDebuggerFactory: DebuggerFactory = (id: number) => new MockDebugger(id);
-const ThrowingDebuggerFactory :DebuggerFactory = (id: number) => new ThrowingDebugger();
+const ThrowingDebuggerFactory: DebuggerFactory = (id: number) => new ThrowingDebugger();
 
 const REQUEST_ID = 123;
 const HOST = 'http://test.host.here';
@@ -34,7 +34,7 @@ const REQUEST_HEADERS: Metadata = new BrowserHeaders({'Request-Header-Key': 'Req
 const RESPONSE_HEADERS: Metadata = new BrowserHeaders({'Response-Header-Key': 'Response Header Value'});
 const RESPONSE_TRAILERS: Metadata = new BrowserHeaders({'Response-Trailer-Key': 'Response Trailer Value'});
 
-const TestDebuggerFactory: DebuggerFactory = (id: number) => new TestDebugger(id);
+const TestDebuggerFactory: DebuggerFactory = (id: number) => new MockDebugger(id);
 
 describe('debug', () => {
 
@@ -311,16 +311,16 @@ export class MockDebugger implements Debugger {
 //   return mockDebugger;
 // }
 
-  describe('registerDebugger', () => {
+  // describe('registerDebugger', () => {
+  //
+  //   it('should register a debugger', () => {
+  //     registerDebugger()
+  //   })
+  //
+  // })
 
-    it('should register a debugger', () => {
-      registerDebugger()
-    })
 
-  })
-
-
-})
+// })
 
 
 describe("detach", () => {
@@ -330,6 +330,7 @@ describe("detach", () => {
         done();
       });
     });
+    
 
     it("should invoke multiple functions in the order they are added", (done) => {
       let index = 0;
