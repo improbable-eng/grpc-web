@@ -22,6 +22,7 @@ import detach from "../../../ts/src/detach";
 import {UncaughtExceptionListener} from "./util";
 
 // const TestDebugger: sinon.SinonStubbedInstance<ConsoleDebugger> = sinon.createStubInstance(ConsoleDebugger);
+
 const MockDebuggerFactory: DebuggerFactory = (id: number) => new MockDebugger(id);
 const ThrowingDebuggerFactory: DebuggerFactory = (id: number) => new ThrowingDebugger();
 
@@ -298,30 +299,6 @@ export class MockDebugger implements Debugger {
 
 }
 
-// function buildDebuggerMock(): sinon.SinonMock {
-//   const mockDebugger = sinon.mock(new ThrowingDebugger());
-//   mockDebugger.expects('onRequestStart').once().withArgs(HOST, METHOD).returns(true);
-//   mockDebugger.expects('onRequestHeaders').once().withArgs(REQUEST_HEADERS).returns(true);
-//   mockDebugger.expects('onRequestMessage').once().withArgs(PING).returns(true);
-//   mockDebugger.expects('onResponseHeaders').once().withArgs(RESPONSE_HEADERS, 200).returns(true);
-//   mockDebugger.expects('onResponseMessage').once().withArgs(PONG).returns(true);
-//   mockDebugger.expects('onResponseTrailers').once().withArgs(RESPONSE_TRAILERS).returns(true);
-//   mockDebugger.expects('onResponseEnd').once().withArgs(Code.OK, null).returns(true);
-//
-//   return mockDebugger;
-// }
-
-  // describe('registerDebugger', () => {
-  //
-  //   it('should register a debugger', () => {
-  //     registerDebugger()
-  //   })
-  //
-  // })
-
-
-// })
-
 
 describe("detach", () => {
   describe("basic execution ordering", () => {
@@ -330,7 +307,7 @@ describe("detach", () => {
         done();
       });
     });
-    
+
 
     it("should invoke multiple functions in the order they are added", (done) => {
       let index = 0;
