@@ -14,6 +14,7 @@ if [[ "$GOBIN" == "" ]]; then
   export GOBIN="$GOPATH/bin"
 fi
 
+echo "Compiling protobuf definitions"
 protoc \
   --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
   --plugin=protoc-gen-go=${GOBIN}/protoc-gen-go \

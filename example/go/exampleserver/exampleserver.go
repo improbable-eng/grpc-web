@@ -39,7 +39,7 @@ func main() {
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		wrappedServer.ServeHTTP(resp, req)
+		wrappedServer.ServeHttp(resp, req)
 	}
 
 	httpServer := http.Server{
