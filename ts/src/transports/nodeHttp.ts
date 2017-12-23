@@ -45,7 +45,9 @@ class NodeHttp implements Transport {
   };
 
   start(metadata: Metadata) {
-    const headers: { [key: string]: string } = {};
+    const headers: { [key: string]: string } = {
+      'Content-Length': options.body.length.toString()
+    };
     metadata.forEach((key, values) => {
       headers[key] = values.join(", ");
     });
