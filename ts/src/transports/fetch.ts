@@ -44,7 +44,7 @@ class Fetch implements Transport {
       });
   }
 
-  send(msgBytes: ArrayBufferView) {
+  send(msgBytes: Uint8Array) {
     fetch(this.options.url, {
       headers: this.metadata.toHeaders(),
       method: "POST",
@@ -71,7 +71,7 @@ class Fetch implements Transport {
     });
   }
 
-  sendMessage(msgBytes: ArrayBufferView) {
+  sendMessage(msgBytes: Uint8Array) {
     this.send(msgBytes);
   }
 
