@@ -67,7 +67,7 @@ describe(`unary`, () => {
             onEnd: ({status, statusMessage, headers, message, trailers}) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-              assert.strictEqual(statusMessage, undefined, "expected no message");
+              assert.isNotOk(statusMessage, "expected no message");
               if (withHeaders) {
                 assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
@@ -108,7 +108,7 @@ describe(`unary`, () => {
             onEnd: ({status, statusMessage, headers, message, trailers}) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-              assert.strictEqual(statusMessage, undefined, "expected no message");
+              assert.isNotOk(statusMessage, "expected no message");
               if (withHeaders) {
                 assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
@@ -143,7 +143,7 @@ describe(`unary`, () => {
             onEnd: ({status, statusMessage, headers, message, trailers}) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-              assert.strictEqual(statusMessage, undefined, "expected no message");
+              assert.isNotOk(statusMessage, "expected no message");
               if (withHeaders) {
                 assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
