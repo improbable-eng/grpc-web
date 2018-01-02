@@ -21,7 +21,6 @@
     "@types/node": "^7.0.5",
     "browser-headers": "^0.3.2",
     "google-protobuf": "^3.2.0",
-    "text-encoding": "^0.6.4",
     "typedarray": "0.0.6"
   },
   "devDependencies": {
