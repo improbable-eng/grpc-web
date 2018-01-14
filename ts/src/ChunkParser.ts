@@ -1,9 +1,23 @@
 import {Metadata} from "./grpc";
-import * as TextEncoding from "text-encoding";
 
 const HEADER_SIZE = 5;
 
-const global = Function('return this')();
+const isAllowedControlChars = (char: number) => char === 0x9 || char === 0xa || char === 0xd;
+
+function isValidHeaderAscii(val: number): boolean {
+  return isAllowedControlChars(val) || (val >= 0x20 && val <= 0x7e);
+}
+
+export function decodeASCII(input: Uint8Array): string {
+  // With ES2015, TypedArray.prototype.every can be used
+  for (let i = 0; i !== input.length; ++i) {
+    if (!isValidHeaderAscii(input[i])) {
+      throw new Error("Header is not valid (printable) ASCII");
+    }
+  }
+  // With ES2017, the array conversion can be omitted with iterables
+  return String.fromCharCode(...Array.prototype.slice.call(input));
+}
 
 function isTrailerHeader(headerView: DataView) {
   // This is encoded in the MSB of the grpc header's first byte.
@@ -11,8 +25,7 @@ function isTrailerHeader(headerView: DataView) {
 }
 
 function parseTrailerData(msgData: Uint8Array): Metadata {
-  const decoder = global.TextDecoder !== undefined ? global.TextDecoder : TextEncoding.TextDecoder;
-  return new Metadata(new decoder("utf-8").decode(msgData))
+  return new Metadata(decodeASCII(msgData))
 }
 
 function readLengthFromHeader(headerView: DataView) {
@@ -25,7 +38,7 @@ function hasEnoughBytes(buffer: Uint8Array, position: number, byteCount: number)
 
 export function sliceUint8Array(buffer: Uint8Array, from: number, to?: number) {
   if (buffer.slice) {
-    return buffer.slice(from ,to);
+    return buffer.slice(from, to);
   }
 
   let end = buffer.length;
@@ -36,7 +49,7 @@ export function sliceUint8Array(buffer: Uint8Array, from: number, to?: number) {
   const num = end - from;
   const array = new Uint8Array(num);
   let arrayIndex = 0;
-  for(let i = from; i < end; i++) {
+  for (let i = from; i < end; i++) {
     array[arrayIndex++] = buffer[i];
   }
   return array;
@@ -53,7 +66,7 @@ export type Chunk = {
   data?: Uint8Array,
 }
 
-export class ChunkParser{
+export class ChunkParser {
   buffer: Uint8Array | null = null;
   position: number = 0;
 
