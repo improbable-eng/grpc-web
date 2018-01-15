@@ -34,3 +34,15 @@ $GOPATH/bin/grpcwebproxy
     --backend_addr=localhost:9090 \
     --backend_tls_noverify
 ```
+
+### Running specific servers
+
+By default, grpcwebproxy will run both TLS and HTTP debug servers. To disable either one, set the `--run_http_server` or `--run_tls_server` flags to false.
+
+For example, to only run the HTTP server, run the following:
+
+```
+$GOPATH/bin/grpcwebproxy
+    --backend_addr=localhost:9090 \
+    --run_tls_server=false
+```
