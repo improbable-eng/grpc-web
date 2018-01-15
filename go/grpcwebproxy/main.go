@@ -71,8 +71,8 @@ func main() {
 	// TODO(mwitkow): Add graceful shutdown.
 }
 
-func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) http.Server {
-	return http.Server{
+func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
+	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
@@ -81,7 +81,7 @@ func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) http.Server {
 	}
 }
 
-func serveServer(server http.Server, listener net.Listener, name string, errChan chan error) {
+func serveServer(server *http.Server, listener net.Listener, name string, errChan chan error) {
 	go func() {
 		logrus.Infof("listening for %s on: %v", name, listener.Addr().String())
 		if err := server.Serve(listener); err != nil {
