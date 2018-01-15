@@ -53,44 +53,41 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		debugServer := http.Server{
-			WriteTimeout: *flagHttpMaxWriteTimeout,
-			ReadTimeout:  *flagHttpMaxReadTimeout,
-			Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-				wrappedGrpc.ServeHTTP(resp, req)
-			}),
-		}
+		debugServer := buildServer(wrappedGrpc)
 		http.Handle("/metrics", promhttp.Handler())
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
-		go func() {
-			logrus.Infof("listening for http on: %v", debugListener.Addr().String())
-			if err := debugServer.Serve(debugListener); err != nil {
-				errChan <- fmt.Errorf("http_debug server error: %v", err)
-			}
-		}()
+		serveServer(debugServer, debugListener, "http", errChan)
 	}
 
 	if *runTlsServer {
 		// Debug server.
-		servingServer := http.Server{
-			WriteTimeout: *flagHttpMaxWriteTimeout,
-			ReadTimeout:  *flagHttpMaxReadTimeout,
-			Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-				wrappedGrpc.ServeHTTP(resp, req)
-			}),
-		}
+		servingServer := buildServer(wrappedGrpc)
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
-		go func() {
-			logrus.Infof("listening for http_tls on: %v", servingListener.Addr().String())
-			if err := servingServer.Serve(servingListener); err != nil {
-				errChan <- fmt.Errorf("http_tls server error: %v", err)
-			}
-		}()
+		serveServer(servingServer, servingListener, "http_tls", errChan)
 	}
 
 	<-errChan
 	// TODO(mwitkow): Add graceful shutdown.
+}
+
+func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) http.Server {
+	return http.Server{
+		WriteTimeout: *flagHttpMaxWriteTimeout,
+		ReadTimeout:  *flagHttpMaxReadTimeout,
+		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+			wrappedGrpc.ServeHTTP(resp, req)
+		}),
+	}
+}
+
+func serveServer(server http.Server, listener net.Listener, name string, errChan chan error) {
+	go func() {
+		logrus.Infof("listening for %s on: %v", name, listener.Addr().String())
+		if err := server.Serve(listener); err != nil {
+			errChan <- fmt.Errorf("%s server error: %v", name, err)
+		}
+	}()
 }
 
 func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
