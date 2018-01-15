@@ -28,8 +28,8 @@ import (
 
 var (
 	flagBindAddr    = pflag.String("server_bind_address", "0.0.0.0", "address to bind the server to")
-	flagHttpPort    = pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls. If 0, no insecure HTTP will be open.")
-	flagHttpTlsPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web). If 0, no TLS will be open.")
+	flagHttpPort    = pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls.")
+	flagHttpTlsPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web).")
 
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
