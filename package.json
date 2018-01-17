@@ -7,5 +7,6 @@
     "test": "npm run test:golang && npm run test:integration"
   },
   "author": "Improbable",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": "github:improbable-eng/grpc-web"
 }
