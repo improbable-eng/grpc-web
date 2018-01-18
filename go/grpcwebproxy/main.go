@@ -51,6 +51,10 @@ func main() {
 	// gRPC-Web compatibility layer with CORS configured to accept on every
 	wrappedGrpc := grpcweb.WrapServer(grpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
 
+	if !*runHttpServer && !*runTlsServer {
+		logrus.Fatalf("Both run_http_server and run_tls_server are set to false. At least one must be enabled for grpcweb proxy to function correctly.")
+	}
+
 	if *runHttpServer {
 		// Debug server.
 		debugServer := buildServer(wrappedGrpc)
