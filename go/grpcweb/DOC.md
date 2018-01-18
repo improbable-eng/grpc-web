@@ -1,6 +1,7 @@
 # grpcweb
---
-    import "github.com/improbable-eng/grpc-web/go/grpcweb"
+```go
+import "github.com/improbable-eng/grpc-web/go/grpcweb"
+```
 
 `grpcweb` implements the gRPC-Web spec as a wrapper around a gRPC-Go Server.
 
