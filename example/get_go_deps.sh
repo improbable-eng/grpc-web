@@ -1,11 +1,15 @@
-go get github.com/sirupsen/logrus
-go get github.com/grpc-ecosystem/go-grpc-prometheus
-go get github.com/mwitkow/go-conntrack
-go get github.com/mwitkow/go-conntrack/connhelpers
-go get github.com/mwitkow/go-grpc-middleware
-go get github.com/mwitkow/go-grpc-middleware/logging/logrus
-go get github.com/mwitkow/grpc-proxy/proxy
-go get github.com/prometheus/client_golang/prometheus/promhttp
-go get github.com/spf13/pflag
-go get github.com/rs/cors
-go get github.com/golang/protobuf/protoc-gen-go
+#!/usr/bin/env bash
+
+echo "Installing go dependencies..."
+DEP=command -v dep
+if [[ "$DEP" == "" ]]; then
+  echo "Cannot find golang's package manager 'dep'. Please follow https://github.com/golang/dep#setup"
+  exit -1
+fi
+cd go
+dep ensure
+
+cd ../
+
+echo "Installing Protobuf to Golang compiler..."
+go get -u github.com/golang/protobuf/protoc-gen-go

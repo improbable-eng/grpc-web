@@ -14,9 +14,9 @@ import (
 
 	"strings"
 
-	library "../_proto/examplecom/library"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"golang.org/x/net/context"
+	library "github.com/improbable-eng/grpc-web/example/go/_proto/examplecom/library"
 )
 
 var (
@@ -39,7 +39,7 @@ func main() {
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		wrappedServer.ServeHTTP(resp, req)
+		wrappedServer.ServeHttp(resp, req)
 	}
 
 	httpServer := http.Server{
@@ -63,22 +63,22 @@ func main() {
 type bookService struct{}
 
 var books = []*library.Book{
-	&library.Book{
+	{
 		Isbn:   60929871,
 		Title:  "Brave New World",
 		Author: "Aldous Huxley",
 	},
-	&library.Book{
+	{
 		Isbn:   140009728,
 		Title:  "Nineteen Eighty-Four",
 		Author: "George Orwell",
 	},
-	&library.Book{
+	{
 		Isbn:   9780140301694,
 		Title:  "Alice's Adventures in Wonderland",
 		Author: "Lewis Carroll",
 	},
-	&library.Book{
+	{
 		Isbn:   140008381,
 		Title:  "Animal Farm",
 		Author: "George Orwell",
