@@ -772,6 +772,11 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
     });
 
     it("should handle aborting a streaming response mid-stream with propagation of the disconnection to the server", (done) => {
+      if (global.navigator && /Edge\/\d./i.test(global.navigator.userAgent)) {
+        pending();
+        return;
+      }
+
       let onMessageId = 0;
 
       const streamIdentifier = `rpc-${Math.random()}`;
