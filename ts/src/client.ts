@@ -37,7 +37,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
   sentFirstMessage: boolean = false;
   completed: boolean = false;
   closed: boolean = false;
-  finishedSend: boolean = false;
+  finishedSending: boolean = false;
 
   onHeadersCallbacks: Array<(headers: Metadata) => void> = [];
   onMessageCallbacks: Array<(res: TResponse) => void> = [];
@@ -257,7 +257,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.closed) {
       throw new Error("Client already closed - cannot .send()");
     }
-    if (this.finishedSend) {
+    if (this.finishedSending) {
       throw new Error("Client already finished sending - cannot .send()");
     }
     if (!this.methodDefinition.requestStream && this.sentFirstMessage) {
@@ -276,10 +276,10 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.closed) {
       throw new Error("Client already closed - cannot .send()");
     }
-    if (this.finishedSend) {
+    if (this.finishedSending) {
       throw new Error("Client already finished sending - cannot .finishSend()");
     }
-    this.finishedSend = true;
+    this.finishedSending = true;
     this.transport.finishSend();
   }
 
