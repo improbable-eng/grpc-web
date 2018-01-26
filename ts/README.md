@@ -59,14 +59,14 @@ There are three functions for making gRPC requests:
 ### [`grpc.unary`](docs/unary.md)
 This is a convenience function for making requests that consist of a single request message and single response message. It can only be used with unary methods.
 
-```
+```protobuf
 rpc GetBook(GetBookRequest) returns (Book) {}
 ```
 
 ### [`grpc.invoke`](docs/invoke.md)
 This is a convenience function for making requests that consist of a single request message and a stream of response messages (server-streaming). It can also be used with unary methods.
 
-```
+```protobuf
 rpc GetBook(GetBookRequest) returns (Book) {}
 rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
 ```
@@ -74,7 +74,7 @@ rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
 ### [`grpc.client`](docs/client.md)
 `grpc.client` returns a client. Dependant upon [transport compatibility](docs/transport) this client is capable of sending multiple request messages (client-streaming) and receiving multiple response messages (server-streaming). It can be used with any type of method, but will enforce limiting the sending of messages for unary methods.
 
-```
+```protobuf
 rpc GetBook(GetBookRequest) returns (Book) {}
 rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
 rpc LogReadPages(stream PageRead) returns (google.protobuf.Empty) {}
