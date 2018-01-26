@@ -24,7 +24,7 @@ There is an [example project available here](https://github.com/improbable-eng/g
   * [Go to code generation docs](docs/code-generation)
 * Make a request using [`unary()`](unary), [`invoke()`](invoke) or [`client()`](client)
 
-```typescript
+```javascript
 import {grpc} from "grpc-web-client";
 
 // Import code-generated data structures.
@@ -47,7 +47,7 @@ grpc.unary(BookService.GetBook, {
 
 * Requests can be aborted/cancelled before they complete:
 
-```typescript
+```javascript
 const request = grpc.unary(BookService.GetBook, { ... });
 request.cancel();
 ```

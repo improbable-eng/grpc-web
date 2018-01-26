@@ -5,7 +5,7 @@
 **The default transports are not capable of bi-directional streaming - this implementation exists to support future transports such as websockets that are capable of bi-directional streaming.**
 
 ## API Docs:
-```typescript
+```javascript
 grpc.client(methodDescriptor: MethodDescriptor, props: ClientRpcOptions): Client;
 ```
 
@@ -21,7 +21,7 @@ grpc.client(methodDescriptor: MethodDescriptor, props: ClientRpcOptions): Client
   * (optional) if `true`, debug information will be printed to the console
 
 #### `Client`:
-```typescript
+```javascript
 // Open the connection to the server
 start(metadata?: grpc.Metadata): void;
 
@@ -63,7 +63,7 @@ Most browser networking methods do not allow control over the sending of the bod
 For transports that do allow control over the sending of the body (e.g. websockets - coming soon), the client can optionally indicate that it has finished sending. This is useful for client-streaming or bi-directional methods in which the server will send responses after receiving all client messages. Usage with unary methods is likely not necessary as server handlers will assume the client has finished sending after receiving the single expected message.
 
 ## Example:
-```typescript
+```javascript
 const request = new QueryBooksRequest();
 request.setAuthorPrefix("Geor");
 

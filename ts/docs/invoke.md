@@ -5,7 +5,7 @@
 There is also [`grpc.unary`](unary) which is a convenience function for making unary requests and [`grpc.client`](client) for making bi-directional requests. `grpc.client` will also work with unary and server-streaming methods.
 
 ## API Docs:
-```typescript
+```javascript
 grpc.invoke(methodDescriptor: MethodDescriptor, props: InvokeRpcOptions): Request;
 ```
 
@@ -31,7 +31,7 @@ grpc.invoke(methodDescriptor: MethodDescriptor, props: InvokeRpcOptions): Reques
   * (optional) if `true`, debug information will be printed to the console
 
 #### `Request`:
-```typescript
+```javascript
 // Close the connection to the server without waiting for any response
 close(): void;
 ```
@@ -45,7 +45,7 @@ A unary or server-streaming gRPC request goes through the following stages:
 * Server closes the request with [status code](concepts#status-codes) and trailers (metadata) - `onEnd` callback called
 
 ## Example:
-```typescript
+```javascript
 const request = new QueryBooksRequest();
 request.setAuthorPrefix("Geor");
 

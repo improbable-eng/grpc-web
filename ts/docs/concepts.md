@@ -10,7 +10,7 @@ A method definition includes the service and method names, request and response 
 Definitions of the format used by `grpc-web-client` can be generated using the [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) plugin for [protoc](https://github.com/google/protobuf). See [code generation](code-generation) for instructions.
 
 #### Example method definition:
-```typescript
+```javascript
 export namespace BookService {
   export class GetBook {
     static readonly methodName = "GetBook";
@@ -34,7 +34,7 @@ Upon completion a gRPC request will expose a status code indicating how the requ
 `0 - OK` indicates that the request was completed successfully.
 
 #### `grpc.Code`:
-```typescript
+```javascript
 0   OK
 1   Canceled
 2   Unknown

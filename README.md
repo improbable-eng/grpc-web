@@ -100,7 +100,7 @@ func (s *bookService) QueryBooks(bookQuery *pb_library.QueryBooksRequest, stream
 
 You will be able to access it in a browser using TypeScript (and equally JavaScript after transpiling):
 
-```typescript
+```javascript
 import {grpc} from "grpc-web-client";
 
 // Import code-generated data structures.
