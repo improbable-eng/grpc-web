@@ -23,8 +23,7 @@
     "@types/node": "^7.0.5",
     "browser-headers": "^0.3.2",
     "google-protobuf": "^3.2.0",
-    "typedarray": "0.0.6",
-    "text-encoding-utf-8": "^1.0.2"
+    "typedarray": "0.0.6"
   },
   "devDependencies": {
     "@types/chai": "^3.4.35",
