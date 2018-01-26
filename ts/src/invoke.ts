@@ -27,28 +27,28 @@ export function invoke<TRequest extends ProtobufMessage, TResponse extends Proto
   }
 
   // client can throw an error if the transport factory returns an error (e.g. no valid transport)
-  const clientImpl = client(methodDescriptor, {
+  const grpcClient = client(methodDescriptor, {
     host: props.host,
     transport: props.transport,
     debug: props.debug,
   });
 
   if (props.onHeaders) {
-    clientImpl.onHeaders(props.onHeaders);
+    grpcClient.onHeaders(props.onHeaders);
   }
   if (props.onMessage) {
-    clientImpl.onMessage(props.onMessage);
+    grpcClient.onMessage(props.onMessage);
   }
   if (props.onEnd) {
-    clientImpl.onEnd(props.onEnd);
+    grpcClient.onEnd(props.onEnd);
   }
 
-  clientImpl.start(props.metadata);
-  clientImpl.send(props.request);
+  grpcClient.start(props.metadata);
+  grpcClient.send(props.request);
 
   return {
     close: () => {
-      clientImpl.close();
+      grpcClient.close();
     }
   };
 }

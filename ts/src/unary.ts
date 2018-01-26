@@ -34,18 +34,18 @@ export function unary<TRequest extends ProtobufMessage, TResponse extends Protob
   let responseMessage: TResponse | null = null;
 
   // client can throw an error if the transport factory returns an error (e.g. no valid transport)
-  const clientImpl = client(methodDescriptor, {
+  const grpcClient = client(methodDescriptor, {
     host: props.host,
     transport: props.transport,
     debug: props.debug,
   });
-  clientImpl.onHeaders((headers: Metadata) => {
+  grpcClient.onHeaders((headers: Metadata) => {
     responseHeaders = headers;
   });
-  clientImpl.onMessage((res: TResponse) => {
+  grpcClient.onMessage((res: TResponse) => {
     responseMessage = res;
   });
-  clientImpl.onEnd((status: Code, statusMessage: string, trailers: Metadata) => {
+  grpcClient.onEnd((status: Code, statusMessage: string, trailers: Metadata) => {
     props.onEnd({
       status: status,
       statusMessage: statusMessage,
@@ -55,12 +55,12 @@ export function unary<TRequest extends ProtobufMessage, TResponse extends Protob
     });
   });
 
-  clientImpl.start(props.metadata);
-  clientImpl.send(props.request);
+  grpcClient.start(props.metadata);
+  grpcClient.send(props.request);
 
   return {
     close: () => {
-      clientImpl.close();
+      grpcClient.close();
     }
   };
 }
