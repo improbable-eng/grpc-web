@@ -2,14 +2,14 @@
 
 `grpc.invoke` allows making either a unary or server-streaming gRPC request.
 
-There is also [`grpc.unary`](unary) which is a convenience function for making unary requests and [`grpc.client`](client) for making bi-directional requests. `grpc.client` will also work with unary and server-streaming methods.
+There is also [`grpc.unary`](unary.md) which is a convenience function for making unary requests and [`grpc.client`](client.md) for making bi-directional requests. `grpc.client` will also work with unary and server-streaming methods.
 
 ## API Docs:
 ```javascript
 grpc.invoke(methodDescriptor: MethodDescriptor, props: InvokeRpcOptions): Request;
 ```
 
-`methodDescriptor` is a generated method definition ([see code generation for how to generate these](code-generation)).
+`methodDescriptor` is a generated method definition ([see code generation for how to generate these](code-generation.md)).
 
 #### `InvokeRpcOptions`:
 
@@ -26,7 +26,7 @@ grpc.invoke(methodDescriptor: MethodDescriptor, props: InvokeRpcOptions): Reques
 * `onEnd: (code: grpc.Code, message: string, trailers: grpc.Metadata) => void)`
   * A callback for the end of the request and trailers being received
 * `transport?: TransportConstructor`
-  * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport).
+  * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport.md).
 * `debug?: boolean`
   * (optional) if `true`, debug information will be printed to the console
 
@@ -42,7 +42,7 @@ A unary or server-streaming gRPC request goes through the following stages:
 * Request with optional metadata and a single message is sent to the server - `invoke()`
 * Server sends headers (metadata) - `onHeaders` callback called
 * Server responds with one (or more if non-unary) message(s) to the client - `onMessage` callback called
-* Server closes the request with [status code](concepts#status-codes) and trailers (metadata) - `onEnd` callback called
+* Server closes the request with [status code](concepts.md#status-codes) and trailers (metadata) - `onEnd` callback called
 
 ## Example:
 ```javascript

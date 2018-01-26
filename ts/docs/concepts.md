@@ -29,7 +29,7 @@ Metadata is a collection of key-value pairs sent by the client to the server and
 `grpc-web-client` uses the [`js-browser-headers`](https://github.com/improbable-eng/js-browser-headers) library to provide a consistent implementation of the Headers class across browsers. The `BrowserHeaders` class from this library is aliased to `grpc.Metadata`.
 
 ### Status Codes
-Upon completion a gRPC request will expose a status code indicating how the request ended. This status code can be provided by the server in the [Metadata](#Metadata), but if the request failed or the server did not include a status code then the status code is determined by the client.
+Upon completion a gRPC request will expose a status code indicating how the request ended. This status code can be provided by the server in the [Metadata](#metadata), but if the request failed or the server did not include a status code then the status code is determined by the client.
 
 `0 - OK` indicates that the request was completed successfully.
 
@@ -55,5 +55,5 @@ Upon completion a gRPC request will expose a status code indicating how the requ
 ```
 
 ### Status Messages
-Alongside a status code, requests can include a message upon completion. This can be provided by the server in the [Metadata](#Metadata), but if the request failed or the server did not include a status message then the status message is determined by the client and is intended to aid debugging.
+Alongside a status code, requests can include a message upon completion. This can be provided by the server in the [Metadata](#metadata), but if the request failed or the server did not include a status message then the status message is determined by the client and is intended to aid debugging.
 

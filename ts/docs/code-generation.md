@@ -1,6 +1,6 @@
 # Code Generation
 
-To make gRPC requests the client requires generated code for the [method definitions](concepts#method-definition) and message classes that are [defined in `.proto` files](https://developers.google.com/protocol-buffers/docs/proto3#services).
+To make gRPC requests the client requires generated code for the [method definitions](concepts.md#method-definition) and message classes that are [defined in `.proto` files](https://developers.google.com/protocol-buffers/docs/proto3#services).
 
 [`protoc`](https://github.com/google/protobuf) is the google protobuf code generation tool. It can generate the JavaScript message classes and also supports using plugins for additional code generation.
 
@@ -86,4 +86,4 @@ service BookService {
 
 Will generate `book_service_pb.js` and `book_service_pb_service.js`.
 
-The first file contains the message classes and `book_service_pb_service.js` contains a `BookService.GetBook` class that acts as [method definition](concepts#MethodDefinition) that can be used with `grpc-web-client`.
+The first file contains the message classes and `book_service_pb_service.js` contains a `BookService.GetBook` class that acts as [method definition](concepts.md#method-definition) that can be used with `grpc-web-client`.

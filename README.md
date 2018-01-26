@@ -140,7 +140,7 @@ This library is tested against:
   
 ## Node.js Support
 
-`grpc-web-client` also [supports Node.js through a transport](ts/docs/transport#Node-HTTP) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
+`grpc-web-client` also [supports Node.js through a transport](ts/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
 *__Please note - There is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc) that does not require the server to support gRPC-Web__*
 
@@ -164,7 +164,7 @@ Browsers that don't support [Fetch with `body.getReader`](https://developer.mozi
 
 XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large payload server streaming if you intend to support browsers that do not support Fetch.
 
-You can read more about how grpc-web-client determines and uses transports [here](ts/docs/transport).
+You can read more about how grpc-web-client determines and uses transports [here](ts/docs/transport.md).
 
 ### Running the tests
 

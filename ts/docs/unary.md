@@ -2,14 +2,14 @@
 
 `grpc.unary` allows making unary gRPC requests.
 
-There is also [`grpc.invoke`](invoke) for making server-streaming requests and [`grpc.client`](client) for making bi-directional requests that will both work with unary methods.
+There is also [`grpc.invoke`](invoke.md) for making server-streaming requests and [`grpc.client`](client.md) for making bi-directional requests that will both work with unary methods.
 
 ## API Docs:
 ```javascript
 grpc.unary(methodDescriptor: MethodDescriptor, props: UnaryRpcOptions): Request;
 ```
 
-`methodDescriptor` is a generated method definition ([see code generation for how to generate these](code-generation)).
+`methodDescriptor` is a generated method definition ([see code generation for how to generate these](code-generation.md)).
 
 #### `UnaryRpcOptions`:
 
@@ -22,22 +22,22 @@ grpc.unary(methodDescriptor: MethodDescriptor, props: UnaryRpcOptions): Request;
 * `onEnd: (output: UnaryOutput<TResponse>) => void)`
   * A callback for the end of the request and trailers being received
 * `transport?: TransportConstructor`
-  * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport).
+  * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport.md).
 * `debug?: boolean`
   * (optional) if `true`, debug information will be printed to the console
 
 #### `UnaryOutput`
 
 * `status: Code`
-  * The [status code](concepts#status-codes) that the request ended with
+  * The [status code](concepts.md#status-codes) that the request ended with
 * `statusMessage: string`
-  * The [status message](concepts#status-messages) that the request ended with
+  * The [status message](concepts.md#status-messages) that the request ended with
 * `headers: Metadata`
-  * The headers ([Metadata](concepts#metadata)) that the server sent
+  * The headers ([Metadata](concepts.md#metadata)) that the server sent
 * `message: TResponse | null`
   * The single message that the server sent in the response.
 * `trailers: Metadata`
-  * The trailers ([Metadata](concepts#metadata)) that the server sent
+  * The trailers ([Metadata](concepts.md#metadata)) that the server sent
 
 #### `Request`:
 ```javascript

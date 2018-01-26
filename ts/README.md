@@ -21,8 +21,8 @@ There is an [example project available here](https://github.com/improbable-eng/g
 
 ## Usage Overview
 * Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes. `ts-protoc-gen` can also generate gRPC service definitions with the `service=true` argument.
-  * [Go to code generation docs](docs/code-generation)
-* Make a request using [`unary()`](unary), [`invoke()`](invoke) or [`client()`](client)
+  * [Go to code generation docs](docs/code-generation.md)
+* Make a request using [`unary()`](docs/unary.md), [`invoke()`](docs/invoke.md) or [`client()`](docs/client.md)
 
 ```javascript
 import {grpc} from "grpc-web-client";
@@ -56,14 +56,14 @@ request.cancel();
 
 There are three functions for making gRPC requests:
 
-### [`grpc.unary`](docs/unary)
+### [`grpc.unary`](docs/unary.md)
 This is a convenience function for making requests that consist of a single request message and single response message. It can only be used with unary methods.
 
 ```
 rpc GetBook(GetBookRequest) returns (Book) {}
 ```
 
-### [`grpc.invoke`](docs/invoke)
+### [`grpc.invoke`](docs/invoke.md)
 This is a convenience function for making requests that consist of a single request message and a stream of response messages (server-streaming). It can also be used with unary methods.
 
 ```
@@ -71,7 +71,7 @@ rpc GetBook(GetBookRequest) returns (Book) {}
 rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
 ```
 
-### [`grpc.client`](docs/client)
+### [`grpc.client`](docs/client.md)
 `grpc.client` returns a client. Dependant upon [transport compatibility](docs/transport) this client is capable of sending multiple request messages (client-streaming) and receiving multiple response messages (server-streaming). It can be used with any type of method, but will enforce limiting the sending of messages for unary methods.
 
 ```
@@ -84,9 +84,9 @@ rpc ListenForBooks(stream QueryBooksRequest) returns (stream Book) {}
 
 ## All Docs
 
-* [unary()](docs/unary)
-* [invoke()](docs/invoke)
-* [client()](docs/client)
-* [Code Generation](docs/code-generation)
-* [Concepts](docs/concepts)
-* [Transport](docs/transport)
+* [unary()](docs/unary.md)
+* [invoke()](docs/invoke.md)
+* [client()](docs/client.md)
+* [Code Generation](docs/code-generation.md)
+* [Concepts](docs/concepts.md)
+* [Transport](docs/transport.md)

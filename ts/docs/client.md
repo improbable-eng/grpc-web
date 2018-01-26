@@ -9,14 +9,14 @@
 grpc.client(methodDescriptor: MethodDescriptor, props: ClientRpcOptions): Client;
 ```
 
-`methodDescriptor` is a generated method definition ([see code generation for how to generate these](code-generation)).
+`methodDescriptor` is a generated method definition ([see code generation for how to generate these](code-generation.md)).
 
 #### `ClientRpcOptions`:
 
 * `host: string`
   * The server address (`"https://example.com:9100"`)
 * `transport?: TransportConstructor`
-  * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport).
+  * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport.md).
 * `debug?: boolean`
   * (optional) if `true`, debug information will be printed to the console
 

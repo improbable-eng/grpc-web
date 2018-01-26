@@ -6,9 +6,9 @@ A “transport” in this context is a wrapper of one of these methods of creati
 
 ## How does grpc-web-client pick a transport?
 
-You can specify the transport that you want to use for a specific invocation through the `library` property in the [`client`](client), [`invoke`](invoke) and [`unary`](unary) function options.
+You can specify the transport that you want to use for a specific invocation through the `library` property in the [`client`](client.md), [`invoke`](invoke.md) and [`unary`](unary.md) function options.
 
-If a transport is not specified then a transport factory is used to determine the browser’s compatible transports. See [Available Transports](#Available transports)
+If a transport is not specified then a transport factory is used to determine the browser’s compatible transports. See [Available Transports](#available-transports)
 
 If none are found then an exception is thrown.
 
