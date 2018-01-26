@@ -16,7 +16,7 @@ import {
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {DEBUG, continueStream, UncaughtExceptionListener} from "./util";
-import {headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports} from "./testCombinations";
+import {headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports} from "./testRpcCombinations";
 
 describe("invoke", () => {
   runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
