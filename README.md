@@ -118,6 +118,9 @@ grpc.invoke(BookService.QueryBooks, {
 });
 ```
 
+### Usage with React
+* [Example project using gRPC-Web with React and Go](https://github.com/easyCZ/grpc-web-hacker-news)
+
 ## Browser Support
 
 The `grpc-web-client` uses multiple techniques to efficiently invoke gRPC services. Most modern browsers support the [Fetch API](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), which allows for efficient reading of partial, binary responses. For older browsers, it automatically falls back to [`XMLHttpRequest`](https://developer.mozilla.org/nl/docs/Web/API/XMLHttpRequest).
