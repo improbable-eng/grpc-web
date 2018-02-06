@@ -19,13 +19,16 @@ env:
     - BROWSER=firefox53_osx
     - BROWSER=firefox39_osx
     - BROWSER=firefox38_osx
+    - BROWSER=firefox21_osx
     - BROWSER=chrome_57
     - BROWSER=chrome_52
     - BROWSER=chrome_43
     - BROWSER=chrome_42
     - BROWSER=chrome_41
+    - BROWSER=safari11
     - BROWSER=safari9_1
     - BROWSER=safari8
+    - BROWSER=safari6
 cache:
   directories:
     - node_modules
@@ -39,7 +42,7 @@ install:
   - go get github.com/golang/protobuf/protoc-gen-go
   - dep ensure
   - export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install 6
+  - nvm install
   - npm install
 before_script:
   - ./test/start-testserver.sh &

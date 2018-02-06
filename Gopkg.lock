@@ -22,8 +22,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
-  packages = [".","logging","logging/logrus","tags"]
-  revision = "952ab2f8654d37d739b03d1a4e30e2c4bfa4bb18"
+  packages = [".","logging","logging/logrus","tags","tags/logrus"]
+  revision = "93790b4a90fab4022bb148faf5e3f3580d817d50"
 
 [[projects]]
   name = "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -88,8 +88,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
-  version = "v1.0.3"
+  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  version = "v1.0.4"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -107,37 +107,37 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "9f005a07e0d31d45e6656d241bb5c0f2efd4bc94"
+  revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
-  revision = "9dfe39835686865bff950a07b394c12a98ddc811"
+  revision = "dc871a5d77e227f5bbf6545176ef3eeebf87e76e"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
-  revision = "82aafbf43bf885069dc71b7e7c2f9d7a614d47da"
+  revision = "b8f5ef32195cae6470b728e8ca677f0dbed1a004"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
-  revision = "88f656faf3f37f690df1a32515b479415e1a6769"
+  revision = "be25de41fadfae372d6470bda81ca6beb55ef551"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "891aceb7c239e72692819142dfca057bdcbfcb96"
+  revision = "73cb5d0be5af113b42057925bd6c93e3cd9f60fd"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
-  revision = "5a9f7b402fe85096d2e1d0383435ee1876e863d0"
-  version = "v1.8.0"
+  packages = [".","balancer","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","resolver","resolver/dns","resolver/manual","resolver/passthrough","stats","status","tap","transport"]
+  revision = "be077907e29fdb945d351e4284eb5361e7f8924e"
+  version = "v1.8.1"
 
 [solve-meta]
   analyzer-name = "dep"

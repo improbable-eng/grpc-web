@@ -27,6 +27,12 @@ message PingResponse {
   int32 counter = 2;
 }
 
+message TextMessage {
+  string text = 1;
+  bool send_headers = 2;
+  bool send_trailers = 3;
+}
+
 service TestService {
   rpc PingEmpty(google.protobuf.Empty) returns (PingResponse) {}
 
@@ -35,6 +41,12 @@ service TestService {
   rpc PingError(PingRequest) returns (google.protobuf.Empty) {}
 
   rpc PingList(PingRequest) returns (stream PingResponse) {}
+
+  rpc PingPongBidi(stream PingRequest) returns (stream PingResponse) {}
+
+  rpc PingStream(stream PingRequest) returns (PingResponse) {}
+
+  rpc Echo(TextMessage) returns (TextMessage) {}
 }
 
 message ContinueStreamRequest {

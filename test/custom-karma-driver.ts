@@ -68,6 +68,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   self.name = capabilities.browserName + ' - ' + capabilities.browserVersion + ' - ' + capabilities.os + ' ' + capabilities.os_version;
   self.log = logger.create('launcher.selenium-webdriver: ' + self.name);
   self.captured = false;
+  self.ended = false;
   self.id = id;
   self._start = (testUrl) => {
     self.localTunnel = new LocalTunnel(self.log, (err, tunnelIdentifier) => {
@@ -109,6 +110,21 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
             browser.get(testUrl, function() {
               self.captured = true;
               // This will wait on the page until the browser is killed
+
+              // To avoid BrowserStack killing the session because there is no interaction with the page
+              // poll the title of the page to keep the session alive.
+              const interval = setInterval(function() {
+                if (self.ended) {
+                  clearInterval(interval);
+                  return;
+                }
+                browser.title(function (err) {
+                  if (err) {
+                    console.error("Failed to get page title: ", err);
+                    clearInterval(interval);
+                  }
+                })
+              }, 10000);
             });
           } else {
             browser.get(via, function () {
@@ -122,6 +138,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   };
 
   this.on('kill', function(done){
+    self.ended = true;
     self.localTunnel.dispose(function(){
       self.browser.quit(function(err) {
         self._done();

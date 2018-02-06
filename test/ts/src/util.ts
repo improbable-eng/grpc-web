@@ -1,3 +1,11 @@
+import {ContinueStreamRequest} from "../_proto/improbable/grpcweb/test/test_pb";
+import {TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
+import {
+  grpc,
+} from "../../../ts/src/index";
+
+export const DEBUG: boolean = (global as any).DEBUG;
+
 export class UncaughtExceptionListener {
   private attached: boolean = false;
   private exceptionsCaught: string[] = [];
@@ -26,9 +34,9 @@ export class UncaughtExceptionListener {
       };
     } else {
       // Remove existing listeners - necessary to prevent test runners from exiting on exceptions
-      self.originalProcessHandlers = process.listeners('uncaughtException');
-      process.removeAllListeners('uncaughtException');
-      process.addListener('uncaughtException', self.processListener);
+      self.originalProcessHandlers = process.listeners("uncaughtException");
+      process.removeAllListeners("uncaughtException");
+      process.addListener("uncaughtException", self.processListener);
     }
     self.attached = true;
   }
@@ -42,9 +50,9 @@ export class UncaughtExceptionListener {
     if (typeof window !== "undefined") {
       window.onerror = self.originalWindowHandler!;
     } else {
-      process.removeListener('uncaughtException', self.processListener);
+      process.removeListener("uncaughtException", self.processListener);
       self.originalProcessHandlers.forEach(handler => {
-        process.addListener('uncaughtException', handler);
+        process.addListener("uncaughtException", handler);
       });
       self.originalProcessHandlers = [];
     }
@@ -54,4 +62,17 @@ export class UncaughtExceptionListener {
   getMessages() {
     return this.exceptionsCaught;
   }
+}
+
+export function continueStream(host: string, streamIdentifier: string, cb: (status: grpc.Code) => void) {
+  const req = new ContinueStreamRequest();
+  req.setStreamIdentifier(streamIdentifier);
+  grpc.unary(TestUtilService.ContinueStream, {
+    debug: DEBUG,
+    request: req,
+    host: host,
+    onEnd: ({status}) => {
+      cb(status);
+    },
+  })
 }

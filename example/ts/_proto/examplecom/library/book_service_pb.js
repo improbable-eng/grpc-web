@@ -1,6 +1,8 @@
 /**
  * @fileoverview
  * @enhanceable
+ * @suppress {messageConventions} JS Compiler reports an error if a variable or
+ *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
@@ -55,6 +57,7 @@ proto.examplecom.library.Book.prototype.toObject = function(opt_includeInstance)
  *     http://goto/soy-param-migration
  * @param {!proto.examplecom.library.Book} msg The msg instance to transform.
  * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.examplecom.library.Book.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -134,6 +137,7 @@ proto.examplecom.library.Book.prototype.serializeBinary = function() {
  * format), writing to the given BinaryWriter.
  * @param {!proto.examplecom.library.Book} message
  * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.examplecom.library.Book.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
@@ -249,6 +253,7 @@ proto.examplecom.library.GetBookRequest.prototype.toObject = function(opt_includ
  *     http://goto/soy-param-migration
  * @param {!proto.examplecom.library.GetBookRequest} msg The msg instance to transform.
  * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.examplecom.library.GetBookRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -318,6 +323,7 @@ proto.examplecom.library.GetBookRequest.prototype.serializeBinary = function() {
  * format), writing to the given BinaryWriter.
  * @param {!proto.examplecom.library.GetBookRequest} message
  * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.examplecom.library.GetBookRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
@@ -389,6 +395,7 @@ proto.examplecom.library.QueryBooksRequest.prototype.toObject = function(opt_inc
  *     http://goto/soy-param-migration
  * @param {!proto.examplecom.library.QueryBooksRequest} msg The msg instance to transform.
  * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.examplecom.library.QueryBooksRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -458,6 +465,7 @@ proto.examplecom.library.QueryBooksRequest.prototype.serializeBinary = function(
  * format), writing to the given BinaryWriter.
  * @param {!proto.examplecom.library.QueryBooksRequest} message
  * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.examplecom.library.QueryBooksRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
