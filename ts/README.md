@@ -72,7 +72,7 @@ rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
 ```
 
 ### [`grpc.client`](docs/client.md)
-`grpc.client` returns a client. Dependant upon [transport compatibility](docs/transport) this client is capable of sending multiple request messages (client-streaming) and receiving multiple response messages (server-streaming). It can be used with any type of method, but will enforce limiting the sending of messages for unary methods.
+`grpc.client` returns a client. Dependant upon [transport compatibility](docs/transport.md) this client is capable of sending multiple request messages (client-streaming) and receiving multiple response messages (server-streaming). It can be used with any type of method, but will enforce limiting the sending of messages for unary methods.
 
 ```protobuf
 rpc GetBook(GetBookRequest) returns (Book) {}
