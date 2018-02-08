@@ -49,7 +49,13 @@ func (w *grpcWebResponse) Flush() {
 }
 
 func (w *grpcWebResponse) CloseNotify() <-chan bool {
-	return w.wrapped.(http.CloseNotifier).CloseNotify()
+	cn, ok := w.wrapped.(http.CloseNotifier)
+
+	if !ok {
+		return make(chan bool)
+	}
+
+	return cn.CloseNotify()
 }
 
 func (w *grpcWebResponse) copyJustHeadersToWrapped() {
