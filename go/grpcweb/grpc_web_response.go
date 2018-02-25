@@ -97,7 +97,7 @@ func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
 func (w *grpcWebResponse) writeCorsExposedHeaders() {
 	// These cors handlers are added to the *response*, not a preflight.
 	knownHeaders := []string{}
-	for h, _ := range w.wrapped.Header() {
+	for h := range w.wrapped.Header() {
 		knownHeaders = append(knownHeaders, http.CanonicalHeaderKey(h))
 	}
 	w.wrapped.Header().Set("Access-Control-Expose-Headers", strings.Join(knownHeaders, ", "))
