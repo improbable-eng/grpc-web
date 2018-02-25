@@ -14,9 +14,9 @@ import (
 
 	"strings"
 
+	library "github.com/improbable-eng/grpc-web/example/go/_proto/examplecom/library"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"golang.org/x/net/context"
-	library "github.com/improbable-eng/grpc-web/example/go/_proto/examplecom/library"
 )
 
 var (
@@ -39,7 +39,7 @@ func main() {
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
-		wrappedServer.ServeHttp(resp, req)
+		wrappedServer.ServeHTTP(resp, req)
 	}
 
 	httpServer := http.Server{
