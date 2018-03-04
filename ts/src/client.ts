@@ -216,7 +216,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
   }
 
   rawOnMessage(res: TResponse) {
-    this.props.debug && debug("rawOnMessage", res.toObject());
+    this.props.debug && debug("rawOnMessage", res);
     if (this.completed) return;
     this.onMessageCallbacks.forEach(callback => {
       detach(() => {
