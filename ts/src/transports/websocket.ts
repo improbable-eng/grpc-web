@@ -14,10 +14,7 @@ const finishSendFrame = new Uint8Array([1]);
 export default function websocketRequest(options: TransportOptions): Transport {
   options.debug && debug("websocketRequest", options);
 
-  let httpAddress = `${options.url}`;
-  httpAddress = httpAddress.substr(8);
-
-  const webSocketAddress = `wss://${httpAddress}`;
+  let webSocketAddress = constructWebSocketAddress(options.url);
 
   const sendQueue: Array<ArrayBufferView | WebsocketSignal> = [];
   let ws: WebSocket;
@@ -89,6 +86,15 @@ export default function websocketRequest(options: TransportOptions): Transport {
       });
     }
   };
+}
+
+function constructWebSocketAddress(url: string) {
+  if (url.substr(0, 8) === "https://") {
+    return `wss://${url.substr(8)}`;
+  } else if (url.substr(0, 7) === "http://") {
+    return `ws://${url.substr(7)}`;
+  }
+  throw new Error("Websocket transport constructed with non-https:// or http:// host.");
 }
 
 function headersToBytes(headers: Metadata): Uint8Array {
