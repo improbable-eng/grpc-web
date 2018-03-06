@@ -82,7 +82,7 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 				return
 			}
 		}
-		resp.WriteHeader(400)
+		resp.WriteHeader(403)
 		resp.Write(make([]byte, 0))
 		return
 	}
