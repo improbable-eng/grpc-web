@@ -22,6 +22,7 @@ type WebSocketResponseWriter struct {
 	writtenHeaders  bool
 	wsConn          *websocket.Conn
 	headers         http.Header
+	flushedHeaders         http.Header
 	closeNotifyChan chan bool
 }
 
@@ -29,6 +30,7 @@ func newWebSocketResponseWriter(wsConn *websocket.Conn) *WebSocketResponseWriter
 	return &WebSocketResponseWriter{
 		writtenHeaders:  false,
 		headers:         make(http.Header),
+		flushedHeaders:         make(http.Header),
 		wsConn:          wsConn,
 		closeNotifyChan: make(chan bool),
 	}
@@ -54,7 +56,20 @@ func (w *WebSocketResponseWriter) writeHeaderFrame(headers http.Header) {
 	w.wsConn.WriteMessage(websocket.BinaryMessage, headerBuffer.Bytes())
 }
 
+func (w *WebSocketResponseWriter) copyFlushedHeaders() {
+	for k, vv := range w.headers {
+		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
+		if strings.ToLower(k) == "trailer" {
+			continue
+		}
+		for _, v := range vv {
+			w.flushedHeaders.Add(k, v)
+		}
+	}
+}
+
 func (w *WebSocketResponseWriter) WriteHeader(code int) {
+	w.copyFlushedHeaders()
 	w.writtenHeaders = true
 	w.writeHeaderFrame(w.headers)
 	return
@@ -67,10 +82,10 @@ func (w *WebSocketResponseWriter) extractTrailerHeaders() http.Header {
 		if strings.ToLower(k) == "trailer" {
 			continue
 		}
-		//// Skip existing headers that were already sent.
-		//if _, exists := flushedHeaders[k]; exists {
-		//	continue
-		//}
+		// Skip existing headers that were already sent.
+		if _, exists := w.flushedHeaders[k]; exists {
+			continue
+		}
 		// Skip the Trailer prefix
 		if strings.HasPrefix(k, http2.TrailerPrefix) {
 			k = k[len(http2.TrailerPrefix):]

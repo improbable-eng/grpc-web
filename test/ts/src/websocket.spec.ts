@@ -39,6 +39,11 @@ describe(`websocket-support`, () => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.strictEqual(statusMessage, undefined, "expected no message");
+              if (withHeaders) {
+                // Check that the headers are not resent in the trailers
+                assert.deepEqual(trailers.get("HeaderTestKey1"), []);
+                assert.deepEqual(trailers.get("HeaderTestKey2"), []);
+              }
               if (withTrailers) {
                 assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
@@ -106,6 +111,11 @@ describe(`websocket-support`, () => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.strictEqual(statusMessage, undefined, "expected no message");
+              if (withHeaders) {
+                // Check that the headers are not resent in the trailers
+                assert.deepEqual(trailers.get("HeaderTestKey1"), []);
+                assert.deepEqual(trailers.get("HeaderTestKey2"), []);
+              }
               if (withTrailers) {
                 assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
@@ -168,6 +178,11 @@ describe(`websocket-support`, () => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.strictEqual(statusMessage, undefined, "expected no message");
+              if (withHeaders) {
+                // Check that the headers are not resent in the trailers
+                assert.deepEqual(trailers.get("HeaderTestKey1"), []);
+                assert.deepEqual(trailers.get("HeaderTestKey2"), []);
+              }
               if (withTrailers) {
                 assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
