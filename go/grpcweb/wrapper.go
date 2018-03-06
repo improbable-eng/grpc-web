@@ -5,14 +5,15 @@ package grpcweb
 
 import (
 	"net/http"
+	"net/url"
+
 	"strings"
 	"time"
 
-	"github.com/rs/cors"
 	"github.com/gorilla/websocket"
+	"github.com/rs/cors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
-	"net/url"
 )
 
 var (
@@ -126,8 +127,6 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 }
 
 func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Request) {
-	respWriter := newWebSocketResponseWriter(wsConn)
-
 	messageType, readBytes, err := wsConn.ReadMessage()
 	if err != nil {
 		grpclog.Errorf("Unable to read first websocket message: %v", err)
@@ -145,6 +144,7 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 		return
 	}
 
+	respWriter := newWebSocketResponseWriter(wsConn)
 	wrappedReader := NewWebsocketWrappedReader(wsConn, respWriter)
 
 	req.Body = wrappedReader

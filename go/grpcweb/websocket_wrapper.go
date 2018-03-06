@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
-	"github.com/gorilla/websocket"
+	"errors"
 	"io"
 	"net/http"
 	"net/textproto"
 	"strings"
+
+	"github.com/gorilla/websocket"
 	"golang.org/x/net/http2"
-	"errors"
 )
 
 type WebSocketWrapper struct {
@@ -94,10 +95,10 @@ func (w *WebSocketResponseWriter) CloseNotify() <-chan bool {
 }
 
 type WebSocketWrappedReader struct {
-	wsConn     *websocket.Conn
-	respWriter *WebSocketResponseWriter
+	wsConn          *websocket.Conn
+	respWriter      *WebSocketResponseWriter
 	remainingBuffer []byte
-	remainingError error
+	remainingError  error
 }
 
 func (w *WebSocketWrappedReader) Close() error {
@@ -139,9 +140,9 @@ func (w *WebSocketWrappedReader) Read(p []byte) (int, error) {
 	// Read a whole frame from the WebSocket connection
 	messageType, framePayload, err := w.wsConn.ReadMessage()
 	if err == io.EOF || messageType == -1 {
-		defer func() {
-			w.respWriter.closeNotifyChan <- true
-		}()
+		// The client has closed the connection. Indicate to the response writer that it should close
+		w.respWriter.closeNotifyChan <- true
+		return 0, io.EOF
 	}
 
 	// Only Binary frames are valid
@@ -183,10 +184,10 @@ func (w *WebSocketWrappedReader) Read(p []byte) (int, error) {
 
 func NewWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *WebSocketResponseWriter) *WebSocketWrappedReader {
 	return &WebSocketWrappedReader{
-		wsConn: wsConn,
-		respWriter: respWriter,
+		wsConn:          wsConn,
+		respWriter:      respWriter,
 		remainingBuffer: nil,
-		remainingError: nil,
+		remainingError:  nil,
 	}
 }
 
