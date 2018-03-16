@@ -104,7 +104,9 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 	director := func(ctx context.Context, fullMethodName string) (context.Context, *grpc.ClientConn, error) {
 		md, _ := metadata.FromIncomingContext(ctx)
 		outCtx, _ := context.WithCancel(ctx)
-		outCtx = metadata.NewOutgoingContext(outCtx, md.Copy())
+    mdCopy := md.Copy()
+    delete(mdCopy, "user-agent")
+		outCtx = metadata.NewOutgoingContext(outCtx, mdCopy)
 		return outCtx, backendConn, nil
 	}
 	// Server with logging and monitoring enabled.
