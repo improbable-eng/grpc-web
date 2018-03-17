@@ -338,7 +338,7 @@ describe("invoke", () => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
               // Some browsers return empty Headers for failed requests
               assert.strictEqual(statusMessage, "Response closed without headers");
-              assert.strictEqual(status, grpc.Code.Internal);
+              assert.strictEqual(status, grpc.Code.Unknown);
               assert.ok(!didGetOnMessage);
               done();
             }
@@ -370,7 +370,7 @@ describe("invoke", () => {
           onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-            assert.strictEqual(status, grpc.Code.Internal);
+            assert.strictEqual(status, grpc.Code.Unknown);
             assert.ok(!didGetOnMessage);
             done();
           }
@@ -398,7 +398,7 @@ describe("invoke", () => {
           onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
             assert.strictEqual(statusMessage, "Response closed without headers");
-            assert.strictEqual(status, grpc.Code.Internal);
+            assert.strictEqual(status, grpc.Code.Unknown);
             assert.ok(!didGetOnMessage);
             done();
           }
