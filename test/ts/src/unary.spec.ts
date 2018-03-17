@@ -213,7 +213,7 @@ describe(`unary`, () => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               // Some browsers return empty Headers for failed requests
               assert.strictEqual(statusMessage, "Response closed without headers");
-              assert.strictEqual(status, grpc.Code.Internal);
+              assert.strictEqual(status, grpc.Code.Unknown);
               done();
             }
           });
@@ -232,7 +232,7 @@ describe(`unary`, () => {
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-            assert.strictEqual(status, grpc.Code.Internal);
+            assert.strictEqual(status, grpc.Code.Unknown);
             assert.deepEqual(headers.get("grpc-status"), []);
             assert.deepEqual(headers.get("grpc-message"), []);
             done();
@@ -252,7 +252,7 @@ describe(`unary`, () => {
           onEnd: ({status, statusMessage, headers, message, trailers}) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(statusMessage, "Response closed without headers");
-            assert.strictEqual(status, grpc.Code.Internal);
+            assert.strictEqual(status, grpc.Code.Unknown);
             assert.isNull(message);
             done();
           }

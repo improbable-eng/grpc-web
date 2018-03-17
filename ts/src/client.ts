@@ -151,7 +151,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.responseTrailers === undefined) {
       if (this.responseHeaders === undefined) {
         // The request was unsuccessful - it did not receive any headers
-        this.rawOnError(Code.Internal, "Response closed without headers");
+        this.rawOnError(Code.Unknown, "Response closed without headers");
         return;
       }
 
@@ -162,7 +162,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       this.props.debug && debug("grpc.headers only response ", grpcStatus, grpcMessage);
 
       if (grpcStatus === null) {
-        this.rawOnEnd(Code.Internal, "Response closed without grpc-status (Headers only)", this.responseHeaders);
+        this.rawOnEnd(Code.Unknown, "Response closed without grpc-status (Headers only)", this.responseHeaders);
         return;
       }
 
