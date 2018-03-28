@@ -12,6 +12,35 @@ type TestConfig = {
   httpVersion: string,
 }
 
+export enum SuiteEnum {
+  client,
+  invoke,
+  unary,
+  ChunkParser,
+  cancellation,
+  detach,
+}
+
+type enumMap = {[key: string]: number} & {[key: number]: string};
+const suiteNamesMap: enumMap = SuiteEnum as any;
+
+const specifiedSuiteName = process.env.TEST_SUITE_NAME;
+export function conditionallyRunTestSuite(suite: SuiteEnum, suiteFunction: () => void) {
+  if (suiteNamesMap[suite] === undefined) {
+    throw new Error(`Unrecognised suite name: ${suite}`);
+  }
+  const suiteName = suiteNamesMap[suite];
+  if (specifiedSuiteName) {
+    if (suiteName === specifiedSuiteName) {
+      describe(suiteName, suiteFunction);
+    } else {
+      console.log(`Skipping "${suiteName}" suite as it is not the specified suite (process.env.TEST_SUITE_NAME is "${specifiedSuiteName}")`)
+    }
+    return;
+  }
+  describe(suiteName, suiteFunction);
+}
+
 export function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean) => void) {
   describe("(no headers - no trailers)", () => {
     cb(false, false);

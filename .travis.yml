@@ -13,6 +13,7 @@ env:
     # GLOBAL_TESTSERVER is used to skip starting the testserver in start-testserver.sh
     - GLOBAL_TESTSERVER=true
   matrix:
+    - BROWSER=nodejs
     - BROWSER=edge14_win
     - BROWSER=edge13_win
     - BROWSER=ie11_win
@@ -29,6 +30,12 @@ env:
     - BROWSER=safari9_1
     - BROWSER=safari8
     - BROWSER=safari6
+    - TEST_SUITE_NAME=client
+    - TEST_SUITE_NAME=invoke
+    - TEST_SUITE_NAME=unary
+    - TEST_SUITE_NAME=ChunkParser
+    - TEST_SUITE_NAME=cancellation
+    - TEST_SUITE_NAME=detach
 cache:
   directories:
     - node_modules
@@ -36,7 +43,7 @@ before_install:
   - sudo apt-get install unzip
   - bash install-protobuf.sh
   - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfVVNFUk5BTUU9aW1wcm9iYWJsZWVuZ2JvdDEK`
-  - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfQUNDRVNTX0tFWT1xTGJxUjE2azhqdFducVh2RmlvZwo=`
+  - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfQUNDRVNTX0tFWT1SRG1Cc2pwQUJ4RlljcEVkeVp5bwo=`
 install:
   - go get -u github.com/golang/dep/cmd/dep
   - go get github.com/golang/protobuf/protoc-gen-go

@@ -1,8 +1,9 @@
 import {assert} from "chai";
 import detach from "../../../ts/src/detach";
 import {UncaughtExceptionListener} from "./util";
+import { conditionallyRunTestSuite, SuiteEnum } from "./testRpcCombinations";
 
-describe("detach", () => {
+conditionallyRunTestSuite(SuiteEnum.detach, () => {
   describe("basic execution ordering", () => {
     it("should invoke a function", (done) => {
       detach(() => {

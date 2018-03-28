@@ -1,7 +1,8 @@
 import {assert} from "chai";
 import {decodeASCII} from "../../../ts/src/ChunkParser";
+import { conditionallyRunTestSuite, SuiteEnum } from "./testRpcCombinations";
 
-describe("ChunkParser", () => {
+conditionallyRunTestSuite(SuiteEnum.ChunkParser, () => {
   describe("decodeASCII", () => {
     function asciiToBinary(src: string): Uint8Array {
       const ret = new Uint8Array(src.length);
