@@ -13,29 +13,109 @@ env:
     # GLOBAL_TESTSERVER is used to skip starting the testserver in start-testserver.sh
     - GLOBAL_TESTSERVER=true
   matrix:
-    - BROWSER=nodejs
-    - BROWSER=edge14_win
-    - BROWSER=edge13_win
-    - BROWSER=ie11_win
-    - BROWSER=firefox53_osx
-    - BROWSER=firefox39_osx
-    - BROWSER=firefox38_osx
-    - BROWSER=firefox21_osx
-    - BROWSER=chrome_57
-    - BROWSER=chrome_52
-    - BROWSER=chrome_43
-    - BROWSER=chrome_42
-    - BROWSER=chrome_41
-    - BROWSER=safari11
-    - BROWSER=safari9_1
-    - BROWSER=safari8
-    - BROWSER=safari6
-    - TEST_SUITE_NAME=client
-    - TEST_SUITE_NAME=invoke
-    - TEST_SUITE_NAME=unary
-    - TEST_SUITE_NAME=ChunkParser
-    - TEST_SUITE_NAME=cancellation
-    - TEST_SUITE_NAME=detach
+    # Generated using test/travis_matrix_gen.sh
+    - BROWSER=nodejs TEST_SUITE_NAME=client
+    - BROWSER=nodejs TEST_SUITE_NAME=invoke
+    - BROWSER=nodejs TEST_SUITE_NAME=unary
+    - BROWSER=nodejs TEST_SUITE_NAME=ChunkParser
+    - BROWSER=nodejs TEST_SUITE_NAME=cancellation
+    - BROWSER=nodejs TEST_SUITE_NAME=detach
+    - BROWSER=edge14_win TEST_SUITE_NAME=client
+    - BROWSER=edge14_win TEST_SUITE_NAME=invoke
+    - BROWSER=edge14_win TEST_SUITE_NAME=unary
+    - BROWSER=edge14_win TEST_SUITE_NAME=ChunkParser
+    - BROWSER=edge14_win TEST_SUITE_NAME=cancellation
+    - BROWSER=edge14_win TEST_SUITE_NAME=detach
+    - BROWSER=edge13_win TEST_SUITE_NAME=client
+    - BROWSER=edge13_win TEST_SUITE_NAME=invoke
+    - BROWSER=edge13_win TEST_SUITE_NAME=unary
+    - BROWSER=edge13_win TEST_SUITE_NAME=ChunkParser
+    - BROWSER=edge13_win TEST_SUITE_NAME=cancellation
+    - BROWSER=edge13_win TEST_SUITE_NAME=detach
+    - BROWSER=ie11_win TEST_SUITE_NAME=client
+    - BROWSER=ie11_win TEST_SUITE_NAME=invoke
+    - BROWSER=ie11_win TEST_SUITE_NAME=unary
+    - BROWSER=ie11_win TEST_SUITE_NAME=ChunkParser
+    - BROWSER=ie11_win TEST_SUITE_NAME=cancellation
+    - BROWSER=ie11_win TEST_SUITE_NAME=detach
+    - BROWSER=firefox53_osx TEST_SUITE_NAME=client
+    - BROWSER=firefox53_osx TEST_SUITE_NAME=invoke
+    - BROWSER=firefox53_osx TEST_SUITE_NAME=unary
+    - BROWSER=firefox53_osx TEST_SUITE_NAME=ChunkParser
+    - BROWSER=firefox53_osx TEST_SUITE_NAME=cancellation
+    - BROWSER=firefox53_osx TEST_SUITE_NAME=detach
+    - BROWSER=firefox39_osx TEST_SUITE_NAME=client
+    - BROWSER=firefox39_osx TEST_SUITE_NAME=invoke
+    - BROWSER=firefox39_osx TEST_SUITE_NAME=unary
+    - BROWSER=firefox39_osx TEST_SUITE_NAME=ChunkParser
+    - BROWSER=firefox39_osx TEST_SUITE_NAME=cancellation
+    - BROWSER=firefox39_osx TEST_SUITE_NAME=detach
+    - BROWSER=firefox38_osx TEST_SUITE_NAME=client
+    - BROWSER=firefox38_osx TEST_SUITE_NAME=invoke
+    - BROWSER=firefox38_osx TEST_SUITE_NAME=unary
+    - BROWSER=firefox38_osx TEST_SUITE_NAME=ChunkParser
+    - BROWSER=firefox38_osx TEST_SUITE_NAME=cancellation
+    - BROWSER=firefox38_osx TEST_SUITE_NAME=detach
+    - BROWSER=firefox21_osx TEST_SUITE_NAME=client
+    - BROWSER=firefox21_osx TEST_SUITE_NAME=invoke
+    - BROWSER=firefox21_osx TEST_SUITE_NAME=unary
+    - BROWSER=firefox21_osx TEST_SUITE_NAME=ChunkParser
+    - BROWSER=firefox21_osx TEST_SUITE_NAME=cancellation
+    - BROWSER=firefox21_osx TEST_SUITE_NAME=detach
+    - BROWSER=chrome_57 TEST_SUITE_NAME=client
+    - BROWSER=chrome_57 TEST_SUITE_NAME=invoke
+    - BROWSER=chrome_57 TEST_SUITE_NAME=unary
+    - BROWSER=chrome_57 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=chrome_57 TEST_SUITE_NAME=cancellation
+    - BROWSER=chrome_57 TEST_SUITE_NAME=detach
+    - BROWSER=chrome_52 TEST_SUITE_NAME=client
+    - BROWSER=chrome_52 TEST_SUITE_NAME=invoke
+    - BROWSER=chrome_52 TEST_SUITE_NAME=unary
+    - BROWSER=chrome_52 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=chrome_52 TEST_SUITE_NAME=cancellation
+    - BROWSER=chrome_52 TEST_SUITE_NAME=detach
+    - BROWSER=chrome_43 TEST_SUITE_NAME=client
+    - BROWSER=chrome_43 TEST_SUITE_NAME=invoke
+    - BROWSER=chrome_43 TEST_SUITE_NAME=unary
+    - BROWSER=chrome_43 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=chrome_43 TEST_SUITE_NAME=cancellation
+    - BROWSER=chrome_43 TEST_SUITE_NAME=detach
+    - BROWSER=chrome_42 TEST_SUITE_NAME=client
+    - BROWSER=chrome_42 TEST_SUITE_NAME=invoke
+    - BROWSER=chrome_42 TEST_SUITE_NAME=unary
+    - BROWSER=chrome_42 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=chrome_42 TEST_SUITE_NAME=cancellation
+    - BROWSER=chrome_42 TEST_SUITE_NAME=detach
+    - BROWSER=chrome_41 TEST_SUITE_NAME=client
+    - BROWSER=chrome_41 TEST_SUITE_NAME=invoke
+    - BROWSER=chrome_41 TEST_SUITE_NAME=unary
+    - BROWSER=chrome_41 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=chrome_41 TEST_SUITE_NAME=cancellation
+    - BROWSER=chrome_41 TEST_SUITE_NAME=detach
+    - BROWSER=safari11 TEST_SUITE_NAME=client
+    - BROWSER=safari11 TEST_SUITE_NAME=invoke
+    - BROWSER=safari11 TEST_SUITE_NAME=unary
+    - BROWSER=safari11 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=safari11 TEST_SUITE_NAME=cancellation
+    - BROWSER=safari11 TEST_SUITE_NAME=detach
+    - BROWSER=safari9_1 TEST_SUITE_NAME=client
+    - BROWSER=safari9_1 TEST_SUITE_NAME=invoke
+    - BROWSER=safari9_1 TEST_SUITE_NAME=unary
+    - BROWSER=safari9_1 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=safari9_1 TEST_SUITE_NAME=cancellation
+    - BROWSER=safari9_1 TEST_SUITE_NAME=detach
+    - BROWSER=safari8 TEST_SUITE_NAME=client
+    - BROWSER=safari8 TEST_SUITE_NAME=invoke
+    - BROWSER=safari8 TEST_SUITE_NAME=unary
+    - BROWSER=safari8 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=safari8 TEST_SUITE_NAME=cancellation
+    - BROWSER=safari8 TEST_SUITE_NAME=detach
+    - BROWSER=safari6 TEST_SUITE_NAME=client
+    - BROWSER=safari6 TEST_SUITE_NAME=invoke
+    - BROWSER=safari6 TEST_SUITE_NAME=unary
+    - BROWSER=safari6 TEST_SUITE_NAME=ChunkParser
+    - BROWSER=safari6 TEST_SUITE_NAME=cancellation
+    - BROWSER=safari6 TEST_SUITE_NAME=detach
 cache:
   directories:
     - node_modules
