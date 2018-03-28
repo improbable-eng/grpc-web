@@ -11,7 +11,7 @@ if [ -z "$BROWSER" ]; then
   exit 0
 fi
 
-if [ "$BROWSER" -eq "nodejs" ]; then
+if [ "$BROWSER" == "nodejs" ]; then
   # Node is specified
   npm run test:node
   exit 0
