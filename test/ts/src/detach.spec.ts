@@ -1,7 +1,7 @@
 import {assert} from "chai";
 import detach from "../../../ts/src/detach";
 import {UncaughtExceptionListener} from "./util";
-import { conditionallyRunTestSuite, SuiteEnum } from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.detach, () => {
   describe("basic execution ordering", () => {

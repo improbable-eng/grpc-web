@@ -14,7 +14,8 @@ import {
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import {TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {DEBUG, continueStream} from "./util";
-import { conditionallyRunTestSuite, runWithHttp1AndHttp2, SuiteEnum } from "./testRpcCombinations";
+import { runWithHttp1AndHttp2 } from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.cancellation, () => {
   runWithHttp1AndHttp2(({ testHostUrl }) => {

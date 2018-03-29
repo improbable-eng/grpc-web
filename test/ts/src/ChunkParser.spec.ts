@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {decodeASCII} from "../../../ts/src/ChunkParser";
-import { conditionallyRunTestSuite, SuiteEnum } from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.ChunkParser, () => {
   describe("decodeASCII", () => {

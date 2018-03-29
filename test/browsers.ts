@@ -1,28 +1,23 @@
-const suites = [
-  "client",
-  "invoke",
-  "unary",
-  "ChunkParser",
-  "cancellation",
-  "detach",
-];
+import {SuiteEnum} from "./ts/suiteUtils";
 
 function browser(browserName, browserVersion, os, osVersion) {
   const browsers = [];
   if (process.env.SEPARATE_TEST_SUITES) {
-    suites.forEach(suiteName => {
-      browsers.push({
-        configName: `${os}_${osVersion}_${browserName}_${browserVersion}_${suiteName}`,
-        base: 'CustomWebDriver',
-        capabilities: {
-          testSuite: suiteName,
-          browserName: browserName,
-          browserVersion: browserVersion,
-          os: os,
-          os_version: osVersion
-        }
-      });
-    });
+    for (let suiteName in SuiteEnum) {
+      if (isNaN(Number(suiteName))) {
+        browsers.push({
+          configName: `${os}_${osVersion}_${browserName}_${browserVersion}_${suiteName}`,
+          base: 'CustomWebDriver',
+          capabilities: {
+            testSuite: suiteName,
+            browserName: browserName,
+            browserVersion: browserVersion,
+            os: os,
+            os_version: osVersion
+          }
+        });
+      }
+    };
   } else {
     browsers.push({
       configName: `${os}_${osVersion}_${browserName}_${browserVersion}_allsuites`,
@@ -65,23 +60,22 @@ const browsers = {
 export default () => {
   const browserEnv = process.env.BROWSER;
 
-  const toReturn = {};
+  const filteredBrowsers = {};
   if (browserEnv) {
     const foundBrowser = browsers[browserEnv];
     if (!foundBrowser) {
       throw new Error(`BROWSER env var set to "${browserEnv}", but there is no browser with that identifier`);
     }
     foundBrowser.forEach(browserConfig => {
-      toReturn[browserConfig.configName] = browserConfig;
+      filteredBrowsers[browserConfig.configName] = browserConfig;
     });
-    console.log("toReturn", toReturn);
-    return toReturn;
+    return filteredBrowsers;
   }
 
   for(let i in browsers) {
     browsers[i].forEach(browserConfig => {
-      toReturn[browserConfig.configName] = browserConfig;
+      filteredBrowsers[browserConfig.configName] = browserConfig;
     });
   }
-  return toReturn
+  return filteredBrowsers
 };

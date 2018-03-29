@@ -9,9 +9,9 @@ import {PingRequest, PingResponse,} from "../_proto/improbable/grpcweb/test/test
 import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {continueStream, DEBUG, UncaughtExceptionListener} from "./util";
 import {
-  headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports, conditionallyRunTestSuite,
-  SuiteEnum
+  headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.client, () => {
   runWithHttp1AndHttp2(({testHostUrl, corsHostUrl, unavailableHost, emptyHost}) => {

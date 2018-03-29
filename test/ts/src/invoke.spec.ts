@@ -17,9 +17,9 @@ import {
 import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {DEBUG, continueStream, UncaughtExceptionListener} from "./util";
 import {
-  conditionallyRunTestSuite, headerTrailerCombos, runWithHttp1AndHttp2,
-  runWithSupportedTransports, SuiteEnum
+  headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.invoke, () => {
   runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
