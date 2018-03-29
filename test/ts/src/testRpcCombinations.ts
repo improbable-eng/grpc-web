@@ -24,7 +24,12 @@ export enum SuiteEnum {
 type enumMap = {[key: string]: number} & {[key: number]: string};
 const suiteNamesMap: enumMap = SuiteEnum as any;
 
-const specifiedSuiteName = process.env.TEST_SUITE_NAME;
+let specifiedSuiteName: string | undefined;
+if (typeof process.env.TEST_SUITE_NAME !== "undefined") {
+  specifiedSuiteName = process.env.TEST_SUITE_NAME;
+} else if (typeof window !== "undefined") {
+  specifiedSuiteName = window.location.hash.length > 1 ? window.location.hash.substring(1) : undefined;
+}
 export function conditionallyRunTestSuite(suite: SuiteEnum, suiteFunction: () => void) {
   if (suiteNamesMap[suite] === undefined) {
     throw new Error(`Unrecognised suite name: ${suite}`);
@@ -34,7 +39,7 @@ export function conditionallyRunTestSuite(suite: SuiteEnum, suiteFunction: () =>
     if (suiteName === specifiedSuiteName) {
       describe(suiteName, suiteFunction);
     } else {
-      console.log(`Skipping "${suiteName}" suite as it is not the specified suite (process.env.TEST_SUITE_NAME is "${specifiedSuiteName}")`)
+      console.log(`Skipping "${suiteName}" suite as it is not the specified suite (specifiedSuiteName is "${specifiedSuiteName}")`)
     }
     return;
   }
