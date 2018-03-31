@@ -1,26 +1,24 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
-
-	"fmt"
-
-	"crypto/tls"
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/transport"
-	"io"
-	"sync"
 )
 
 var (
@@ -288,9 +286,8 @@ func (s *testSrv) PingPongBidi(stream testproto.TestService_PingPongBidiServer) 
 		if in.FailureType == testproto.PingRequest_CODE {
 			if in.ErrorCodeReturned == 0 {
 				return nil
-			} else {
-				return grpc.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
 			}
+			return grpc.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
 		}
 		stream.Send(&testproto.PingResponse{
 			Value: in.Value,

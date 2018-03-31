@@ -56,7 +56,7 @@ func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option {
 	}
 }
 
-// WithAllowedResponseHeaders allows for customizing what gRPC request headers a browser can add.
+// WithAllowedRequestHeaders allows for customizing what gRPC request headers a browser can add.
 //
 // This is controlling the CORS pre-flight `Access-Control-Allow-Headers` method and applies to *all* gRPC handlers.
 // However, a special `*` value can be passed in that allows
