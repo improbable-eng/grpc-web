@@ -13,9 +13,12 @@ import {
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {DEBUG, UncaughtExceptionListener} from "./util";
-import {headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports} from "./testRpcCombinations";
+import {
+  headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
+} from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-describe(`unary`, () => {
+conditionallyRunTestSuite(SuiteEnum.unary, () => {
   runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost}) => {
     runWithSupportedTransports(transport => {
       it(`should reject a server-streaming method`, () => {

@@ -52,7 +52,7 @@ export default (config) => {
     browserDisconnectTimeout: 120000,
     browserNoActivityTimeout: 120000,
     singlerun: useBrowserStack,
-    concurrency: 2,
+    concurrency: 1,
     customLaunchers: customLaunchers,
     browsers: browsers
   });

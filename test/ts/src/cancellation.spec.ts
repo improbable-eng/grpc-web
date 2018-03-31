@@ -14,9 +14,10 @@ import {
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import {TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {DEBUG, continueStream} from "./util";
-import {runWithHttp1AndHttp2} from "./testRpcCombinations";
+import { runWithHttp1AndHttp2 } from "./testRpcCombinations";
+import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-describe("cancellation handling", () => {
+conditionallyRunTestSuite(SuiteEnum.cancellation, () => {
   runWithHttp1AndHttp2(({ testHostUrl }) => {
     it("should allow the caller to abort an rpc before it completes", () => {
       let transportCancelFuncInvoked = false;

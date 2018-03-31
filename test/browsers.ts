@@ -1,13 +1,37 @@
+import {SuiteEnum} from "./ts/suiteUtils";
+
 function browser(browserName, browserVersion, os, osVersion) {
-  return {
-    base: 'CustomWebDriver',
-    capabilities: {
-      browserName: browserName,
-      browserVersion: browserVersion,
-      os: os,
-      os_version: osVersion
-    }
-  };
+  const browsers = [];
+  if (process.env.SEPARATE_TEST_SUITES) {
+    for (let suiteName in SuiteEnum) {
+      if (isNaN(Number(suiteName))) {
+        browsers.push({
+          configName: `${os}_${osVersion}_${browserName}_${browserVersion}_${suiteName}`,
+          base: 'CustomWebDriver',
+          capabilities: {
+            testSuite: suiteName,
+            browserName: browserName,
+            browserVersion: browserVersion,
+            os: os,
+            os_version: osVersion
+          }
+        });
+      }
+    };
+  } else {
+    browsers.push({
+      configName: `${os}_${osVersion}_${browserName}_${browserVersion}_allsuites`,
+      base: 'CustomWebDriver',
+      capabilities: {
+        testSuite: undefined,
+        browserName: browserName,
+        browserVersion: browserVersion,
+        os: os,
+        os_version: osVersion
+      }
+    })
+  }
+  return browsers;
 }
 
 // Browser versions that should not have any Fetch/XHR differences in functionality to other (tested) versions are
@@ -35,14 +59,23 @@ const browsers = {
 
 export default () => {
   const browserEnv = process.env.BROWSER;
+
+  const filteredBrowsers = {};
   if (browserEnv) {
     const foundBrowser = browsers[browserEnv];
     if (!foundBrowser) {
       throw new Error(`BROWSER env var set to "${browserEnv}", but there is no browser with that identifier`);
     }
-    return {
-      [browserEnv]: foundBrowser,
-    }
+    foundBrowser.forEach(browserConfig => {
+      filteredBrowsers[browserConfig.configName] = browserConfig;
+    });
+    return filteredBrowsers;
   }
-  return browsers
+
+  for(let i in browsers) {
+    browsers[i].forEach(browserConfig => {
+      filteredBrowsers[browserConfig.configName] = browserConfig;
+    });
+  }
+  return filteredBrowsers
 };

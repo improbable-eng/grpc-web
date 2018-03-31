@@ -64,13 +64,14 @@ function LocalTunnel(logger, cb) {
 function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   baseBrowserDecorator(this);
   const self = this;
-  const capabilities = args.capabilities;
-  self.name = capabilities.browserName + ' - ' + capabilities.browserVersion + ' - ' + capabilities.os + ' ' + capabilities.os_version;
-  self.log = logger.create('launcher.selenium-webdriver: ' + self.name);
+  self.name = args.configName;
+  self.log = logger.create(`launcher.selenium-webdriver: ${self.name}`);
   self.captured = false;
   self.ended = false;
   self.id = id;
+  const caps = args.capabilities;
   self._start = (testUrl) => {
+    const testUrlWithSuite = `${testUrl}#${caps.testSuite ? caps.testSuite : ''}`;
     self.localTunnel = new LocalTunnel(self.log, (err, tunnelIdentifier) => {
       if (err) {
         return self.log.error("Could not create local testing", err);
@@ -98,7 +99,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         "browserstack.debug": true,
         "tunnelIdentifier": tunnelIdentifier,
         "browserstack.localIdentifier": tunnelIdentifier
-      }, capabilities);
+      }, caps);
       browser.init(bsCaps, function(err) {
         if (err) {
           self.log.error("browser.init", err);
@@ -107,7 +108,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         const next = (i) => {
           const via = viaUrls[i];
           if (!via) {
-            browser.get(testUrl, function() {
+            browser.get(testUrlWithSuite, function() {
               self.captured = true;
               // This will wait on the page until the browser is killed
 
