@@ -1,6 +1,8 @@
 #!/bin/bash
 # Script that checks up code (govet).
 
+set -e
+
 function print_real_go_files {
     grep --files-without-match 'DO NOT EDIT!' $(find . -iname '*.go')
 }
