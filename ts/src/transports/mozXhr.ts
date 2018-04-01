@@ -47,7 +47,7 @@ class MozXHR implements Transport {
     }
   }
 
-  sendMessage(msgBytes: ArrayBufferView) {
+  sendMessage(msgBytes: Uint8Array) {
     this.options.debug && debug("MozXHR.sendMessage");
     this.xhr.send(msgBytes);
   }

@@ -19,7 +19,7 @@ class NodeHttp implements Transport {
     this.options = transportOptions;
   }
 
-  sendMessage(msgBytes: ArrayBufferView) {
+  sendMessage(msgBytes: Uint8Array) {
     this.request.write(toBuffer(msgBytes));
     this.request.end();
   }
@@ -45,7 +45,9 @@ class NodeHttp implements Transport {
   };
 
   start(metadata: Metadata) {
-    const headers: { [key: string]: string } = {};
+    const headers: { [key: string]: string } = {
+      "Content-Length": options.body.length.toString()
+    };
     metadata.forEach((key, values) => {
       headers[key] = values.join(", ");
     });
@@ -98,7 +100,7 @@ function toArrayBuffer(buf: Buffer): Uint8Array {
   return view;
 }
 
-function toBuffer(ab: ArrayBufferView): Buffer {
+function toBuffer(ab: Uint8Array): Buffer {
   const buf = new Buffer(ab.byteLength);
   const view = new Uint8Array(ab.buffer);
   for (let i = 0; i < buf.length; i++) {

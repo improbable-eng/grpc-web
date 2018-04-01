@@ -7,7 +7,7 @@ import {MethodDefinition} from "../service";
 import {ProtobufMessage} from "../message";
 
 export interface Transport {
-  sendMessage(msgBytes: ArrayBufferView): void
+  sendMessage(msgBytes: Uint8Array): void
   finishSend(): void
   cancel(): void
   start(metadata: Metadata): void
