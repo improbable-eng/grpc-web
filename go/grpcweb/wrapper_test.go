@@ -50,6 +50,8 @@ type GrpcWebWrapperTestSuite struct {
 	suite.Suite
 	httpMajorVersion int
 	listener         net.Listener
+	grpcServer       *grpc.Server
+	wrappedServer    *grpcweb.WrappedGrpcServer
 }
 
 func TestHttp2GrpcWebWrapperTestSuite(t *testing.T) {
@@ -60,18 +62,18 @@ func TestHttp1GrpcWebWrapperTestSuite(t *testing.T) {
 	suite.Run(t, &GrpcWebWrapperTestSuite{httpMajorVersion: 1})
 }
 
-func (s *GrpcWebWrapperTestSuite) SetupSuite() {
+func (s *GrpcWebWrapperTestSuite) SetupTest() {
 	var err error
-	grpcServer := grpc.NewServer()
-	testproto.RegisterTestServiceServer(grpcServer, &testServiceImpl{})
+	s.grpcServer = grpc.NewServer()
+	testproto.RegisterTestServiceServer(s.grpcServer, &testServiceImpl{})
 	grpclog.SetLogger(log.New(os.Stderr, "grpc: ", log.LstdFlags))
-	wrappedServer := grpcweb.WrapServer(grpcServer)
+	s.wrappedServer = grpcweb.WrapServer(s.grpcServer)
 
 	httpServer := http.Server{
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 			require.EqualValues(s.T(), s.httpMajorVersion, req.ProtoMajor, "Requests in this test are served over the wrong protocol")
 			s.T().Logf("Serving over: %d", req.ProtoMajor)
-			wrappedServer.ServeHTTP(resp, req)
+			s.wrappedServer.ServeHTTP(resp, req)
 		}),
 	}
 
@@ -281,7 +283,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingStream_NormalGrpcWorks() {
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 
-func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_DeniedByDefault() {
 	/**
 	OPTIONS /improbable.grpcweb.test.TestService/Ping
 	Access-Control-Request-Method: POST
@@ -297,10 +299,39 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
 
 	preflight := corsResp.Header
-	assert.Equal(s.T(), "http://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the preflight")
-	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the preflight")
-	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response")
-	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must be in the response")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Origin"), "origin must not be in the response headers")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must not be in the response headers")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Max-Age"), "allowed max age must not be in the response headers")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must not be in the response headers")
+}
+
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_AllowedByOriginFunc() {
+	/**
+	OPTIONS /improbable.grpcweb.test.TestService/Ping
+	Access-Control-Request-Method: POST
+	Access-Control-Request-Headers: origin, x-requested-with, accept
+	Origin: http://foo.client.com
+	*/
+	headers := http.Header{}
+	headers.Add("Access-Control-Request-Method", "POST")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
+	headers.Add("Origin", "http://foo.client.com")
+
+	// Create a new server which permits Cross-Origin Resource requests from `foo.client.com`
+	s.wrappedServer = grpcweb.WrapServer(s.grpcServer,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return origin == "http://foo.client.com"
+		}),
+	)
+
+	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+
+	preflight := corsResp.Header
+	assert.Equal(s.T(), "http://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the response headers")
+	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
+	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
+	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must be in the response headers")
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {

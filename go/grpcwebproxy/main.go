@@ -48,8 +48,11 @@ func main() {
 	grpcServer := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
 
-	// gRPC-Web compatibility layer with CORS configured to accept on every
-	wrappedGrpc := grpcweb.WrapServer(grpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	// gRPC-Web compatibility layer with CORS configured to accept on every request
+	wrappedGrpc := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+		grpcweb.WithOriginFunc(func(origin string) bool { return true }),
+	)
 
 	if !*runHttpServer && !*runTlsServer {
 		logrus.Fatalf("Both run_http_server and run_tls_server are set to false. At least one must be enabled for grpcweb proxy to function correctly.")

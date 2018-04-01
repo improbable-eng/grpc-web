@@ -42,13 +42,21 @@ func main() {
 	testproto.RegisterTestUtilServiceServer(grpcServer, testServer)
 	grpclog.SetLogger(log.New(os.Stdout, "testserver: ", log.LstdFlags))
 
-	wrappedServer := grpcweb.WrapServer(grpcServer)
+	allowAllOrigins := grpcweb.WithOriginFunc(func(origin string) bool {
+		return true
+	})
+
+	wrappedServer := grpcweb.WrapServer(grpcServer, allowAllOrigins)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 
 	emptyGrpcServer := grpc.NewServer()
-	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	emptyWrappedServer := grpcweb.WrapServer(
+	    emptyGrpcServer,
+	    allowAllOrigins,
+	    grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+	)
 	emptyHandler := func(resp http.ResponseWriter, req *http.Request) {
 		emptyWrappedServer.ServeHTTP(resp, req)
 	}
