@@ -57,7 +57,7 @@ export function runWithSupportedTransports(cb: (transport: grpc.TransportConstru
     "defaultTransport": undefined
   };
 
-  for(let transportName in transports) {
+  for (let transportName in transports) {
     describe(transportName, () => {
       cb(transports[transportName]);
     })

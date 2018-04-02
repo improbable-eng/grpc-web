@@ -4,8 +4,8 @@ import {grpc} from "../../../ts/src/index";
 import {debug} from "../../../ts/src/debug";
 import {assert} from "chai";
 // Generated Test Classes
-import {Empty,} from "google-protobuf/google/protobuf/empty_pb";
-import {PingRequest, PingResponse,} from "../_proto/improbable/grpcweb/test/test_pb";
+import {Empty, } from "google-protobuf/google/protobuf/empty_pb";
+import {PingRequest, PingResponse, } from "../_proto/improbable/grpcweb/test/test_pb";
 import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {continueStream, DEBUG, UncaughtExceptionListener} from "./util";
 import {
