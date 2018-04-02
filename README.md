@@ -145,6 +145,16 @@ This library is tested against:
 
 `grpc-web-client` also [supports Node.js through a transport](ts/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
+If you want to use `grpc-web-client` in a node.js environment with Typescript, you must include `dom` in the `"lib"` Array in your `tsconfig.json` otherwise `tsc` will be unable to find some type declarations to compile. Note that `dom` will be included automatically if you do not declare `lib` in your configration and your target is one of `es5` or `es6`. (See [Typescript compiler options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)).
+
+```
+{
+  "compilerOptions": {
+    "lib": [ "dom", /* ... */ ],
+  }
+}
+```
+
 *__Please note - There is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc) that does not require the server to support gRPC-Web__*
 
 ### Client-side streaming
