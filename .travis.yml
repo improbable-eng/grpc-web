@@ -42,7 +42,9 @@ before_install:
   - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfQUNDRVNTX0tFWT1SRG1Cc2pwQUJ4RlljcEVkeVp5bwo=`
 install:
   - go get -u github.com/golang/dep/cmd/dep
-  - go get github.com/golang/protobuf/protoc-gen-go
+  - go get -u golang.org/x/tools/cmd/goimports
+  - go get -u github.com/robertkrimen/godocdown/godocdown
+  - go get -u github.com/golang/protobuf/protoc-gen-go
   - dep ensure
   - export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
   - nvm install
@@ -50,4 +52,4 @@ install:
 before_script:
   - ./test/start-testserver.sh &
 script:
-  - travis_retry npm run test
+  - travis_retry ./test-all.sh

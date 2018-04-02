@@ -1,7 +1,6 @@
 # grpcweb
-```go
-import "github.com/improbable-eng/grpc-web/go/grpcweb"
-```
+--
+    import "github.com/improbable-eng/grpc-web/go/grpcweb"
 
 `grpcweb` implements the gRPC-Web spec as a wrapper around a gRPC-Go Server.
 
@@ -53,7 +52,7 @@ type Option func(*options)
 ```go
 func WithAllowedRequestHeaders(headers []string) Option
 ```
-WithAllowedResponseHeaders allows for customizing what gRPC request headers a
+WithAllowedRequestHeaders allows for customizing what gRPC request headers a
 browser can add.
 
 This is controlling the CORS pre-flight `Access-Control-Allow-Headers` method
