@@ -101,13 +101,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       const gRPCMessage = headers.get("grpc-message") || [];
       this.props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
       if (code !== Code.OK) {
-        let statusMessage;
-        try {
-          statusMessage = this.decodeGRPCStatus(gRPCMessage[0]);
-        } catch (err) {
-          this.rawOnError(Code.Internal, "Cannot decode gRPC-Message header");
-          return;
-        }
+        const statusMessage = this.decodeGRPCStatus(gRPCMessage[0]);
         this.rawOnError(code, statusMessage);
         return;
       }
@@ -174,13 +168,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       }
 
       // Return an empty trailers instance
-      let statusMessage;
-      try {
-        statusMessage = this.decodeGRPCStatus(grpcMessage[0]);
-      } catch (err) {
-        this.rawOnError(Code.Internal, "Cannot decode gRPC-Message header");
-        return;
-      }
+      const statusMessage = this.decodeGRPCStatus(grpcMessage[0]);
       this.rawOnEnd(grpcStatus, statusMessage, this.responseHeaders);
       return;
     }
@@ -193,18 +181,20 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     }
 
     const grpcMessage = this.responseTrailers.get("grpc-message");
-    let statusMessage;
-    try {
-      statusMessage = this.decodeGRPCStatus(grpcMessage[0]);
-    } catch (err) {
-      this.rawOnError(Code.Internal, "Cannot decode gRPC-Message header");
-      return;
-    }
+    const statusMessage = this.decodeGRPCStatus(grpcMessage[0]);
     this.rawOnEnd(grpcStatus, statusMessage, this.responseTrailers);
   }
 
   decodeGRPCStatus(src: string | undefined): string {
-    return src ? decodeURIComponent(src) : ""
+    if (src) {
+      try {
+        return decodeURIComponent(src)
+      } catch (err) {
+        return src
+      }
+    } else {
+      return ""
+    }
   }
 
   rawOnEnd(code: Code, message: string, trailers: Metadata) {
