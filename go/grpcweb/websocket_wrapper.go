@@ -22,7 +22,7 @@ type WebSocketResponseWriter struct {
 	writtenHeaders  bool
 	wsConn          *websocket.Conn
 	headers         http.Header
-	flushedHeaders         http.Header
+	flushedHeaders  http.Header
 	closeNotifyChan chan bool
 }
 
@@ -30,7 +30,7 @@ func newWebSocketResponseWriter(wsConn *websocket.Conn) *WebSocketResponseWriter
 	return &WebSocketResponseWriter{
 		writtenHeaders:  false,
 		headers:         make(http.Header),
-		flushedHeaders:         make(http.Header),
+		flushedHeaders:  make(http.Header),
 		wsConn:          wsConn,
 		closeNotifyChan: make(chan bool),
 	}

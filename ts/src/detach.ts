@@ -6,18 +6,18 @@ function runCallbacks() {
     // Use a new reference to the awaitingExecution array to allow callbacks to add to the "new" awaitingExecution array
     const thisCallbackSet = awaitingExecution;
     awaitingExecution = null;
-    for(let i = 0; i < thisCallbackSet.length; i++) {
+    for (let i = 0; i < thisCallbackSet.length; i++) {
       try {
         thisCallbackSet[i]();
       } catch (e) {
-        if (awaitingExecution===null) {
+        if (awaitingExecution === null) {
           awaitingExecution = [];
           setTimeout(() => {
             runCallbacks();
-          },0);
+          }, 0);
         }
         // Add the remaining callbacks to the array so that they can be invoked on the next pass
-        for(let k = thisCallbackSet.length-1; k > i; k--) {
+        for (let k = thisCallbackSet.length - 1; k > i; k--) {
           awaitingExecution.unshift(thisCallbackSet[k]);
         }
         // rethrow the error
@@ -31,7 +31,7 @@ function runCallbacks() {
 // in user callbacks being caught by handlers such as fetch's catch. This function is necessary as setTimeout in
 // Safari is prone to switching the order of execution of setTimeout(0).
 export default function detach(cb: () => void) {
-  if (awaitingExecution !== null){
+  if (awaitingExecution !== null) {
     // there is a timer running, add to the list and this function will be executed with that existing timer
     awaitingExecution.push(cb);
     return;
@@ -39,5 +39,5 @@ export default function detach(cb: () => void) {
   awaitingExecution = [cb];
   setTimeout(() => {
     runCallbacks();
-  },0);
+  }, 0);
 }
