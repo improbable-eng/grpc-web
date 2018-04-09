@@ -95,7 +95,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
               assert.ok(message instanceof PingResponse);
               assert.deepEqual(message.getValue(), lastMessage);
 
-              if (counter == 10) {
+              if (counter === 10) {
                 client.finishSend();
               } else {
                 counter++;
@@ -154,7 +154,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
               assert.ok(message instanceof PingResponse);
               assert.deepEqual(message.getValue(), lastMessage);
 
-              if (counter == 10) {
+              if (counter === 10) {
                 const ping = new PingRequest();
                 ping.setFailureType(PingRequest.FailureType.CODE);
                 ping.setErrorCodeReturned(grpc.Code.OK);
