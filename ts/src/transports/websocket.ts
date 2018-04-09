@@ -49,7 +49,7 @@ export default function websocketRequest(options: TransportOptions): Transport {
       }
     },
     start: (metadata: Metadata) => {
-      ws = new WebSocket(webSocketAddress, ['grpc-websockets']);
+      ws = new WebSocket(webSocketAddress, ["grpc-websockets"]);
       ws.binaryType = "arraybuffer";
       ws.onopen = function () {
         options.debug && debug("websocketRequest.onopen");
@@ -98,9 +98,9 @@ function constructWebSocketAddress(url: string) {
 }
 
 function headersToBytes(headers: Metadata): Uint8Array {
-  let asString = '';
+  let asString = "";
   headers.forEach((key, values) => {
-    asString += `${key}: ${values.join(', ')}\r\n`;
+    asString += `${key}: ${values.join(", ")}\r\n`;
   });
   return encodeASCII(asString);
 }
