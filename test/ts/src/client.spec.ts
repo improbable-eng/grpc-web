@@ -170,7 +170,10 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
             assert.ok(didGetOnMessage);
             done();
           });
-          client.start(new grpc.Metadata({"HeaderTestKey1": "ClientValue1"}));
+          client.start(new grpc.Metadata({
+            "HeaderTestKey1": "ClientValue1",
+            "HeaderTestKey2": "ClientValue2",
+          }));
           client.send(ping);
         });
       });

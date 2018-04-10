@@ -57,6 +57,10 @@ export function runWithSupportedTransports(cb: (transport: grpc.TransportConstru
     "defaultTransport": undefined
   };
 
+  if (!process.env.DISABLE_WEBSOCKET_TESTS) {
+    transports["websocketTransport"] = grpc.WebsocketTransportFactory
+  }
+
   for (let transportName in transports) {
     describe(transportName, () => {
       cb(transports[transportName]);

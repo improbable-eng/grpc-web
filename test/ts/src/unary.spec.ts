@@ -141,7 +141,10 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             debug: DEBUG,
             transport: transport,
             request: ping,
-            metadata: new grpc.Metadata({"HeaderTestKey1": "ClientValue1"}),
+            metadata: new grpc.Metadata({
+              "HeaderTestKey1": "ClientValue1",
+              "HeaderTestKey2": "ClientValue2",
+            }),
             host: testHostUrl,
             onEnd: ({status, statusMessage, headers, message, trailers}) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);

@@ -12,11 +12,23 @@ export function decodeASCII(input: Uint8Array): string {
   // With ES2015, TypedArray.prototype.every can be used
   for (let i = 0; i !== input.length; ++i) {
     if (!isValidHeaderAscii(input[i])) {
-      throw new Error("Header is not valid (printable) ASCII");
+      throw new Error("Metadata is not valid (printable) ASCII");
     }
   }
   // With ES2017, the array conversion can be omitted with iterables
   return String.fromCharCode(...Array.prototype.slice.call(input));
+}
+
+export function encodeASCII(input: string): Uint8Array {
+  const encoded = new Uint8Array(input.length);
+  for (let i = 0; i !== input.length; ++i) {
+    const charCode = input.charCodeAt(i);
+    if (!isValidHeaderAscii(charCode)) {
+      throw new Error("Metadata contains invalid ASCII");
+    }
+    encoded[i] = charCode;
+  }
+  return encoded;
 }
 
 function isTrailerHeader(headerView: DataView) {
