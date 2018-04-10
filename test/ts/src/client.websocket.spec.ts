@@ -12,6 +12,11 @@ import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 if (process.env.DISABLE_WEBSOCKET_TESTS) {
   console.log(`Skipping "clientWebsockets" suite as "DISABLE_WEBSOCKET_TESTS" is set`);
+  describe("skipping client-streaming (websockets)", () => {
+    it("should skip client-streaming request tests", (done) => {
+      done();
+    });
+  });
 } else {
   conditionallyRunTestSuite(SuiteEnum.clientWebsockets, () => {
     runWithHttp1AndHttp2(({testHostUrl}) => {
