@@ -14,11 +14,11 @@ env:
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
   matrix:
-    # Generated using test/travis_matrix_gen.sh
+    # Browsers that do not support trusting self-signed certs for wss:// connections are disabled (see https://github.com/improbable-eng/grpc-web/issues/165)
     - BROWSER=nodejs
     - BROWSER=edge14_win
     - BROWSER=edge13_win
-    - BROWSER=ie11_win
+    - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=1
     - BROWSER=firefox53_osx
     - BROWSER=firefox39_osx
     - BROWSER=firefox38_osx
@@ -28,10 +28,10 @@ env:
     - BROWSER=chrome_43
     - BROWSER=chrome_42
     - BROWSER=chrome_41
-    - BROWSER=safari11
-    - BROWSER=safari9_1
-    - BROWSER=safari8
-    - BROWSER=safari6
+    - BROWSER=safari11 DISABLE_WEBSOCKET_TESTS=1
+    - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=1
+    - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=1
+    - BROWSER=safari6 DISABLE_WEBSOCKET_TESTS=1
 cache:
   directories:
     - node_modules

@@ -61,8 +61,8 @@ export default function websocketRequest(options: TransportOptions): Transport {
         });
       };
 
-      ws.onclose = function () {
-        options.debug && debug("websocketRequest.onclose");
+      ws.onclose = function (closeEvent) {
+        options.debug && debug("websocketRequest.onclose", closeEvent);
         detach(() => {
           options.onEnd();
         });
