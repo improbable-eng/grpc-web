@@ -95,6 +95,8 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 	w.server.ServeHTTP(resp, req)
 }
 
+// IsGrpcWebSocketRequest determines if a request is a gRPC-Web request by checking that the "Sec-Websocket-Protocol"
+// header value is "grpc-websockets"
 func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 	return req.Header.Get("Upgrade") == "websocket" && req.Header.Get("Sec-Websocket-Protocol") == "grpc-websockets"
 }
@@ -116,13 +118,15 @@ var websocketUpgrader = websocket.Upgrader{
 	Subprotocols:    []string{"grpc-websockets"},
 }
 
+// HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a gRPC-Websocket request and wraps it with a
+// compatibility layer to transform it to a standard gRPC request for the wrapped gRPC server and transforms the
+// response to comply with the gRPC-Web protocol.
 func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter, req *http.Request) {
 	conn, err := websocketUpgrader.Upgrade(resp, req, nil)
 	if err != nil {
 		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
 		return
 	}
-
 	w.handleWebSocket(conn, req)
 }
 
@@ -145,7 +149,7 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 	}
 
 	respWriter := newWebSocketResponseWriter(wsConn)
-	wrappedReader := NewWebsocketWrappedReader(wsConn, respWriter)
+	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter)
 
 	req.Body = wrappedReader
 	req.Method = http.MethodPost
