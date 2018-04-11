@@ -124,86 +124,6 @@ bidirectional requests.
 
 The default behaviour is false, i.e. to disallow websockets
 
-#### type WebSocketResponseWriter
-
-```go
-type WebSocketResponseWriter struct {
-}
-```
-
-
-#### func (*WebSocketResponseWriter) CloseNotify
-
-```go
-func (w *WebSocketResponseWriter) CloseNotify() <-chan bool
-```
-
-#### func (*WebSocketResponseWriter) Flush
-
-```go
-func (w *WebSocketResponseWriter) Flush()
-```
-
-#### func (*WebSocketResponseWriter) FlushTrailers
-
-```go
-func (w *WebSocketResponseWriter) FlushTrailers()
-```
-
-#### func (*WebSocketResponseWriter) Header
-
-```go
-func (w *WebSocketResponseWriter) Header() http.Header
-```
-
-#### func (*WebSocketResponseWriter) Write
-
-```go
-func (w *WebSocketResponseWriter) Write(b []byte) (int, error)
-```
-
-#### func (*WebSocketResponseWriter) WriteHeader
-
-```go
-func (w *WebSocketResponseWriter) WriteHeader(code int)
-```
-
-#### type WebSocketWrappedReader
-
-```go
-type WebSocketWrappedReader struct {
-}
-```
-
-
-#### func  NewWebsocketWrappedReader
-
-```go
-func NewWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *WebSocketResponseWriter) *WebSocketWrappedReader
-```
-
-#### func (*WebSocketWrappedReader) Close
-
-```go
-func (w *WebSocketWrappedReader) Close() error
-```
-
-#### func (*WebSocketWrappedReader) Read
-
-```go
-func (w *WebSocketWrappedReader) Read(p []byte) (int, error)
-```
-First byte of a binary WebSocket frame is used for control flow: 0 = Data 1 =
-End of client send
-
-#### type WebSocketWrapper
-
-```go
-type WebSocketWrapper struct {
-}
-```
-
-
 #### type WrappedGrpcServer
 
 ```go
@@ -242,6 +162,10 @@ with the gRPC-Web protocol.
 ```go
 func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter, req *http.Request)
 ```
+HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a
+gRPC-Websocket request and wraps it with a compatibility layer to transform it
+to a standard gRPC request for the wrapped gRPC server and transforms the
+response to comply with the gRPC-Web protocol.
 
 #### func (*WrappedGrpcServer) IsAcceptableGrpcCorsRequest
 
@@ -267,6 +191,8 @@ the "content-type" is "application/grpc-web" and that the method is POST.
 ```go
 func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool
 ```
+IsGrpcWebSocketRequest determines if a request is a gRPC-Web request by checking
+that the "Sec-Websocket-Protocol" header value is "grpc-websockets"
 
 #### func (*WrappedGrpcServer) ServeHTTP
 

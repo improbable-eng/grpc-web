@@ -14,11 +14,7 @@ import (
 	"golang.org/x/net/http2"
 )
 
-type WebSocketWrapper struct {
-	wsConn *websocket.Conn
-}
-
-type WebSocketResponseWriter struct {
+type webSocketResponseWriter struct {
 	writtenHeaders  bool
 	wsConn          *websocket.Conn
 	headers         http.Header
@@ -26,8 +22,8 @@ type WebSocketResponseWriter struct {
 	closeNotifyChan chan bool
 }
 
-func newWebSocketResponseWriter(wsConn *websocket.Conn) *WebSocketResponseWriter {
-	return &WebSocketResponseWriter{
+func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter {
+	return &webSocketResponseWriter{
 		writtenHeaders:  false,
 		headers:         make(http.Header),
 		flushedHeaders:  make(http.Header),
@@ -36,18 +32,18 @@ func newWebSocketResponseWriter(wsConn *websocket.Conn) *WebSocketResponseWriter
 	}
 }
 
-func (w *WebSocketResponseWriter) Header() http.Header {
+func (w *webSocketResponseWriter) Header() http.Header {
 	return w.headers
 }
 
-func (w *WebSocketResponseWriter) Write(b []byte) (int, error) {
+func (w *webSocketResponseWriter) Write(b []byte) (int, error) {
 	if !w.writtenHeaders {
 		w.WriteHeader(http.StatusOK)
 	}
 	return len(b), w.wsConn.WriteMessage(websocket.BinaryMessage, b)
 }
 
-func (w *WebSocketResponseWriter) writeHeaderFrame(headers http.Header) {
+func (w *webSocketResponseWriter) writeHeaderFrame(headers http.Header) {
 	headerBuffer := new(bytes.Buffer)
 	headers.Write(headerBuffer)
 	headerGrpcDataHeader := []byte{1 << 7, 0, 0, 0, 0} // MSB=1 indicates this is a header data frame.
@@ -56,7 +52,7 @@ func (w *WebSocketResponseWriter) writeHeaderFrame(headers http.Header) {
 	w.wsConn.WriteMessage(websocket.BinaryMessage, headerBuffer.Bytes())
 }
 
-func (w *WebSocketResponseWriter) copyFlushedHeaders() {
+func (w *webSocketResponseWriter) copyFlushedHeaders() {
 	for k, vv := range w.headers {
 		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
 		if strings.ToLower(k) == "trailer" {
@@ -68,14 +64,14 @@ func (w *WebSocketResponseWriter) copyFlushedHeaders() {
 	}
 }
 
-func (w *WebSocketResponseWriter) WriteHeader(code int) {
+func (w *webSocketResponseWriter) WriteHeader(code int) {
 	w.copyFlushedHeaders()
 	w.writtenHeaders = true
 	w.writeHeaderFrame(w.headers)
 	return
 }
 
-func (w *WebSocketResponseWriter) extractTrailerHeaders() http.Header {
+func (w *webSocketResponseWriter) extractTrailerHeaders() http.Header {
 	trailerHeaders := make(http.Header)
 	for k, vv := range w.headers {
 		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
@@ -97,26 +93,26 @@ func (w *WebSocketResponseWriter) extractTrailerHeaders() http.Header {
 	return trailerHeaders
 }
 
-func (w *WebSocketResponseWriter) FlushTrailers() {
+func (w *webSocketResponseWriter) FlushTrailers() {
 	w.writeHeaderFrame(w.extractTrailerHeaders())
 }
 
-func (w *WebSocketResponseWriter) Flush() {
+func (w *webSocketResponseWriter) Flush() {
 	// no-op
 }
 
-func (w *WebSocketResponseWriter) CloseNotify() <-chan bool {
+func (w *webSocketResponseWriter) CloseNotify() <-chan bool {
 	return w.closeNotifyChan
 }
 
-type WebSocketWrappedReader struct {
+type webSocketWrappedReader struct {
 	wsConn          *websocket.Conn
-	respWriter      *WebSocketResponseWriter
+	respWriter      *webSocketResponseWriter
 	remainingBuffer []byte
 	remainingError  error
 }
 
-func (w *WebSocketWrappedReader) Close() error {
+func (w *webSocketWrappedReader) Close() error {
 	w.respWriter.FlushTrailers()
 	return w.wsConn.Close()
 }
@@ -124,7 +120,7 @@ func (w *WebSocketWrappedReader) Close() error {
 // First byte of a binary WebSocket frame is used for control flow:
 // 0 = Data
 // 1 = End of client send
-func (w *WebSocketWrappedReader) Read(p []byte) (int, error) {
+func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 	// If a buffer remains from a previous WebSocket frame read then continue reading it
 	if w.remainingBuffer != nil {
 
@@ -197,8 +193,8 @@ func (w *WebSocketWrappedReader) Read(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func NewWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *WebSocketResponseWriter) *WebSocketWrappedReader {
-	return &WebSocketWrappedReader{
+func newWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *webSocketResponseWriter) *webSocketWrappedReader {
+	return &webSocketWrappedReader{
 		wsConn:          wsConn,
 		respWriter:      respWriter,
 		remainingBuffer: nil,
