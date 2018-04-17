@@ -37,6 +37,6 @@
     "@types/node": "^7.0.29",
     "google-protobuf": "^3.2.0",
     "tslint": "^4.5.1",
-    "typescript": "2.2.1"
+    "typescript": "2.8.1"
   }
 }
