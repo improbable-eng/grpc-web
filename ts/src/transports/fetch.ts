@@ -17,8 +17,7 @@ class Fetch implements Transport {
   options: TransportOptions;
   reader: ReadableStreamReader;
   metadata: Metadata;
-  controller: AbortController = new AbortController();
-  signal: AbortSignal = this.controller.signal;
+  controller: AbortController | undefined = (window as any).AbortController && new AbortController();
 
   constructor(transportOptions: TransportOptions) {
     this.options = transportOptions;
@@ -52,7 +51,7 @@ class Fetch implements Transport {
       method: "POST",
       body: msgBytes,
       credentials: "same-origin",
-      signal: this.signal
+      signal: this.controller && this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
       detach(() => {
@@ -95,7 +94,9 @@ class Fetch implements Transport {
     } else {
       this.options.debug && debug("Fetch.abort.cancel before reader");
     }
-    this.controller.abort();
+    if (this.controller) {
+      this.controller.abort();
+    }
   }
 }
 
