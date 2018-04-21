@@ -55,6 +55,7 @@ export namespace PingRequest {
     NONE = 0,
     CODE = 1,
     DROP = 2,
+    CODE_UNICODE = 3,
   }
 }
 
