@@ -158,11 +158,7 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 	if ping.GetSendTrailers() {
 		grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	}
-	if ping.FailureType == testproto.PingRequest_CODE {
-	    return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
-	} else {
-	    return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "💣")
-	}
+	return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
 }
 
 func (s *testSrv) ContinueStream(ctx context.Context, req *testproto.ContinueStreamRequest) (*google_protobuf.Empty, error) {
