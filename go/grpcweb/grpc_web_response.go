@@ -44,12 +44,18 @@ func (w *grpcWebResponse) Flush() {
 	if w.wroteHeaders || w.wroteBody {
 		// Work around the fact that WriteHeader and a call to Flush would have caused a 200 response.
 		// This is the case when there is no payload.
-		w.wrapped.(http.Flusher).Flush()
+		flush(w.wrapped)
 	}
 }
 
 func (w *grpcWebResponse) CloseNotify() <-chan bool {
-	return w.wrapped.(http.CloseNotifier).CloseNotify()
+	cn, ok := w.wrapped.(http.CloseNotifier)
+
+	if !ok {
+		return make(chan bool)
+	}
+
+	return cn.CloseNotify()
 }
 
 func (w *grpcWebResponse) copyJustHeadersToWrapped() {
@@ -91,7 +97,14 @@ func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
 	}
 	w.writeCorsExposedHeaders()
 	w.wrapped.WriteHeader(http.StatusOK)
-	w.wrapped.(http.Flusher).Flush()
+	flush(w.wrapped)
+}
+
+func flush(rw http.ResponseWriter) {
+	f, ok := rw.(http.Flusher)
+	if ok {
+		f.Flush()
+	}
 }
 
 func (w *grpcWebResponse) writeCorsExposedHeaders() {
@@ -111,7 +124,7 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 	binary.BigEndian.PutUint32(trailerGrpcDataHeader[1:5], uint32(trailerBuffer.Len()))
 	w.wrapped.Write(trailerGrpcDataHeader)
 	w.wrapped.Write(trailerBuffer.Bytes())
-	w.wrapped.(http.Flusher).Flush()
+	flush(w.wrapped)
 }
 
 func (w *grpcWebResponse) extractTrailerHeaders() http.Header {

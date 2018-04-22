@@ -4,7 +4,7 @@
 [![Master Build](https://travis-ci.org/improbable-eng/grpc-web.svg)](https://travis-ci.org/improbable-eng/grpc-web)
 ![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=L0k3QjhiNnByd3hWVVhtS0FxTmNrZERwbDBqR053OFJKV01veUpkL1FqOD0tLXZyS0d2WC9TaGEzeTBjbXZ6L1JNa2c9PQ==--b460187586f63fc2a48f557a515f9900f5639d10)
 [![NPM](https://img.shields.io/npm/v/grpc-web-client.svg)](https://www.npmjs.com/package/grpc-web-client)
-[![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/improbable-eng/grpc-web/go/grpcweb) 
+[![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/improbable-eng/grpc-web/go/grpcweb)
 [![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![quality: alpha](https://img.shields.io/badge/quality-alpha-orange.svg)](#status)
 
@@ -20,7 +20,7 @@ Components of the stack are based on Golang and TypeScript:
  * [`grpcwebproxy`](go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers.
  * [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) - a TypeScript plugin for the protocol buffers compiler that provides strongly typed message classes and method definitions.
  * [`grpc-web-client`](ts) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
- 
+
 ## Why?
 
 With gRPC-Web, it is extremely easy to build well-defined, easy to reason about APIs between browser frontend code and microservices. Frontend development changes significantly:
@@ -41,7 +41,7 @@ In short, gRPC-Web moves the interaction between frontend code and microservices
 
 [API Docs for `grpc-web-client` can be found here](ts)
 
-## Example 
+## Example
 
 For a self-contained demo of a Golang gRPC service called from a TypeScript project, see [example](example). It contains most of the initialization code that performs the magic. Here's the application code extracted from the example:
 
@@ -140,7 +140,7 @@ This library is tested against:
   * Edge >= 13
   * IE >= 11
   * Safari >= 6
-  
+
 ## Node.js Support
 
 `grpc-web-client` also [supports Node.js through a transport](ts/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
@@ -178,6 +178,11 @@ Browsers that don't support [Fetch with `body.getReader`](https://developer.mozi
 XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large payload server streaming if you intend to support browsers that do not support Fetch.
 
 You can read more about how grpc-web-client determines and uses transports [here](ts/docs/transport.md).
+
+### AppEngine
+
+AppEngine does not support server side streaming. The streaming response API will work but end up as one big response on the client side. As usual with AppEngine, the server code should try to finish the response as quick as possible to stay within deadlines.
+Additionally, the `context` provided in the gRPC handlers is *not* the original AppEngine `context`. A possible solution is to inject the AppEngine `context` prior to giving control to the gRPC code and the get the `context` back in the handler. See [here](https://gist.github.com/maxhille/8ebd91758dbf8443abbc6d38bdd1020d) for an example.
 
 ### Running the tests
 
