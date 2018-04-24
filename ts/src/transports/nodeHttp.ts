@@ -19,7 +19,7 @@ class NodeHttp implements Transport {
     this.options = transportOptions;
   }
 
-  sendMessage(msgBytes: ArrayBufferView) {
+  sendMessage(msgBytes: Uint8Array) {
     this.request.write(toBuffer(msgBytes));
     this.request.end();
   }
@@ -98,11 +98,10 @@ function toArrayBuffer(buf: Buffer): Uint8Array {
   return view;
 }
 
-function toBuffer(ab: ArrayBufferView): Buffer {
+function toBuffer(ab: Uint8Array): Buffer {
   const buf = new Buffer(ab.byteLength);
-  const view = new Uint8Array(ab.buffer);
   for (let i = 0; i < buf.length; i++) {
-    buf[i] = view[i];
+    buf[i] = ab[i];
   }
   return buf;
 }

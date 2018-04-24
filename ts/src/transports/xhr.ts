@@ -47,7 +47,7 @@ class XHR implements Transport {
     }
   }
 
-  sendMessage(msgBytes: ArrayBufferView) {
+  sendMessage(msgBytes: Uint8Array) {
     this.xhr.send(msgBytes);
   }
 
