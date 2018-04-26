@@ -34,7 +34,7 @@ var (
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
 
-	useWebsockets = pflag.Bool("use_websockets", false, "whether to use beta websocket tranport layer")
+	useWebsockets = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
 
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
@@ -51,7 +51,7 @@ func main() {
 	errChan := make(chan error)
 
 	options := []grpcweb.Option{
-		// gRPC-Web compatibility layer with CORS configured to accept on every
+		// gRPC-Web compatibility layer with CORS configured to accept on every request
 		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
 	}
 	if *useWebsockets {
