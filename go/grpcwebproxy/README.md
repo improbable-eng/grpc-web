@@ -49,7 +49,7 @@ $GOPATH/bin/grpcwebproxy
 
 ### Enabling Websocket Transport
 
-By default, grpcwebproxy will not use websockets as a transport layer. To enable websockets, set the `--use_websockets` flag to true
+By default, grpcwebproxy will not use websockets as a transport layer. To enable websockets, set the `--use_websockets` flag to true.
 
 ```
 $GOPATH/bin/grpcwebproxy \
