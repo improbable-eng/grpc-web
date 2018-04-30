@@ -9,7 +9,7 @@ addons:
     - corshost
 env:
   global:
-    - PROTOBUF_VER="3.2.0"
+    - PROTOBUF_VER="3.5.0"
     # GLOBAL_TESTSERVER is used to skip starting the testserver in run-with-testserver.sh
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
