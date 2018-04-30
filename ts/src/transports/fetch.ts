@@ -23,14 +23,15 @@ class Fetch implements Transport {
     this.options = transportOptions;
   }
 
-  pump(readerArg: ReadableStreamReader, res: Response): Promise<void | Response> {
+  pump(readerArg: ReadableStreamReader, res: Response) {
     this.reader = readerArg;
     if (this.cancelled) {
       // If the request was cancelled before the first pump then cancel it here
       this.options.debug && debug("Fetch.pump.cancel at first pump");
-      return this.reader.cancel();
+      this.reader.cancel();
+      return;
     }
-    return this.reader.read()
+    this.reader.read()
       .then((result: { done: boolean, value: Uint8Array }) => {
         if (result.done) {
           detach(() => {
@@ -41,7 +42,8 @@ class Fetch implements Transport {
         detach(() => {
           this.options.onChunk(result.value);
         });
-        return this.pump(this.reader, res);
+        this.pump(this.reader, res);
+        return;
       });
   }
 
@@ -58,7 +60,8 @@ class Fetch implements Transport {
         this.options.onHeaders(new Metadata(res.headers as any), res.status);
       });
       if (res.body) {
-        return this.pump(res.body.getReader(), res)
+        this.pump(res.body.getReader(), res)
+        return;
       }
       return res;
     }).catch(err => {

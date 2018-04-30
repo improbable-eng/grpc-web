@@ -161,5 +161,10 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# localhost cert authority intermediate files
+misc/localhost.csr
+misc/localhostCA.key
+misc/localhostCA.srl
+
 node_modules
 vendor
