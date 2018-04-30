@@ -22,7 +22,7 @@
     "@types/google-protobuf": "^3.2.5",
     "@types/node": "^7.0.5",
     "browser-headers": "^0.3.2",
-    "google-protobuf": "^3.5.0",
+    "google-protobuf": "^3.2.0",
     "typedarray": "0.0.6"
   },
   "devDependencies": {
