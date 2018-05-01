@@ -46,7 +46,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-              assert.strictEqual(statusMessage, undefined, "expected no message");
+              assert.strictEqual(statusMessage, "", "expected no message");
               if (withTrailers) {
                 assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
@@ -113,7 +113,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-              assert.strictEqual(statusMessage, undefined, "expected no message");
+              assert.strictEqual(statusMessage, "", "expected no message");
               if (withTrailers) {
                 assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
@@ -175,7 +175,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
-              assert.strictEqual(statusMessage, undefined, "expected no message");
+              assert.strictEqual(statusMessage, "", "expected no message");
               if (withTrailers) {
                 assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
