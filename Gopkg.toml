@@ -34,6 +34,10 @@
   version = "1.1.0"
 
 [[constraint]]
+  name = "github.com/gorilla/websocket"
+  version = "1.2.0"
+
+[[constraint]]
   branch = "master"
   name = "github.com/mwitkow/go-conntrack"
 
