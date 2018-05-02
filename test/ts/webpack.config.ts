@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 module.exports = {
   entry: "./src/spec.ts",
+  mode: "development",
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'integration-tests.js'
