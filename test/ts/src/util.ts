@@ -51,7 +51,7 @@ export class UncaughtExceptionListener {
       window.onerror = self.originalWindowHandler!;
     } else {
       process.removeListener("uncaughtException", self.processListener);
-      self.originalProcessHandlers.forEach(handler => {
+      self.originalProcessHandlers.forEach((handler: (error: Error) => void) => {
         process.addListener("uncaughtException", handler);
       });
       self.originalProcessHandlers = [];

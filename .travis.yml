@@ -9,7 +9,7 @@ addons:
     - corshost
 env:
   global:
-    - PROTOBUF_VER="3.2.0"
+    - PROTOBUF_VER="3.5.0"
     # GLOBAL_TESTSERVER is used to skip starting the testserver in run-with-testserver.sh
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
@@ -18,7 +18,7 @@ env:
     - BROWSER=nodejs
     - BROWSER=edge14_win
     - BROWSER=edge13_win
-    - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=1
+    - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=firefox53_osx
     - BROWSER=firefox39_osx
     - BROWSER=firefox38_osx
@@ -28,10 +28,10 @@ env:
     - BROWSER=chrome_43
     - BROWSER=chrome_42
     - BROWSER=chrome_41
-    - BROWSER=safari11 DISABLE_WEBSOCKET_TESTS=1
-    - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=1
-    - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=1
-    - BROWSER=safari6 DISABLE_WEBSOCKET_TESTS=1
+    - BROWSER=safari11 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari6 DISABLE_WEBSOCKET_TESTS=true
 cache:
   directories:
     - node_modules
