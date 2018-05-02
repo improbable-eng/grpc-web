@@ -16,14 +16,14 @@ export default function websocketRequest(options: TransportOptions): Transport {
 
   let webSocketAddress = constructWebSocketAddress(options.url);
 
-  const sendQueue: Array<ArrayBufferView | WebsocketSignal> = [];
+  const sendQueue: Array<Uint8Array | WebsocketSignal> = [];
   let ws: WebSocket;
 
-  function sendToWebsocket(toSend: ArrayBufferView | WebsocketSignal) {
+  function sendToWebsocket(toSend: Uint8Array | WebsocketSignal) {
     if (toSend === WebsocketSignal.FINISH_SEND) {
       ws.send(finishSendFrame);
     } else {
-      const byteArray = toSend as ArrayBufferView;
+      const byteArray = toSend as Uint8Array;
       const c = new Int8Array(byteArray.byteLength + 1);
       c.set(new Uint8Array([0]));
 
@@ -34,7 +34,7 @@ export default function websocketRequest(options: TransportOptions): Transport {
   }
 
   return {
-    sendMessage: (msgBytes: ArrayBufferView) => {
+    sendMessage: (msgBytes: Uint8Array) => {
       if (!ws || ws.readyState === ws.CONNECTING) {
         sendQueue.push(msgBytes);
       } else {

@@ -17,6 +17,7 @@ class Fetch implements Transport {
   options: TransportOptions;
   reader: ReadableStreamReader;
   metadata: Metadata;
+  controller: AbortController | undefined = (window as any).AbortController && new AbortController();
 
   constructor(transportOptions: TransportOptions) {
     this.options = transportOptions;
@@ -46,12 +47,13 @@ class Fetch implements Transport {
       });
   }
 
-  send(msgBytes: ArrayBufferView) {
+  send(msgBytes: Uint8Array) {
     fetch(this.options.url, {
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
       credentials: "same-origin",
+      signal: this.controller && this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
       detach(() => {
@@ -74,7 +76,7 @@ class Fetch implements Transport {
     });
   }
 
-  sendMessage(msgBytes: ArrayBufferView) {
+  sendMessage(msgBytes: Uint8Array) {
     this.send(msgBytes);
   }
 
@@ -94,6 +96,9 @@ class Fetch implements Transport {
       this.reader.cancel();
     } else {
       this.options.debug && debug("Fetch.abort.cancel before reader");
+    }
+    if (this.controller) {
+      this.controller.abort();
     }
   }
 }
