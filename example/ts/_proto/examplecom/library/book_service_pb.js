@@ -176,7 +176,7 @@ proto.examplecom.library.Book.prototype.getIsbn = function() {
 
 /** @param {number} value */
 proto.examplecom.library.Book.prototype.setIsbn = function(value) {
-  jspb.Message.setField(this, 1, value);
+  jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
@@ -191,7 +191,7 @@ proto.examplecom.library.Book.prototype.getTitle = function() {
 
 /** @param {string} value */
 proto.examplecom.library.Book.prototype.setTitle = function(value) {
-  jspb.Message.setField(this, 2, value);
+  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -206,7 +206,7 @@ proto.examplecom.library.Book.prototype.getAuthor = function() {
 
 /** @param {string} value */
 proto.examplecom.library.Book.prototype.setAuthor = function(value) {
-  jspb.Message.setField(this, 3, value);
+  jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -348,7 +348,7 @@ proto.examplecom.library.GetBookRequest.prototype.getIsbn = function() {
 
 /** @param {number} value */
 proto.examplecom.library.GetBookRequest.prototype.setIsbn = function(value) {
-  jspb.Message.setField(this, 1, value);
+  jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
@@ -490,7 +490,7 @@ proto.examplecom.library.QueryBooksRequest.prototype.getAuthorPrefix = function(
 
 /** @param {string} value */
 proto.examplecom.library.QueryBooksRequest.prototype.setAuthorPrefix = function(value) {
-  jspb.Message.setField(this, 1, value);
+  jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
