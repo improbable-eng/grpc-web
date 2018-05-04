@@ -44,6 +44,16 @@ class Fetch implements Transport {
         });
         this.pump(this.reader, res);
         return;
+      })
+      .catch(err => {
+        if (this.cancelled) {
+          this.options.debug && debug("Fetch.catch - request cancelled");
+          return;
+        }
+        this.options.debug && debug("Fetch.catch", err.message);
+        detach(() => {
+          this.options.onEnd(err);
+        });
       });
   }
 
