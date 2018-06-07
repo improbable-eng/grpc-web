@@ -148,12 +148,16 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 		return
 	}
 
+	// Overwrite original request headers with those we parsed out.
+	for k := range headers {
+		req.Header.Set(k, headers.Get(k))
+	}
+
 	respWriter := newWebSocketResponseWriter(wsConn)
 	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter)
 
 	req.Body = wrappedReader
 	req.Method = http.MethodPost
-	req.Header = headers
 
 	w.server.ServeHTTP(respWriter, hackIntoNormalGrpcRequest(req))
 }
