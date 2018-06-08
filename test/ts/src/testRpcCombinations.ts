@@ -54,8 +54,9 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
 }
 
 export function runWithSupportedTransports(cb: (transport: grpc.TransportConstructor | undefined) => void) {
+  const is_node = typeof module !== "undefined" && module.exports;
   const transports: {[key: string]: grpc.TransportConstructor | undefined} = {
-    "defaultTransport": typeof window === "undefined" ? nodeHttpRequest : undefined
+    "defaultTransport": is_node ? nodeHttpRequest : undefined
   };
 
   if (!process.env.DISABLE_WEBSOCKET_TESTS) {
