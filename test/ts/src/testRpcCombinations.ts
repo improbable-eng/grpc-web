@@ -3,7 +3,7 @@ import {
   corsHost
 } from "../../hosts-config";
 import {grpc} from "../../../ts/src/index";
-import {nodeHttpRequest} from "../../../ts/src/transports/nodeHttp";
+import nodeHttpRequest from "../../../ts/src/transports/nodeHttp";
 
 type TestConfig = {
   testHostUrl: string,
