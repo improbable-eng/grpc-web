@@ -2,7 +2,6 @@ import {Metadata} from "../metadata";
 import fetchRequest, {detectFetchSupport} from "./fetch";
 import xhrRequest, {detectXHRSupport} from "./xhr";
 import mozXhrRequest, {detectMozXHRSupport} from "./mozXhr";
-import httpNodeRequest, {detectNodeHTTPSupport} from "./nodeHttp";
 import {MethodDefinition} from "../service";
 import {ProtobufMessage} from "../message";
 import websocketRequest from "./websocket";
@@ -54,11 +53,8 @@ function detectTransport(): TransportConstructor {
     return xhrRequest;
   }
 
-  if (detectNodeHTTPSupport()) {
-    return httpNodeRequest;
-  }
-
-  throw new Error("No suitable transport found for gRPC-Web");
+  throw new Error("No suitable transport found for gRPC-Web.  If running in " +
+    "Node, import and set the `transport` option to nodeHttpRequest");
 }
 
 export function WebsocketTransportFactory(transportOptions: TransportOptions): Transport | Error {
