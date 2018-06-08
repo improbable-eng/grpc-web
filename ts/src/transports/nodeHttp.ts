@@ -1,6 +1,6 @@
-import * as http from "http";
-import * as https from "https";
-import * as url from "url";
+import * as http_type from 'http';
+import * as https_type from 'https';
+import * as url_type from 'url';
 import {Transport, TransportOptions} from "./Transport";
 import {Metadata} from "../metadata";
 
@@ -11,9 +11,28 @@ export default function nodeHttpRequest(options: TransportOptions): Transport {
   return new NodeHttp(options);
 }
 
+// fool webpack into allowing optional require
+function _require(path: string): any {
+  return require(path);
+}
+
+export function detectNodeHTTPSupport(): boolean {
+  return typeof window === "undefined";
+}
+
+let http: typeof http_type = (undefined as any) as typeof http_type;
+let https: typeof https_type = (undefined as any) as typeof https_type;
+let url: typeof url_type = (undefined as any) as typeof url_type;
+
+if (detectNodeHTTPSupport()) {
+  http = _require("http");
+  https = _require("https");
+  url = _require("url");
+}
+
 class NodeHttp implements Transport {
   options: TransportOptions;
-  request: http.ClientRequest;
+  request: http_type.ClientRequest;
 
   constructor(transportOptions: TransportOptions) {
     this.options = transportOptions;
@@ -28,12 +47,12 @@ class NodeHttp implements Transport {
 
   }
 
-  responseCallback(response: http.IncomingMessage) {
+  responseCallback(response: http_type.IncomingMessage) {
     this.options.debug && console.log("NodeHttp.response", response.statusCode);
     const headers = filterHeadersForUndefined(response.headers);
     this.options.onHeaders(new Metadata(headers), response.statusCode!);
 
-    response.on("data", chunk => {
+    response.on("data", (chunk: any) => {
       this.options.debug && console.log("NodeHttp.data", chunk);
       this.options.onChunk(toArrayBuffer(chunk as Buffer));
     });
@@ -63,7 +82,7 @@ class NodeHttp implements Transport {
     } else {
       this.request = http.request(httpOptions, this.responseCallback.bind(this));
     }
-    this.request.on("error", err => {
+    this.request.on("error", (err: any) => {
       this.options.debug && console.log("NodeHttp.error", err);
       this.options.onEnd(err);
     });
@@ -104,8 +123,4 @@ function toBuffer(ab: Uint8Array): Buffer {
     buf[i] = ab[i];
   }
   return buf;
-}
-
-export function detectNodeHTTPSupport(): boolean {
-  return typeof module !== "undefined" && module.exports;
 }
