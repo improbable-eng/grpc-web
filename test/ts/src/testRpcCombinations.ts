@@ -3,7 +3,7 @@ import {
   corsHost
 } from "../../hosts-config";
 import {grpc} from "../../../ts/src/index";
-import nodeHttpRequest from "../../../ts/src/transports/nodeHttp";
+import nodeHttpRequest, {detectNodeHTTPSupport} from "../../../ts/src/transports/nodeHttp";
 
 type TestConfig = {
   testHostUrl: string,
@@ -54,9 +54,8 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
 }
 
 export function runWithSupportedTransports(cb: (transport: grpc.TransportConstructor | undefined) => void) {
-  const is_node = typeof module !== "undefined" && module.exports;
   const transports: {[key: string]: grpc.TransportConstructor | undefined} = {
-    "defaultTransport": is_node ? nodeHttpRequest : undefined
+    "defaultTransport": detectNodeHTTPSupport() ? nodeHttpRequest : undefined
   };
 
   if (!process.env.DISABLE_WEBSOCKET_TESTS) {
