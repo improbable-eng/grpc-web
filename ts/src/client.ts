@@ -211,7 +211,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
 
   rawOnHeaders(headers: Metadata) {
     this.props.debug && debug("rawOnHeaders", headers);
-    if (this.completed) return;
+    if (this.completed || this.closed) return;
     this.onHeadersCallbacks.forEach(callback => {
       detach(() => {
         callback(headers);
