@@ -45,6 +45,7 @@ export function invoke<TRequest extends ProtobufMessage, TResponse extends Proto
 
   grpcClient.start(props.metadata);
   grpcClient.send(props.request);
+  grpcClient.finishSend();
 
   return {
     close: () => {
