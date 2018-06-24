@@ -64,6 +64,7 @@ const grpcRequest = grpc.unary(BookService.QueryBooks, {
   onEnd: (({status, statusMessage, headers, message, trailers: string, trailers: grpc.Metadata}) => {
     console.log("onEnd", status, statusMessage, headers, message, trailers);
   },
+  request,
 });
 
 grpcRequest.close();// Included as an example of how to close the request, but this usage would cancel the request immediately
