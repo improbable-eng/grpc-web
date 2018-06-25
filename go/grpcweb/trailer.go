@@ -24,9 +24,15 @@ func (t trailer) Get(key string) string {
 	if t.Header == nil {
 		return ""
 	}
+	key = strings.ToLower(key)
 	v := t.Header[key]
 	if len(v) == 0 {
 		return ""
 	}
 	return v[0]
+}
+
+func (t trailer) Set(key, value string) {
+	key = strings.ToLower(key)
+	t.Header[key] = []string{value}
 }

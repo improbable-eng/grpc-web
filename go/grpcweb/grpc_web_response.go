@@ -90,6 +90,7 @@ func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
 		}
 	}
 	w.writeCorsExposedHeaders()
+	hackIntogRPCWebContentType(wrappedHeader)
 	w.wrapped.WriteHeader(http.StatusOK)
 	w.wrapped.(http.Flusher).Flush()
 }
@@ -134,5 +135,16 @@ func (w *grpcWebResponse) extractTrailerHeaders() trailer {
 			trailerHeaders.Add(k, v)
 		}
 	}
+	hackIntogRPCWebContentType(trailerHeaders)
 	return trailerHeaders
+}
+
+type headerLike interface {
+	Get(string) string
+	Set(string, string)
+}
+
+func hackIntogRPCWebContentType(in headerLike) {
+	contentType := in.Get("content-type")
+	in.Set("content-type", strings.Replace(contentType, "application/grpc", "application/grpc-web", 1))
 }
