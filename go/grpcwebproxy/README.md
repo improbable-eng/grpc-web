@@ -17,17 +17,20 @@ The indented use is as a companion process for gRPC server containers.
 
 ## Installing
 
-To install, you need to have Go >= 1.8, and call `go get`:
+To install, you need to have Go >= 1.8, and call `go get` with `dep ensure`:
 
-```
+```sh
 go get -u github.com/improbable-eng/grpc-web/go/grpcwebproxy
+cd $GOPATH/src/github.com/improbable-eng/grpc-web/go/grpcwebproxy
+dep ensure # make sure you have golang/dep installed
+go get -u github.com/improbable-eng/grpc-web/go/grpcwebproxy # one more time
 ```
 
 ## Running
 
 Here's a simple example that fronts a local, TLS gRPC server:
 
-```
+```sh
 $GOPATH/bin/grpcwebproxy
     --server_tls_cert_file=../../misc/localhost.crt \
     --server_tls_key_file=../../misc/localhost.key \
@@ -41,7 +44,7 @@ By default, grpcwebproxy will run both TLS and HTTP debug servers. To disable ei
 
 For example, to only run the HTTP server, run the following:
 
-```
+```sh
 $GOPATH/bin/grpcwebproxy
     --backend_addr=localhost:9090 \
     --run_tls_server=false
