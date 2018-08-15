@@ -34,6 +34,8 @@ var (
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
 
+	useWebsockets = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
+
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 )
@@ -48,8 +50,21 @@ func main() {
 	grpcServer := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
 
-	// gRPC-Web compatibility layer with CORS configured to accept on every
-	wrappedGrpc := grpcweb.WrapServer(grpcServer, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	options := []grpcweb.Option{
+		// gRPC-Web compatibility layer with CORS configured to accept on every request
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+	}
+	if *useWebsockets {
+		logrus.Println("using websockets")
+		options = append(
+			options,
+			grpcweb.WithWebsockets(true),
+			grpcweb.WithWebsocketOriginFunc(func(req *http.Request) bool {
+				return true
+			}),
+		)
+	}
+	wrappedGrpc := grpcweb.WrapServer(grpcServer, options...)
 
 	if !*runHttpServer && !*runTlsServer {
 		logrus.Fatalf("Both run_http_server and run_tls_server are set to false. At least one must be enabled for grpcweb proxy to function correctly.")
