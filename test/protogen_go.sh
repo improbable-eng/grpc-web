@@ -6,6 +6,20 @@ PROTOBUF_DIR=${PROTOBUF_DIR-${SCRIPT_DIR}/proto}
 PROTOGEN_DIR=go/_proto
 GENERATION_DIR=${GENERATION_DIR-${SCRIPT_DIR}/${PROTOGEN_DIR}}
 
+if [[ "$GOBIN" == "" ]]; then
+  if [[ "$GOPATH" == "" ]]; then
+    echo "Required env var GOPATH is not set; aborting with error; see the following documentation which can be invoked via the 'go help gopath' command."
+    go help gopath
+    exit -1
+  fi
+
+  echo "Optional env var GOBIN is not set; using default derived from GOPATH as: \"$GOPATH/bin\""
+  export GOBIN="$GOPATH/bin"
+fi
+
+# Install protoc-gen-go from the vendored protobuf package to $GOBIN
+(cd ../vendor/github.com/golang/protobuf && make install)
+
 # Builds all .proto files in a given package dirctory.
 # NOTE: All .proto files in a given package must be processed *together*, otherwise the self-referencing
 # between files in the same proto package will not work.
@@ -15,7 +29,8 @@ function proto_build_dir {
   DIR_REL=${DIR_REL#/}
   echo -n "protogen_go: $DIR_REL "
   mkdir -p ${GENERATION_DIR}/${DIR_REL} 2> /dev/null
-  PATH=${GOPATH}/bin:$PATH protoc \
+  protoc \
+    --plugin=protoc-gen-go=${GOBIN}/protoc-gen-go \
     -I${PROTOBUF_DIR} \
     --go_out=plugins=grpc:${GENERATION_DIR} \
     ${DIR_FULL}/*.proto || exit $?
