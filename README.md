@@ -172,9 +172,17 @@ The code here is `alpha` quality. It is being used for a subset of Improbable's 
 
 ## Known Limitations
 
+### Edge - Unable to abort RPCs
+
+When using Fetch - the default transport for Edge 13+ - RPCs will fail to be aborted. The signal to abort will not be received by the server, potentially resulting in zombie streams in the case of infinite server-streams.
+
+The connection will be closed as normal if the user navigates away from the browser context making the RPC.
+
+See this issue: https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/13009916/
+
 ### Server-side streaming with XHR
 
-Browsers that don't support [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) (Currently only supported by Edge 14+, Chrome 43+ - full ReadableStream was added in Chrome 52, but only `body.getReader()` is used) or `XMLHttpRequest.responseType = moz-chunked-arraybuffer` (Firefox 38+) use [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest).
+Browsers that don't support [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) (Currently only supported by Edge 13+, Chrome 43+ - full ReadableStream was added in Chrome 52, but only `body.getReader()` is used) or `XMLHttpRequest.responseType = moz-chunked-arraybuffer` (Firefox 38+) use [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest).
 
 XHR keeps the entire server response in memory. This means that a long-lived or otherwise large streaming response will consume a large amount of memory in the browser and may cause instability. Fetch does not suffer from this issue. It is therefore advised that you don't use open-ended or large payload server streaming if you intend to support browsers that do not support Fetch.
 
