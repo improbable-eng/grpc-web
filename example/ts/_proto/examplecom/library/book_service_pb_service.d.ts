@@ -30,7 +30,7 @@ export class BookService {
 
 export type ServiceError = { message: string, code: number; metadata: grpc.Metadata }
 export type Status = { details: string, code: number; metadata: grpc.Metadata }
-export type ServiceClientOptions = { transport: grpc.TransportConstructor }
+export type ServiceClientOptions = { transport: grpc.TransportConstructor; debug?: boolean }
 
 interface ResponseStream<T> {
   cancel(): void;

@@ -34,9 +34,9 @@
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.2.5",
-    "@types/node": "^8.9.4",
+    "@types/node": "^10.7.1",
     "google-protobuf": "^3.2.0",
     "tslint": "^5.9.1",
-    "typescript": "2.8.3"
+    "typescript": "3.0.1"
   }
 }

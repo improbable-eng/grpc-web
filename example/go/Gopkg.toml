@@ -31,7 +31,7 @@
 
 [[constraint]]
   name = "github.com/improbable-eng/grpc-web"
-  version = "0.6.0"
+  version = "0.6.2"
 
 [[constraint]]
   branch = "master"

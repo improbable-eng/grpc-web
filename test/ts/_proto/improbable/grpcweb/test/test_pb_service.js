@@ -90,6 +90,7 @@ TestServiceClient.prototype.pingEmpty = function pingEmpty(requestMessage, metad
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
@@ -111,6 +112,7 @@ TestServiceClient.prototype.ping = function ping(requestMessage, metadata, callb
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
@@ -132,6 +134,7 @@ TestServiceClient.prototype.pingError = function pingError(requestMessage, metad
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
@@ -155,6 +158,7 @@ TestServiceClient.prototype.pingList = function pingList(requestMessage, metadat
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onMessage: function (responseMessage) {
       listeners.data.forEach(function (handler) {
         handler(responseMessage);
@@ -199,6 +203,7 @@ TestServiceClient.prototype.echo = function echo(requestMessage, metadata, callb
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
@@ -253,6 +258,7 @@ TestUtilServiceClient.prototype.continueStream = function continueStream(request
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
@@ -274,6 +280,7 @@ TestUtilServiceClient.prototype.checkStreamClosed = function checkStreamClosed(r
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
@@ -319,6 +326,7 @@ FailServiceClient.prototype.nonExistant = function nonExistant(requestMessage, m
     host: this.serviceHost,
     metadata: metadata,
     transport: this.options.transport,
+    debug: this.options.debug,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
