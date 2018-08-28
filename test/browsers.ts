@@ -2,7 +2,19 @@ import {SuiteEnum} from "./ts/suiteUtils";
 
 function browser(browserName, browserVersion, os, osVersion) {
   const browsers = [];
-  if (process.env.SEPARATE_TEST_SUITES) {
+  if (process.env.TEST_SUITE_NAME) {
+    browsers.push({
+      configName: `${os}_${osVersion}_${browserName}_${browserVersion}_${process.env.TEST_SUITE_NAME}`,
+      base: 'CustomWebDriver',
+      capabilities: {
+        testSuite: process.env.TEST_SUITE_NAME,
+        browserName: browserName,
+        browserVersion: browserVersion,
+        os: os,
+        os_version: osVersion
+      }
+    });
+  } else if (process.env.SEPARATE_TEST_SUITES) {
     for (let suiteName in SuiteEnum) {
       if (isNaN(Number(suiteName))) {
         browsers.push({
@@ -17,7 +29,7 @@ function browser(browserName, browserVersion, os, osVersion) {
           }
         });
       }
-    };
+    }
   } else {
     browsers.push({
       configName: `${os}_${osVersion}_${browserName}_${browserVersion}_allsuites`,
@@ -37,6 +49,7 @@ function browser(browserName, browserVersion, os, osVersion) {
 // Browser versions that should not have any Fetch/XHR differences in functionality to other (tested) versions are
 // commented out.
 const browsers = {
+  edge15_win: browser("edge", "15", "Windows", "10"),
   edge14_win: browser("edge", "14", "Windows", "10"),
   edge13_win: browser('edge', "13", 'Windows', "10"),
   ie11_win: browser('ie', "11", 'Windows', "7"),

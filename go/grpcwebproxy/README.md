@@ -46,3 +46,13 @@ $GOPATH/bin/grpcwebproxy
     --backend_addr=localhost:9090 \
     --run_tls_server=false
 ```
+
+### Enabling Websocket Transport
+
+By default, grpcwebproxy will not use websockets as a transport layer. To enable websockets, set the `--use_websockets` flag to true.
+
+```
+$GOPATH/bin/grpcwebproxy \
+    --backend_addr=localhost:9090 \
+    --use_websockets
+```
