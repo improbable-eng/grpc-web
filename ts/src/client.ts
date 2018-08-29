@@ -96,17 +96,22 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     } else {
       this.responseHeaders = headers;
       this.props.debug && debug("onHeaders.responseHeaders", JSON.stringify(this.responseHeaders, null, 2));
-      const code = httpStatusToCode(status);
+
+      const gRPCStatus: Code = parseInt(headers.get("grpc-status")[0], 10);
+      this.props.debug && debug("onHeaders.gRPCStatus", gRPCStatus);
+
+      const code: Code = gRPCStatus >= 0 ? gRPCStatus : httpStatusToCode(status);
       this.props.debug && debug("onHeaders.code", code);
+
       const gRPCMessage = headers.get("grpc-message") || [];
       this.props.debug && debug("onHeaders.gRPCMessage", gRPCMessage);
-      if (code !== Code.OK) {
-        const statusMessage = this.decodeGRPCStatus(gRPCMessage[0]);
-        this.rawOnError(code, statusMessage);
-        return;
-      }
 
       this.rawOnHeaders(headers);
+
+      if (code !== Code.OK) {
+        const statusMessage = this.decodeGRPCStatus(gRPCMessage[0]);
+        this.rawOnError(code, statusMessage, headers);
+      }
     }
   }
 
@@ -219,13 +224,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     });
   }
 
-  rawOnError(code: Code, msg: string) {
+  rawOnError(code: Code, msg: string, trailers: Metadata = new Metadata()) {
     this.props.debug && debug("rawOnError", code, msg);
     if (this.completed) return;
     this.completed = true;
     this.onEndCallbacks.forEach(callback => {
       detach(() => {
-        callback(code, msg, new Metadata());
+        callback(code, msg, trailers);
       });
     });
   }
