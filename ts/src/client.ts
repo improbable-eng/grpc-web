@@ -100,7 +100,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       const gRPCStatus: Code = parseInt(headers.get("grpc-status")[0], 10);
       this.props.debug && debug("onHeaders.gRPCStatus", gRPCStatus);
 
-      const code: Code = gRPCStatus >= 0 ? gRPCStatus : httpStatusToCode(status);
+      const code = gRPCStatus >= 0 ? gRPCStatus : httpStatusToCode(status);
       this.props.debug && debug("onHeaders.code", code);
 
       const gRPCMessage = headers.get("grpc-message") || [];
