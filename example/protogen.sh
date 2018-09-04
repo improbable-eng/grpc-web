@@ -14,6 +14,15 @@ if [[ "$GOBIN" == "" ]]; then
   export GOBIN="$GOPATH/bin"
 fi
 
+PROTOC=`command -v protoc`
+if [[ "$PROTOC" == "" ]]; then
+  echo "Required "protoc" to be installed. Please visit https://github.com/protocolbuffers/protobuf/releases (3.5.0 suggested)."
+  exit -1
+fi
+
+# Install protoc-gen-go from the vendored protobuf package to $GOBIN
+(cd ../vendor/github.com/golang/protobuf && make install)
+
 echo "Compiling protobuf definitions"
 protoc \
   --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \

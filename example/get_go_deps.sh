@@ -9,7 +9,3 @@ fi
 cd go
 dep ensure
 
-cd ../
-
-echo "Installing Protobuf to Golang compiler..."
-go get -u github.com/golang/protobuf/protoc-gen-go
