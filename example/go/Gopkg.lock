@@ -10,8 +10,8 @@
     "ptypes/duration",
     "ptypes/timestamp"
   ]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -22,8 +22,8 @@
 [[projects]]
   name = "github.com/improbable-eng/grpc-web"
   packages = ["go/grpcweb"]
-  revision = "58d1f6c3d97b6d81d7eebd7d26d5942a1d40cb46"
-  version = "0.6.0"
+  revision = "72eb701d6f320ca324b3347c7925a720b553eae5"
+  version = "0.6.2"
 
 [[projects]]
   name = "github.com/rs/cors"
@@ -71,7 +71,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
+  revision = "86e600f69ee4704c6efbf6a2a40a5c10700e76c2"
 
 [[projects]]
   name = "google.golang.org/grpc"

@@ -19,10 +19,11 @@
   },
   "devDependencies": {
     "concurrently": "^3.4.0",
-    "ts-loader": "^2.0.1",
-    "ts-protoc-gen": "0.3.2",
-    "typescript": "2.2.1",
-    "webpack": "^2.2.1",
-    "webpack-dev-server": "^2.4.2"
+    "ts-loader": "^4.2.0",
+    "ts-protoc-gen": "0.6.0",
+    "typescript": "2.8.3",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.1.2",
+    "webpack-dev-server": "^3.1.7"
   }
 }

@@ -14,11 +14,8 @@ env:
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
   matrix:
-    # Browsers that do not support trusting self-signed certs for wss:// connections are disabled (see https://github.com/improbable-eng/grpc-web/issues/165)
+    - GOTEST=1
     - BROWSER=nodejs
-    - BROWSER=edge14_win
-    - BROWSER=edge13_win
-    - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=firefox53_osx
     - BROWSER=firefox39_osx
     - BROWSER=firefox38_osx
@@ -28,6 +25,12 @@ env:
     - BROWSER=chrome_43
     - BROWSER=chrome_42
     - BROWSER=chrome_41
+    # Edge does not support aborting fetch requests (documented known limitation in project README)
+    - BROWSER=edge15_win DISABLE_ABORT_TESTS=true
+    - BROWSER=edge14_win DISABLE_ABORT_TESTS=true
+    - BROWSER=edge13_win DISABLE_ABORT_TESTS=true
+    # Browsers that do not support trusting self-signed certs for wss:// connections are disabled (see https://github.com/improbable-eng/grpc-web/issues/165)
+    - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=safari11 DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
@@ -37,16 +40,14 @@ cache:
     - node_modules
 before_install:
   - sudo apt-get install unzip
-  - bash install-protobuf.sh
+  - . ./install-protobuf.sh
   - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfVVNFUk5BTUU9aW1wcm9iYWJsZWVuZ2JvdDEK`
   - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfQUNDRVNTX0tFWT1SRG1Cc2pwQUJ4RlljcEVkeVp5bwo=`
 install:
   - go get -u github.com/golang/dep/cmd/dep
   - go get -u golang.org/x/tools/cmd/goimports
   - go get -u github.com/robertkrimen/godocdown/godocdown
-  - go get -u github.com/golang/protobuf/protoc-gen-go
   - dep ensure
-  - export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
   - nvm install
   - npm install
 before_script:

@@ -57,6 +57,7 @@ export function unary<TRequest extends ProtobufMessage, TResponse extends Protob
 
   grpcClient.start(props.metadata);
   grpcClient.send(props.request);
+  grpcClient.finishSend();
 
   return {
     close: () => {
