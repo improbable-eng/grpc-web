@@ -15,15 +15,15 @@
   "license": "none",
   "dependencies": {
     "@types/google-protobuf": "^3.2.5",
-    "google-protobuf": "^3.2.0",
+    "google-protobuf": "^3.6.1",
     "grpc-web-client": "0.6.2"
   },
   "devDependencies": {
-    "concurrently": "^3.4.0",
-    "ts-loader": "^4.2.0",
+    "concurrently": "^3.6.1",
+    "ts-loader": "^4.5.0",
     "ts-protoc-gen": "0.7.6",
     "typescript": "3.0.1",
-    "webpack": "^4.6.0",
+    "webpack": "^4.17.2",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.7"
   }
