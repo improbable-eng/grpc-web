@@ -20,8 +20,8 @@ if [[ "$PROTOC" == "" ]]; then
   exit -1
 fi
 
-# Install protoc-gen-go from the vendored protobuf package to $GOBIN
-(cd ../vendor/github.com/golang/protobuf && make install)
+# Install protoc-gen-go into $GOPATH.
+go get -u github.com/golang/protobuf/protoc-gen-go
 
 echo "Compiling protobuf definitions"
 protoc \

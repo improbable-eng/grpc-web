@@ -13,6 +13,7 @@ env:
     # GLOBAL_TESTSERVER is used to skip starting the testserver in run-with-testserver.sh
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
+    - GO111MODULE=on
   matrix:
     - GOTEST=1
     - BROWSER=nodejs
@@ -46,9 +47,7 @@ before_install:
 install:
   - go get -u golang.org/x/tools/cmd/goimports
   - go get -u github.com/robertkrimen/godocdown/godocdown
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-  - dep ensure
-  - go install ./vendor/github.com/golang/protobuf/protoc-gen-go
+  - go get -u github.com/golang/protobuf/protoc-gen-go
   - export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
   - nvm install
   - npm install
