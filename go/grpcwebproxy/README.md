@@ -66,3 +66,17 @@ $GOPATH/bin/grpcwebproxy \
     --backend_addr=localhost:9090 \
     --use_websockets
 ```
+
+### Changing the Maximum Receive Message Size
+
+By default, grpcwebproxy will limit the message size that the backend sends to the client. This is currently 4MB.
+To override this, set the `--backend_max_call_recv_msg_size` flag to an integer with the desired byte size.
+
+For example, to increase the size to 5MB, set the value to 5242880 (5 * 1024 * 1024).
+
+```bash
+grpcwebproxy \
+    --backend_max_call_recv_msg_size=5242880
+```
+
+Note that if you set a lower value than 4MB, the lower value will be used. Also, it is preferrable to send data in a stream than to set a very large value.
