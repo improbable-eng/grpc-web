@@ -30,10 +30,10 @@ var (
 		"Whether to ignore TLS verification checks (cert validity, hostname). *DO NOT USE IN PRODUCTION*.",
 	)
 
-	flagMaxMsgSize = pflag.Int(
-		"backend_max_msg_size",
-		4194304,
-		"Maximum message size limit. If not specified, the default of 4MB will be used.",
+	flagMaxCallRecvMsgSize = pflag.Int(
+		"backend_max_call_recv_msg_size",
+		1024*1024*4, // The current maximum receive msg size per https://github.com/grpc/grpc-go/blob/v1.8.2/server.go#L54
+		"Maximum receive message size limit. If not specified, the default of 4MB will be used.",
 	)
 
 	flagBackendTlsCa = pflag.StringSlice(
@@ -54,9 +54,7 @@ func dialBackendOrFail() *grpc.ClientConn {
 	} else {
 		opt = append(opt, grpc.WithInsecure())
 	}
-	if *flagMaxMsgSize != 4194304 {
-		opt = append(opt, grpc.WithMaxMsgSize(flagMaxMsgSize))
-	}
+	opt = append(opt, grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize))
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
 		logrus.Fatalf("failed dialing backend: %v", err)
