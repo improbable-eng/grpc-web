@@ -62,13 +62,13 @@ func buildBackendTlsOrFail() *tls.Config {
 		tlsConfig.InsecureSkipVerify = true
 	} else {
 		if len(*flagBackendTlsCa) > 0 {
-			tlsConfig.ClientCAs = x509.NewCertPool()
+			tlsConfig.RootCAs = x509.NewCertPool()
 			for _, path := range *flagBackendTlsCa {
 				data, err := ioutil.ReadFile(path)
 				if err != nil {
 					logrus.Fatalf("failed reading backend CA file %v: %v", path, err)
 				}
-				if ok := tlsConfig.ClientCAs.AppendCertsFromPEM(data); !ok {
+				if ok := tlsConfig.RootCAs.AppendCertsFromPEM(data); !ok {
 					logrus.Fatalf("failed processing backend CA file %v", path)
 				}
 			}
