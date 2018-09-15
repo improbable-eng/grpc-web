@@ -55,7 +55,7 @@ func dialBackendOrFail() *grpc.ClientConn {
 		opt = append(opt, grpc.WithInsecure())
 	}
 	if *flagMaxMsgSize != 4194304 {
-		opt = append(opt, grpc.WithMaxMsgSize())
+		opt = append(opt, grpc.WithMaxMsgSize(flagMaxMsgSize))
 	}
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
