@@ -30,6 +30,12 @@ var (
 		"Whether to ignore TLS verification checks (cert validity, hostname). *DO NOT USE IN PRODUCTION*.",
 	)
 
+	flagMaxMsgSize = pflag.Int(
+		"backend_max_msg_size",
+		4194304,
+		"Maximum message size limit. If not specified, the default of 4MB will be used.",
+	)
+
 	flagBackendTlsCa = pflag.StringSlice(
 		"backend_tls_ca_files",
 		[]string{},
@@ -47,6 +53,9 @@ func dialBackendOrFail() *grpc.ClientConn {
 		opt = append(opt, grpc.WithTransportCredentials(credentials.NewTLS(buildBackendTlsOrFail())))
 	} else {
 		opt = append(opt, grpc.WithInsecure())
+	}
+	if *flagMaxMsgSize != 4194304 {
+		opt = append(opt, grpc.WithMaxMsgSize())
 	}
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
