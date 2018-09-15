@@ -54,7 +54,7 @@ func dialBackendOrFail() *grpc.ClientConn {
 	} else {
 		opt = append(opt, grpc.WithInsecure())
 	}
-	opt = append(opt, grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize))
+	opt = append(opt, grpc.WithDefaultCallOptions(MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)))
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
 		logrus.Fatalf("failed dialing backend: %v", err)
