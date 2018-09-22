@@ -2,11 +2,13 @@
   "name": "grpc-web-client",
   "version": "0.6.3",
   "description": "gRPC-Web client for browsers (JS/TS)",
-  "main": "dist/index.js",
+  "main": "dist/grpc-web-client.js",
+  "module": "dist/grpc-web-client.es.js",
+  "browser": "dist/grpc-web-client.umd.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf build && rm -rf dist",
-    "lib:build": "npm run clean && tsc && cp -R build/ dist/",
+    "build": "npm run clean && rollup -c",
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
   "author": "Improbable",
@@ -36,6 +38,9 @@
     "@types/google-protobuf": "^3.2.5",
     "google-protobuf": "^3.2.0",
     "tslint": "^5.9.1",
-    "typescript": "3.0.1"
+    "typescript": "3.0.1",
+    "rollup": "^0.62.0",
+    "rollup-plugin-typescript2": "^0.15.1",
+    "tslib": "^1.9.3"
   }
 }
