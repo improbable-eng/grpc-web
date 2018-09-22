@@ -8,8 +8,12 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf build && rm -rf dist",
+<<<<<<< HEAD:client/grpc-web-client/package.json
     "postbootstrap": "npm run lib:build",
     "lib:build": "npm run clean && tsc && cp -R build/ dist/",
+=======
+    "build": "npm run clean && rollup -c",
+>>>>>>> Initial implementation of rollup config.:ts/package.json
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
   "author": "Improbable",
