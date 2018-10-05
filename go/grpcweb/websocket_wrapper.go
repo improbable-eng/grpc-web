@@ -3,6 +3,7 @@ package grpcweb
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -110,6 +111,7 @@ type webSocketWrappedReader struct {
 	respWriter      *webSocketResponseWriter
 	remainingBuffer []byte
 	remainingError  error
+	cancel          context.CancelFunc
 }
 
 func (w *webSocketWrappedReader) Close() error {
@@ -152,7 +154,7 @@ func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 	messageType, framePayload, err := w.wsConn.ReadMessage()
 	if err == io.EOF || messageType == -1 {
 		// The client has closed the connection. Indicate to the response writer that it should close
-		w.respWriter.closeNotifyChan <- true
+		w.cancel()
 		return 0, io.EOF
 	}
 
@@ -193,12 +195,13 @@ func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func newWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *webSocketResponseWriter) *webSocketWrappedReader {
+func newWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *webSocketResponseWriter, cancel context.CancelFunc) *webSocketWrappedReader {
 	return &webSocketWrappedReader{
 		wsConn:          wsConn,
 		respWriter:      respWriter,
 		remainingBuffer: nil,
 		remainingError:  nil,
+		cancel:          cancel,
 	}
 }
 
