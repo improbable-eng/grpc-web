@@ -72,14 +72,16 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		debugServer := buildServer(wrappedGrpc, true)
+		debugServer := buildServer(http.DefaultServeMux)
+		http.Handle("/", wrappedGrpc)
+		http.Handle("/metrics", promhttp.Handler())
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
 
 	if *runTlsServer {
 		// Debug server.
-		servingServer := buildServer(wrappedGrpc, false)
+		servingServer := buildServer(wrappedGrpc)
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
 		serveServer(servingServer, servingListener, "http_tls", errChan)
@@ -89,17 +91,11 @@ func main() {
 	// TODO(mwitkow): Add graceful shutdown.
 }
 
-func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metrics bool) *http.Server {
+func buildServer(handler http.Handler) *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
-		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if metrics && req.URL.Path == "/metrics" {
-				promhttp.Handler().ServeHTTP(resp, req)
-			} else {
-				wrappedGrpc.ServeHTTP(resp, req)
-			}
-		}),
+		Handler:      handler,
 	}
 }
 
