@@ -27,7 +27,7 @@ https://github.com/improbable-eng/grpc-web/releases/tag/0.6.3
 To build, you need to have Go >= 1.8, and call `go get` with `dep ensure`:
 
 ```sh
-git clone github.com/improbable-eng/grpc-web $GOPATH/src/
+git clone https://github.com/improbable-eng/grpc-web.git $GOPATH/src/github.com/improbable-eng/grpc-web
 cd $GOPATH/src/github.com/improbable-eng/grpc-web
 dep ensure # after installing dep
 go install ./go/grpcwebproxy # installs into $GOPATH/bin/grpcwebproxy
