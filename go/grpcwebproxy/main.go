@@ -14,7 +14,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/dshuffma-ibm/grpc-web/go/grpcweb"
 	"github.com/mwitkow/go-conntrack"
 	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -72,14 +72,15 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		debugServer := buildServer(wrappedGrpc)
+		debugServer := buildServer(http.DefaultServeMux)
+		http.Handle("/", wrappedGrpc)
 		http.Handle("/metrics", promhttp.Handler())
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
 
 	if *runTlsServer {
-		// Debug server.
+		// tls server.
 		servingServer := buildServer(wrappedGrpc)
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
@@ -90,15 +91,28 @@ func main() {
 	// TODO(mwitkow): Add graceful shutdown.
 }
 
-func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
+//func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
+func buildServer(handler http.Handler) *http.Server {
+	return &http.Server{
+		WriteTimeout: *flagHttpMaxWriteTimeout,
+		ReadTimeout:  *flagHttpMaxReadTimeout,
+		/*Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+			wrappedGrpc.ServeHTTP(resp, req)
+		}),*/
+		Handler:      handler,
+	}
+}
+/*
+func buildServer2() *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			wrappedGrpc.ServeHTTP(resp, req)
+			//wrappedGrpc.ServeHTTP(resp, req)
+			http.DefaultServeMux.ServeHTTP(resp, req)
 		}),
 	}
-}
+}*/
 
 func serveServer(server *http.Server, listener net.Listener, name string, errChan chan error) {
 	go func() {
