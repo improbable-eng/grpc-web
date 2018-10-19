@@ -14,21 +14,22 @@ export interface Transport {
   start(metadata: Metadata): void
 }
 
-export interface TransportConstructor {
-  (options: TransportOptions): Transport | Error;
+export interface TransportConstructor<TImplementaionSpecificOptions= undefined> {
+  (options: TransportOptions<TImplementaionSpecificOptions>): Transport | Error;
 }
 
-export interface TransportOptions {
+export interface TransportOptions<TImplementaionSpecificOptions = undefined> {
   methodDefinition: MethodDefinition<ProtobufMessage, ProtobufMessage>;
   debug: boolean;
   url: string;
+  transportSpecificOptions: TImplementaionSpecificOptions;
   onHeaders: (headers: Metadata, status: number) => void;
   onChunk: (chunkBytes: Uint8Array, flush?: boolean) => void;
   onEnd: (err?: Error) => void;
 }
 
-let selectedTransport: TransportConstructor;
-export function DefaultTransportFactory(transportOptions: TransportOptions): Transport | Error {
+let selectedTransport: TransportConstructor<unknown>;
+export function DefaultTransportFactory(transportOptions: TransportOptions<unknown>): Transport | Error {
   // The transports provided by DefaultTransportFactory do not support client-streaming
   if (transportOptions.methodDefinition.requestStream) {
     return new Error("No transport available for client-streaming (requestStream) method");
@@ -41,7 +42,7 @@ export function DefaultTransportFactory(transportOptions: TransportOptions): Tra
   return selectedTransport(transportOptions);
 }
 
-function detectTransport(): TransportConstructor {
+function detectTransport(): TransportConstructor<unknown> {
   if (detectFetchSupport()) {
     return fetchRequest;
   }
@@ -61,6 +62,6 @@ function detectTransport(): TransportConstructor {
   throw new Error("No suitable transport found for gRPC-Web");
 }
 
-export function WebsocketTransportFactory(transportOptions: TransportOptions): Transport | Error {
+export function WebsocketTransportFactory(transportOptions: TransportOptions<undefined>): Transport | Error {
   return websocketRequest(transportOptions);
 }
