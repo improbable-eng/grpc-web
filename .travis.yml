@@ -23,7 +23,6 @@ env:
     - BROWSER=chrome_57
     - BROWSER=chrome_52
     - BROWSER=chrome_43
-    - BROWSER=chrome_42
     - BROWSER=chrome_41
     # Edge does not support aborting fetch requests (documented known limitation in project README)
     - BROWSER=edge15_win DISABLE_ABORT_TESTS=true
