@@ -3,10 +3,14 @@ import {Transport, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
+interface FetchOptions {
+  credentials?: RequestCredentials;
+}
+
 /* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
-export default function fetchRequest(options: TransportOptions): Transport {
-  options.debug && debug("fetchRequest", options);
-  return new Fetch(options);
+export default function fetchRequest(options: TransportOptions, fetchOptions: FetchOptions = {}): Transport {
+  options.debug && debug("fetchRequest", options, fetchOptions);
+  return new Fetch(options, fetchOptions);
 }
 
 declare const Response: any;
@@ -19,7 +23,7 @@ class Fetch implements Transport {
   metadata: Metadata;
   controller: AbortController | undefined = (window as any).AbortController && new AbortController();
 
-  constructor(transportOptions: TransportOptions) {
+  constructor(transportOptions: TransportOptions, private readonly fetchOptions: FetchOptions) {
     this.options = transportOptions;
   }
 
@@ -63,7 +67,7 @@ class Fetch implements Transport {
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
-      credentials: "same-origin",
+      credentials: this.fetchOptions.credentials || "same-origin",
       signal: this.controller && this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
