@@ -3,7 +3,6 @@ import {
   corsHost
 } from "../../hosts-config";
 import {grpc} from "../../../ts/src/index";
-import { fetchRequestWithOptions } from "../../../ts/src/transports/fetch";
 
 type TestConfig = {
   testHostUrl: string,
@@ -59,7 +58,7 @@ export function runWithSupportedTransports(cb: (transport: grpc.TransportConstru
   };
 
   if (typeof window !== "undefined") {
-    transports["fetchWithOptions"] = fetchRequestWithOptions({})
+    transports["fetchWithOptions"] = grpc.transports.fetchRequestWithOptions({})
   }
 
   if (!process.env.DISABLE_WEBSOCKET_TESTS) {
