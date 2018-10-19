@@ -7,6 +7,13 @@ interface FetchOptions {
   credentials?: RequestCredentials;
 }
 
+/* fetchRequestWithOptions provides a way to construct a Fetch transport with custom FetchOptions */
+export function fetchRequestWithOptions(fetchOptions: FetchOptions = {}): (options: TransportOptions) => Transport {
+  return function(options: TransportOptions) {
+    return fetchRequest(options, fetchOptions);
+  }
+}
+
 /* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
 export default function fetchRequest(options: TransportOptions, fetchOptions: FetchOptions = {}): Transport {
   options.debug && debug("fetchRequest", options, fetchOptions);
