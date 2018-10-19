@@ -55,9 +55,12 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
 
 export function runWithSupportedTransports(cb: (transport: grpc.TransportConstructor | undefined) => void) {
   const transports: {[key: string]: grpc.TransportConstructor | undefined} = {
-    "defaultTransport": undefined,
-    "fetchWithOptions": fetchRequestWithOptions({}),
+    "defaultTransport": undefined
   };
+
+  if (typeof window !== "undefined") {
+    transports["fetchWithOptions"] = fetchRequestWithOptions({})
+  }
 
   if (!process.env.DISABLE_WEBSOCKET_TESTS) {
     transports["websocketTransport"] = grpc.WebsocketTransportFactory
