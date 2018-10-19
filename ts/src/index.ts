@@ -7,6 +7,8 @@ import * as impClient from "./client";
 import * as impService from "./service";
 import * as impMessage from "./message";
 
+import * as impTransportFetch from "./transports/fetch";
+
 export namespace grpc {
   export interface ProtobufMessageClass<T extends ProtobufMessage> extends impMessage.ProtobufMessageClass<T> {}
   export interface ProtobufMessage extends impMessage.ProtobufMessage {}
@@ -37,4 +39,8 @@ export namespace grpc {
   export const unary = impUnary.unary;
   export interface UnaryOutput<TResponse extends ProtobufMessage> extends impUnary.UnaryOutput<TResponse> {}
   export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impUnary.UnaryRpcOptions<TRequest, TResponse> {}
+
+  export namespace transports {
+    export const fetchRequestWithOptions = impTransportFetch.fetchRequestWithOptions;
+  }
 }
