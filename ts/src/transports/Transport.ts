@@ -28,7 +28,7 @@ export interface TransportOptions {
 }
 
 export function DefaultHttpTransport(transportOptions: TransportOptions): Transport {
-  return HttpTransport({ credentials: 'same-origin' })(transportOptions);
+  return HttpTransport({ credentials: "same-origin" })(transportOptions);
 }
 
 function detectHttpTransport(): HttpTransportConstructor {
@@ -52,7 +52,7 @@ function detectHttpTransport(): HttpTransportConstructor {
 }
 
 export interface HttpTransportConfig {
-  credentials: 'include' | 'same-origin'
+  credentials: "include" | "same-origin"
 }
 
 export interface TransportFactory {

@@ -71,7 +71,7 @@ class MozXHR implements Transport {
       xhr.setRequestHeader(key, values.join(", "));
     });
 
-    if (this.config.credentials === 'include') {
+    if (this.config.credentials === "include") {
       xhr.withCredentials = true;
     }
 
