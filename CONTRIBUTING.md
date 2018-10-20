@@ -7,9 +7,13 @@
 The following steps guide you through a fresh checkout
 
 ```
-# Initalise a Go Workspace and checkout project sources
+# Create a workspace
+cd ~/Projects/grpc-web  # or wherever you want your checkout to live
+export GOPATH=`pwd`
+
+# Checkout project sources into your new go workspace
 go get -u github.com/improbable-eng/grpc-web/go
-cd src/github.com/improbable-eng/grpc-web
+cd $GOPATH/src/github.com/improbable-eng/grpc-web
 
 # Install go dependencies
 dep ensure
