@@ -1,24 +1,26 @@
 import {Metadata} from "../metadata";
-import {Transport, TransportOptions} from "./Transport";
+import {HttpTransportConfig, Transport, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
 /* xhrRequest uses XmlHttpRequest with overrideMimeType combined with a byte decoding method that decodes the UTF-8
  * text response to bytes. */
-export default function xhrRequest(options: TransportOptions): Transport {
+export default function xhrRequest(options: TransportOptions, cfg: HttpTransportConfig): Transport {
   options.debug && debug("xhrRequest", options);
 
-  return new XHR(options);
+  return new XHR(options, cfg);
 }
 
 class XHR implements Transport {
   options: TransportOptions;
+  config: HttpTransportConfig;
   xhr: XMLHttpRequest;
   metadata: Metadata;
   index: 0;
 
-  constructor(transportOptions: TransportOptions) {
+  constructor(transportOptions: TransportOptions, cfg: HttpTransportConfig) {
     this.options = transportOptions;
+    this.config = cfg;
   }
 
   onProgressEvent() {
@@ -69,6 +71,11 @@ class XHR implements Transport {
     this.metadata.forEach((key, values) => {
       xhr.setRequestHeader(key, values.join(", "));
     });
+
+    if (this.config.credentials === 'include') {
+      xhr.withCredentials = true;
+    }
+
     xhr.addEventListener("readystatechange", this.onStateChange.bind(this));
     xhr.addEventListener("progress", this.onProgressEvent.bind(this));
     xhr.addEventListener("loadend", this.onLoadEvent.bind(this));

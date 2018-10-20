@@ -6,15 +6,13 @@ A “transport” in this context is a wrapper of one of these methods of creati
 
 ## How does grpc-web-client pick a transport?
 
-You can specify the transport that you want to use for a specific invocation through the `library` property in the [`client`](client.md), [`invoke`](invoke.md) and [`unary`](unary.md) function options.
+You can specify the transport that you want to use for a specific invocation through the `transport` property in the [`client`](client.md), [`invoke`](invoke.md) and [`unary`](unary.md) function options.
 
-If a transport is not specified then a transport factory is used to determine the browser’s compatible transports. See [Available Transports](#available-transports)
+If a transport is not specified then a grpc-web-client will fall back to a DefaultHttpTransport which works across the vast majority of browsers with some limitations. See [Available Transports](#available-transports)
 
-If none are found then an exception is thrown.
+### Automatic HTTP Transport Detection 
 
-### Available transports 
-
-In order of attempted usage.
+grpc-web-client will, by default, attempt to detect the most suitable method for making HTTP based requests. In order of attempted usage:
 
 #### Fetch
 Uses [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch). Requires that the browser supports [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).

@@ -52,13 +52,13 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
   });
 }
 
-export function runWithSupportedTransports(cb: (transport: grpc.TransportConstructor | undefined) => void) {
-  const transports: {[key: string]: grpc.TransportConstructor | undefined} = {
-    "defaultTransport": undefined
+export function runWithSupportedTransports(cb: (transport: grpc.TransportFactory | undefined) => void) {
+  const transports: {[key: string]: grpc.TransportFactory | undefined} = {
+    "httpTransport": undefined
   };
 
   if (!process.env.DISABLE_WEBSOCKET_TESTS) {
-    transports["websocketTransport"] = grpc.WebsocketTransportFactory
+    transports["websocketTransport"] = grpc.WebsocketTransport()
   }
 
   for (let transportName in transports) {

@@ -28,7 +28,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             const client = grpc.client(TestService.PingStream, {
               debug: DEBUG,
               host: testHostUrl,
-              transport: grpc.WebsocketTransportFactory,
+              transport: grpc.WebsocketTransport(),
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);
@@ -86,7 +86,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             const client = grpc.client(TestService.PingPongBidi, {
               debug: DEBUG,
               host: testHostUrl,
-              transport: grpc.WebsocketTransportFactory,
+              transport: grpc.WebsocketTransport(),
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);
@@ -145,7 +145,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             const client = grpc.client(TestService.PingPongBidi, {
               debug: DEBUG,
               host: testHostUrl,
-              transport: grpc.WebsocketTransportFactory,
+              transport: grpc.WebsocketTransport(),
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);

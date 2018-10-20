@@ -1,5 +1,5 @@
 import {Metadata} from "../metadata";
-import {Transport, TransportOptions} from "./Transport";
+import {HttpTransportConfig, Transport, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 import {xhrSupportsResponseType} from "./xhrUtil";
@@ -7,19 +7,21 @@ import {xhrSupportsResponseType} from "./xhrUtil";
 /* mozXhrRequest uses XmlHttpRequest with responseType "moz-chunked-arraybuffer" to support binary streaming in Firefox.
  * Firefox's Fetch as of version 52 does not implement a ReadableStream interface. moz-chunked-arraybuffer enables
  * receiving byte chunks without buffering the entire response as the xhrRequest transport does. */
-export default function mozXhrRequest(options: TransportOptions): Transport {
+export default function mozXhrRequest(options: TransportOptions, cfg: HttpTransportConfig): Transport {
   options.debug && debug("mozXhrRequest", options);
-  return new MozXHR(options);
+  return new MozXHR(options, cfg);
 }
 
 class MozXHR implements Transport {
   options: TransportOptions;
+  config: HttpTransportConfig;
   xhr: XMLHttpRequest;
   metadata: Metadata;
   index: 0;
 
-  constructor(transportOptions: TransportOptions) {
+  constructor(transportOptions: TransportOptions, cfg: HttpTransportConfig) {
     this.options = transportOptions;
+    this.config = cfg;
   }
 
   onProgressEvent() {
@@ -68,6 +70,11 @@ class MozXHR implements Transport {
     this.metadata.forEach((key, values) => {
       xhr.setRequestHeader(key, values.join(", "));
     });
+
+    if (this.config.credentials === 'include') {
+      xhr.withCredentials = true;
+    }
+
     xhr.addEventListener("readystatechange", this.onStateChange.bind(this));
     xhr.addEventListener("progress", this.onProgressEvent.bind(this));
     xhr.addEventListener("loadend", this.onLoadEvent.bind(this));

@@ -3,14 +3,14 @@ import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Code, httpStatusToCode} from "./Code";
 import {debug} from "./debug";
 import detach from "./detach";
-import {Transport, TransportConstructor, DefaultTransportFactory} from "./transports/Transport";
+import {Transport, DefaultHttpTransport, TransportFactory} from "./transports/Transport";
 import {MethodDefinition} from "./service";
 import {frameRequest} from "./util";
 import {ProtobufMessage} from "./message";
 
 export interface ClientRpcOptions {
   host: string;
-  transport?: TransportConstructor;
+  transport?: TransportFactory;
   debug?: boolean;
 }
 
@@ -67,19 +67,12 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       onEnd: this.onTransportEnd.bind(this),
     };
 
-    let transportConstructor = this.props.transport;
-    if (transportConstructor) {
-      const constructedTransport = transportConstructor(transportOptions);
-      if (constructedTransport instanceof Error) {
-        throw constructedTransport;
-      }
-      this.transport = constructedTransport;
+
+
+    if (this.props.transport) {
+      this.transport = this.props.transport(transportOptions);
     } else {
-      const factoryTransport = DefaultTransportFactory(transportOptions);
-      if (factoryTransport instanceof Error) {
-        throw factoryTransport;
-      }
-      this.transport = factoryTransport;
+      this.transport = DefaultHttpTransport(transportOptions);
     }
   }
 

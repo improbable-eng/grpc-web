@@ -14,8 +14,8 @@ export interface Transport {
   start(metadata: Metadata): void
 }
 
-export interface TransportConstructor {
-  (options: TransportOptions): Transport | Error;
+export interface HttpTransportConstructor {
+  (options: TransportOptions, config: HttpTransportConfig): Transport;
 }
 
 export interface TransportOptions {
@@ -27,21 +27,11 @@ export interface TransportOptions {
   onEnd: (err?: Error) => void;
 }
 
-let selectedTransport: TransportConstructor;
-export function DefaultTransportFactory(transportOptions: TransportOptions): Transport | Error {
-  // The transports provided by DefaultTransportFactory do not support client-streaming
-  if (transportOptions.methodDefinition.requestStream) {
-    return new Error("No transport available for client-streaming (requestStream) method");
-  }
-
-  if (!selectedTransport) {
-    selectedTransport = detectTransport();
-  }
-
-  return selectedTransport(transportOptions);
+export function DefaultHttpTransport(transportOptions: TransportOptions): Transport {
+  return HttpTransport({ credentials: 'same-origin' })(transportOptions);
 }
 
-function detectTransport(): TransportConstructor {
+function detectHttpTransport(): HttpTransportConstructor {
   if (detectFetchSupport()) {
     return fetchRequest;
   }
@@ -61,6 +51,26 @@ function detectTransport(): TransportConstructor {
   throw new Error("No suitable transport found for gRPC-Web");
 }
 
-export function WebsocketTransportFactory(transportOptions: TransportOptions): Transport | Error {
-  return websocketRequest(transportOptions);
+export interface HttpTransportConfig {
+  credentials: 'include' | 'same-origin'
+}
+
+export interface TransportFactory {
+  (options: TransportOptions): Transport;
+}
+
+export function HttpTransport(cfg: HttpTransportConfig): TransportFactory {
+  let detectedTransport: HttpTransportConstructor | null = null;
+  return (opts: TransportOptions) => {
+    if (detectedTransport === null) {
+      detectedTransport = detectHttpTransport();
+    }
+    return detectedTransport(opts, cfg);
+  }
+}
+
+export function WebsocketTransport(): TransportFactory {
+  return (opts: TransportOptions) => {
+    return websocketRequest(opts);
+  }
 }

@@ -1,5 +1,5 @@
 import {Code} from "./Code";
-import {TransportConstructor} from "./transports/Transport";
+import {TransportFactory} from "./transports/Transport";
 import {MethodDefinition} from "./service";
 import {Metadata} from "./metadata";
 import {client} from "./client";
@@ -16,7 +16,7 @@ export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse ex
   onHeaders?: (headers: Metadata) => void;
   onMessage?: (res: TResponse) => void;
   onEnd: (code: Code, message: string, trailers: Metadata) => void;
-  transport?: TransportConstructor;
+  transport?: TransportFactory;
   debug?: boolean;
 }
 
