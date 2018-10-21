@@ -15,7 +15,6 @@ env:
     - SEPARATE_TEST_SUITES=true
   matrix:
     - GOTEST=1
-    - BROWSER=nodejs
     - BROWSER=firefox53_osx
     - BROWSER=firefox39_osx
     - BROWSER=firefox38_osx

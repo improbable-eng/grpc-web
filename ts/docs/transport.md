@@ -43,10 +43,3 @@ Supported by:
 * IE 11
 
 **This transport is not safe for long-lived or otherwise large response streams as the entire server response is maintained in memory until the request completes.**
-
-#### Node HTTP (only available in a Node.js environment)
-Uses [http](https://nodejs.org/api/http.html)/[https](https://nodejs.org/api/https.html). This transport exists to allow usage of the `grpc-web-client` library in Node.js environments such as Electron or for server-side rendering.
-
-Supported by:
-
-* Node.js only

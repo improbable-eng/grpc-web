@@ -1,7 +1,7 @@
 # grpc-web-client
 > Library for making gRPC-Web requests from a browser
 
-This library is intended for both JavaScript and TypeScript usage from either a browser or Node.js.
+This library is intended for both JavaScript and TypeScript usage from a web browser.
 
 *Note: This only works if the server supports [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md)*
 
