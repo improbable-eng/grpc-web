@@ -9,7 +9,7 @@ The following steps guide you through a fresh checkout
 ```
 # Create a workspace
 cd ~/Projects/grpc-web  # or wherever you want your checkout to live
-export GOPATH=`pwd`
+export GOPATH=$(pwd)
 
 # Checkout project sources into your new go workspace
 go get -u github.com/improbable-eng/grpc-web/go
