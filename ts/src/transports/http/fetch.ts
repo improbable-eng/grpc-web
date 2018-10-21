@@ -4,7 +4,11 @@ import {debug} from "../../debug";
 import detach from "../../detach";
 
 export interface FetchTransportInit {
-  credentials: "omit" | "same-origin" | "include"
+  credentials?: "omit" | "same-origin" | "include",
+  mode?: "same-origin" | "no-cors" | "cors" | "navigate",
+  cache?: "default" | "no-store" | "reload" | "no-cache" | "force-cache" | "only-if-cached",
+  redirect?: "follow" | "error" | "manual",
+  referrer?: string,
 }
 
 export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
@@ -71,10 +75,10 @@ class Fetch implements Transport {
 
   send(msgBytes: Uint8Array) {
     fetch(this.options.url, {
+      ...this.init,
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
-      credentials: this.init.credentials,
       signal: this.controller && this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
