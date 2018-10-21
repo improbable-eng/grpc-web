@@ -3,7 +3,7 @@ import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Code, httpStatusToCode} from "./Code";
 import {debug} from "./debug";
 import detach from "./detach";
-import {Transport, DefaultHttpTransport, TransportFactory} from "./transports/Transport";
+import {Transport, TransportFactory, makeDefaultTransport} from "./transports/Transport";
 import {MethodDefinition} from "./service";
 import {frameRequest} from "./util";
 import {ProtobufMessage} from "./message";
@@ -67,12 +67,10 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       onEnd: this.onTransportEnd.bind(this),
     };
 
-
-
     if (this.props.transport) {
       this.transport = this.props.transport(transportOptions);
     } else {
-      this.transport = DefaultHttpTransport(transportOptions);
+      this.transport = makeDefaultTransport(transportOptions);
     }
   }
 

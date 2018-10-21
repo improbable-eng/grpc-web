@@ -8,7 +8,9 @@ A “transport” in this context is a wrapper of one of these methods of creati
 
 You can specify the transport that you want to use for a specific invocation through the `transport` property in the [`client`](client.md), [`invoke`](invoke.md) and [`unary`](unary.md) function options.
 
-If a transport is not specified then a grpc-web-client will fall back to a DefaultHttpTransport which works across the vast majority of browsers with some limitations. See [Available Transports](#available-transports)
+If a transport is not specified then a grpc-web-client will use the specified default transport which can be set via `grpc.setDefaultTransport`. By default an `HttpTransport` is used; this transport is configured to not send credentials (cookies) to cross-origin resources. 
+
+will fall back to a DefaultHttpTransport which works across the vast majority of browsers with some limitations. See [Available Transports](#available-transports)
 
 ### Automatic HTTP Transport Detection 
 

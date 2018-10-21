@@ -16,15 +16,16 @@ export namespace grpc {
   export interface Transport extends impTransport.Transport {}
   export interface TransportOptions extends impTransport.TransportOptions {}
   export interface TransportFactory extends impTransport.TransportFactory {}
+  export const setDefaultTransport = impTransport.setDefaultTransportFactory;
 
   export const HttpTransport = impTransport.HttpTransport;
   export interface HttpTransportInit extends impTransport.HttpTransportInit {}
 
   export const FetchReadableStreamTransport = impTransport.FetchReadableStreamTransport;
-  export  interface FetchReadableStreamInit extends impFetch.FetchTransportInit {}
+  export interface FetchReadableStreamInit extends impFetch.FetchTransportInit {}
 
   export const XhrTransport = impTransport.XhrTransport;
-  export  interface XhrTransportInit extends impXhr.XhrTransportInit {}
+  export interface XhrTransportInit extends impXhr.XhrTransportInit {}
 
   export const WebsocketTransport = impTransport.WebsocketTransport;
 

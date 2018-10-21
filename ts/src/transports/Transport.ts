@@ -13,8 +13,14 @@ export interface Transport {
   start(metadata: Metadata): void
 }
 
-export interface HttpTransportConstructor {
-  (options: TransportOptions, config: HttpTransportInit): Transport;
+let defaultTransportFactory: TransportFactory = options => HttpTransport({ withCredentials: false })(options);
+
+export function setDefaultTransportFactory(t: TransportFactory): void {
+  defaultTransportFactory = t;
+}
+
+export function makeDefaultTransport(options: TransportOptions): Transport {
+  return defaultTransportFactory(options);
 }
 
 export interface TransportOptions {
@@ -24,10 +30,6 @@ export interface TransportOptions {
   onHeaders: (headers: Metadata, status: number) => void;
   onChunk: (chunkBytes: Uint8Array, flush?: boolean) => void;
   onEnd: (err?: Error) => void;
-}
-
-export function DefaultHttpTransport(transportOptions: TransportOptions): Transport {
-  return HttpTransport({ withCredentials: false })(transportOptions);
 }
 
 export interface HttpTransportInit {
