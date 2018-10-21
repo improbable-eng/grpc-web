@@ -1,21 +1,26 @@
-import {Metadata} from "../metadata";
-import {Transport, TransportOptions} from "./Transport";
-import {debug} from "../debug";
-import detach from "../detach";
+import {Metadata} from "../../metadata";
+import {Transport, TransportFactory, TransportOptions} from "../Transport";
+import {debug} from "../../debug";
+import detach from "../../detach";
+import {detectMozXHRSupport, detectXHROverrideMimeTypeSupport} from "./xhrUtil";
 
 export interface XhrTransportInit {
   withCredentials?: boolean
 }
 
-/* xhrRequest uses XmlHttpRequest with overrideMimeType combined with a byte decoding method that decodes the UTF-8
- * text response to bytes. */
-export default function xhrRequest(options: TransportOptions, init: XhrTransportInit): Transport {
-  options.debug && debug("xhrRequest", options);
-
-  return new XHR(options, init);
+export function XhrTransport(init: XhrTransportInit): TransportFactory {
+  return (opts: TransportOptions) => {
+    if (detectMozXHRSupport()) {
+      return new MozChunkedArrayBufferXHR(opts, init);
+    } else if (detectXHROverrideMimeTypeSupport()) {
+      return new XHR(opts, init);
+    } else {
+      throw new Error("This environment's XHR implementation cannot support binary transfer.");
+    }
+  }
 }
 
-class XHR implements Transport {
+export class XHR implements Transport {
   options: TransportOptions;
   init: XhrTransportInit;
   xhr: XMLHttpRequest;
@@ -58,7 +63,6 @@ class XHR implements Transport {
   }
 
   finishSend() {
-
   }
 
   start(metadata: Metadata) {
@@ -67,11 +71,9 @@ class XHR implements Transport {
     const xhr = new XMLHttpRequest();
     this.xhr = xhr;
     xhr.open("POST", this.options.url);
-    (xhr as any).responseType = "text";
 
-    // overriding the mime type causes a response that has a code point per byte, which can be decoded using the
-    // stringToArrayBuffer function.
-    xhr.overrideMimeType("text/plain; charset=x-user-defined");
+    this.configureXhr();
+
     this.metadata.forEach((key, values) => {
       xhr.setRequestHeader(key, values.join(", "));
     });
@@ -89,9 +91,32 @@ class XHR implements Transport {
     });
   }
 
+  protected configureXhr(): void {
+    this.xhr.responseType = "text";
+
+    // overriding the mime type causes a response that has a code point per byte, which can be decoded using the
+    // stringToArrayBuffer function.
+    this.xhr.overrideMimeType("text/plain; charset=x-user-defined");
+  }
+
   cancel() {
     this.options.debug && debug("XHR.abort");
     this.xhr.abort();
+  }
+}
+
+export class MozChunkedArrayBufferXHR extends XHR {
+  protected configureXhr(): void {
+    this.options.debug && debug("MozXHR.configureXhr: setting responseType to 'moz-chunked-arraybuffer'");
+    (this.xhr as any).responseType = "moz-chunked-arraybuffer";
+  }
+
+  onProgressEvent() {
+    const resp = this.xhr.response;
+    this.options.debug && debug("MozXHR.onProgressEvent: ", new Uint8Array(resp));
+    detach(() => {
+      this.options.onChunk(new Uint8Array(resp));
+    });
   }
 }
 
@@ -116,6 +141,3 @@ export function stringToArrayBuffer(str: string): Uint8Array {
   return asArray;
 }
 
-export function detectXHRSupport(): boolean {
-  return typeof XMLHttpRequest !== "undefined" && XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")
-}

@@ -1,13 +1,19 @@
-import {Metadata} from "../metadata";
-import {Transport, TransportOptions} from "./Transport";
-import {debug} from "../debug";
-import detach from "../detach";
+import {Metadata} from "../../metadata";
+import {Transport, TransportFactory, TransportOptions} from "../Transport";
+import {debug} from "../../debug";
+import detach from "../../detach";
 
 export interface FetchTransportInit {
   credentials: "omit" | "same-origin" | "include"
 }
 
-export default function fetchRequest(options: TransportOptions, init: FetchTransportInit): Transport {
+export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
+  return (opts: TransportOptions) => {
+    return fetchRequest(opts, init);
+  }
+}
+
+function fetchRequest(options: TransportOptions, init: FetchTransportInit): Transport {
   options.debug && debug("fetchRequest", options);
   return new Fetch(options, init);
 }

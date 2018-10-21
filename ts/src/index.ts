@@ -1,7 +1,9 @@
 import {BrowserHeaders} from "browser-headers";
 import * as impTransport from "./transports/Transport";
-import * as impFetch from "./transports/fetch";
-import * as impXhr from "./transports/xhr";
+import * as impTransportFetch from "./transports/http/fetch";
+import * as impTransportWebSocket from "./transports/websocket/websocket";
+import * as impTransportXhr from "./transports/http/xhr";
+import * as impTransportHttp from "./transports/http/http";
 import * as impCode from "./Code";
 import * as impInvoke from "./invoke";
 import * as impUnary from "./unary";
@@ -18,16 +20,16 @@ export namespace grpc {
   export interface TransportFactory extends impTransport.TransportFactory {}
   export const setDefaultTransport = impTransport.setDefaultTransportFactory;
 
-  export const HttpTransport = impTransport.HttpTransport;
-  export interface HttpTransportInit extends impTransport.HttpTransportInit {}
+  export const HttpTransport = impTransportHttp.HttpTransport;
+  export interface HttpTransportInit extends impTransportHttp.HttpTransportInit {}
 
-  export const FetchReadableStreamTransport = impTransport.FetchReadableStreamTransport;
-  export interface FetchReadableStreamInit extends impFetch.FetchTransportInit {}
+  export const FetchReadableStreamTransport = impTransportFetch.FetchReadableStreamTransport;
+  export interface FetchReadableStreamInit extends impTransportFetch.FetchTransportInit {}
 
-  export const XhrTransport = impTransport.XhrTransport;
-  export interface XhrTransportInit extends impXhr.XhrTransportInit {}
+  export const XhrTransport = impTransportXhr.XhrTransport;
+  export interface XhrTransportInit extends impTransportXhr.XhrTransportInit {}
 
-  export const WebsocketTransport = impTransport.WebsocketTransport;
+  export const WebsocketTransport = impTransportWebSocket.WebsocketTransport;
 
   export interface UnaryMethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.UnaryMethodDefinition<TRequest, TResponse> {}
   export interface MethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.MethodDefinition<TRequest, TResponse> {}

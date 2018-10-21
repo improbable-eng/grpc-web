@@ -1,8 +1,8 @@
-import {Metadata} from "../metadata";
-import {Transport, TransportOptions} from "./Transport";
-import {debug} from "../debug";
-import detach from "../detach";
-import {encodeASCII} from "../ChunkParser";
+import {Metadata} from "../../metadata";
+import {Transport, TransportFactory, TransportOptions} from "../Transport";
+import {debug} from "../../debug";
+import detach from "../../detach";
+import {encodeASCII} from "../../ChunkParser";
 
 enum WebsocketSignal {
   FINISH_SEND = 1
@@ -10,8 +10,13 @@ enum WebsocketSignal {
 
 const finishSendFrame = new Uint8Array([1]);
 
-/* websocketRequest uses Websockets and requires the server to enable experimental websocket support */
-export default function websocketRequest(options: TransportOptions): Transport {
+export function WebsocketTransport(): TransportFactory {
+  return (opts: TransportOptions) => {
+    return websocketRequest(opts);
+  }
+}
+
+function websocketRequest(options: TransportOptions): Transport {
   options.debug && debug("websocketRequest", options);
 
   let webSocketAddress = constructWebSocketAddress(options.url);

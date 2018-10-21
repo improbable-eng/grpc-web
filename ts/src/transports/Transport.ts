@@ -1,10 +1,7 @@
 import {Metadata} from "../metadata";
-import fetchRequest, {detectFetchSupport, FetchTransportInit} from "./fetch";
-import xhrRequest, {XhrTransportInit} from "./xhr";
-import mozXhrRequest, {detectMozXHRSupport} from "./mozXhr";
 import {MethodDefinition} from "../service";
 import {ProtobufMessage} from "../message";
-import websocketRequest from "./websocket";
+import {HttpTransport} from "./http/http";
 
 export interface Transport {
   sendMessage(msgBytes: Uint8Array): void
@@ -32,38 +29,11 @@ export interface TransportOptions {
   onEnd: (err?: Error) => void;
 }
 
-export interface HttpTransportInit {
-  withCredentials?: boolean
-}
-
 export interface TransportFactory {
   (options: TransportOptions): Transport;
 }
 
-export function HttpTransport(init: HttpTransportInit): TransportFactory {
-  if (detectFetchSupport()) {
-    return FetchReadableStreamTransport({ credentials: init.withCredentials ? "include" : "same-origin" })
-  }
-  return XhrTransport({ withCredentials: init.withCredentials });
-}
 
-export function XhrTransport(init: XhrTransportInit): TransportFactory {
-  return (opts: TransportOptions) => {
-    if (detectMozXHRSupport()) {
-      return mozXhrRequest(opts, init);
-    }
-    return xhrRequest(opts, init);
-  }
-}
 
-export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
-  return (opts: TransportOptions) => {
-    return fetchRequest(opts, init);
-  }
-}
 
-export function WebsocketTransport(): TransportFactory {
-  return (opts: TransportOptions) => {
-    return websocketRequest(opts);
-  }
-}
+
