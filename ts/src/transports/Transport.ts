@@ -40,7 +40,7 @@ export interface TransportFactory {
 
 export function HttpTransport(init: HttpTransportInit): TransportFactory {
   if (detectFetchSupport()) {
-    return FetchReadableStreamTransport({ credentials: init.withCredentials ? 'include' : 'same-origin' })
+    return FetchReadableStreamTransport({ credentials: init.withCredentials ? "include" : "same-origin" })
   }
   return XhrTransport({ withCredentials: init.withCredentials });
 }
