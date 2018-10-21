@@ -1,26 +1,30 @@
 import {Metadata} from "../metadata";
-import {HttpTransportConfig, Transport, TransportOptions} from "./Transport";
+import {Transport, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
+export interface XhrTransportInit {
+  withCredentials?: boolean
+}
+
 /* xhrRequest uses XmlHttpRequest with overrideMimeType combined with a byte decoding method that decodes the UTF-8
  * text response to bytes. */
-export default function xhrRequest(options: TransportOptions, cfg: HttpTransportConfig): Transport {
+export default function xhrRequest(options: TransportOptions, init: XhrTransportInit): Transport {
   options.debug && debug("xhrRequest", options);
 
-  return new XHR(options, cfg);
+  return new XHR(options, init);
 }
 
 class XHR implements Transport {
   options: TransportOptions;
-  config: HttpTransportConfig;
+  init: XhrTransportInit;
   xhr: XMLHttpRequest;
   metadata: Metadata;
   index: 0;
 
-  constructor(transportOptions: TransportOptions, cfg: HttpTransportConfig) {
+  constructor(transportOptions: TransportOptions, init: XhrTransportInit) {
     this.options = transportOptions;
-    this.config = cfg;
+    this.init = init;
   }
 
   onProgressEvent() {
@@ -72,9 +76,7 @@ class XHR implements Transport {
       xhr.setRequestHeader(key, values.join(", "));
     });
 
-    if (this.config.credentials === "include") {
-      xhr.withCredentials = true;
-    }
+    xhr.withCredentials = Boolean(this.init.withCredentials);
 
     xhr.addEventListener("readystatechange", this.onStateChange.bind(this));
     xhr.addEventListener("progress", this.onProgressEvent.bind(this));

@@ -1,8 +1,7 @@
 import {Metadata} from "../metadata";
-import fetchRequest, {detectFetchSupport} from "./fetch";
-import xhrRequest, {detectXHRSupport} from "./xhr";
+import fetchRequest, {detectFetchSupport, FetchTransportInit} from "./fetch";
+import xhrRequest, {XhrTransportInit} from "./xhr";
 import mozXhrRequest, {detectMozXHRSupport} from "./mozXhr";
-import httpNodeRequest, {detectNodeHTTPSupport} from "./nodeHttp";
 import {MethodDefinition} from "../service";
 import {ProtobufMessage} from "../message";
 import websocketRequest from "./websocket";
@@ -15,7 +14,7 @@ export interface Transport {
 }
 
 export interface HttpTransportConstructor {
-  (options: TransportOptions, config: HttpTransportConfig): Transport;
+  (options: TransportOptions, config: HttpTransportInit): Transport;
 }
 
 export interface TransportOptions {
@@ -28,44 +27,36 @@ export interface TransportOptions {
 }
 
 export function DefaultHttpTransport(transportOptions: TransportOptions): Transport {
-  return HttpTransport({ credentials: "same-origin" })(transportOptions);
+  return HttpTransport({ withCredentials: false })(transportOptions);
 }
 
-function detectHttpTransport(): HttpTransportConstructor {
-  if (detectFetchSupport()) {
-    return fetchRequest;
-  }
-
-  if (detectMozXHRSupport()) {
-    return mozXhrRequest;
-  }
-
-  if (detectXHRSupport()) {
-    return xhrRequest;
-  }
-
-  if (detectNodeHTTPSupport()) {
-    return httpNodeRequest;
-  }
-
-  throw new Error("No suitable transport found for gRPC-Web");
-}
-
-export interface HttpTransportConfig {
-  credentials: "include" | "same-origin"
+export interface HttpTransportInit {
+  withCredentials?: boolean
 }
 
 export interface TransportFactory {
   (options: TransportOptions): Transport;
 }
 
-export function HttpTransport(cfg: HttpTransportConfig): TransportFactory {
-  let detectedTransport: HttpTransportConstructor | null = null;
+export function HttpTransport(init: HttpTransportInit): TransportFactory {
+  if (detectFetchSupport()) {
+    return FetchReadableStreamTransport({ credentials: init.withCredentials ? 'include' : 'same-origin' })
+  }
+  return XhrTransport({ withCredentials: init.withCredentials });
+}
+
+export function XhrTransport(init: XhrTransportInit): TransportFactory {
   return (opts: TransportOptions) => {
-    if (detectedTransport === null) {
-      detectedTransport = detectHttpTransport();
+    if (detectMozXHRSupport()) {
+      return mozXhrRequest(opts, init);
     }
-    return detectedTransport(opts, cfg);
+    return xhrRequest(opts, init);
+  }
+}
+
+export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
+  return (opts: TransportOptions) => {
+    return fetchRequest(opts, init);
   }
 }
 

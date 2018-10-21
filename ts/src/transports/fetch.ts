@@ -1,12 +1,15 @@
 import {Metadata} from "../metadata";
-import {HttpTransportConfig, Transport, TransportOptions} from "./Transport";
+import {Transport, TransportOptions} from "./Transport";
 import {debug} from "../debug";
 import detach from "../detach";
 
-/* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
-export default function fetchRequest(options: TransportOptions, cfg: HttpTransportConfig): Transport {
+export interface FetchTransportInit {
+  credentials: "omit" | "same-origin" | "include"
+}
+
+export default function fetchRequest(options: TransportOptions, init: FetchTransportInit): Transport {
   options.debug && debug("fetchRequest", options);
-  return new Fetch(options, cfg);
+  return new Fetch(options, init);
 }
 
 declare const Response: any;
@@ -15,14 +18,14 @@ declare const Headers: any;
 class Fetch implements Transport {
   cancelled: boolean = false;
   options: TransportOptions;
-  config: HttpTransportConfig;
+  init: FetchTransportInit;
   reader: ReadableStreamReader;
   metadata: Metadata;
   controller: AbortController | undefined = (window as any).AbortController && new AbortController();
 
-  constructor(transportOptions: TransportOptions, config: HttpTransportConfig) {
+  constructor(transportOptions: TransportOptions, init: FetchTransportInit) {
     this.options = transportOptions;
-    this.config = config;
+    this.init = init;
   }
 
   pump(readerArg: ReadableStreamReader, res: Response) {
@@ -65,7 +68,7 @@ class Fetch implements Transport {
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
-      credentials: this.config.credentials,
+      credentials: this.init.credentials,
       signal: this.controller && this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);

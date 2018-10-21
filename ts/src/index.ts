@@ -1,5 +1,7 @@
 import {BrowserHeaders} from "browser-headers";
 import * as impTransport from "./transports/Transport";
+import * as impFetch from "./transports/fetch";
+import * as impXhr from "./transports/xhr";
 import * as impCode from "./Code";
 import * as impInvoke from "./invoke";
 import * as impUnary from "./unary";
@@ -16,7 +18,13 @@ export namespace grpc {
   export interface TransportFactory extends impTransport.TransportFactory {}
 
   export const HttpTransport = impTransport.HttpTransport;
-  export interface HttpTransportConfig extends impTransport.HttpTransportConfig {}
+  export interface HttpTransportInit extends impTransport.HttpTransportInit {}
+
+  export const FetchReadableStreamTransport = impTransport.FetchReadableStreamTransport;
+  export  interface FetchReadableStreamInit extends impFetch.FetchTransportInit {}
+
+  export const XhrTransport = impTransport.XhrTransport;
+  export  interface XhrTransportInit extends impXhr.XhrTransportInit {}
 
   export const WebsocketTransport = impTransport.WebsocketTransport;
 
