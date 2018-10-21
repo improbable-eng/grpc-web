@@ -4,11 +4,14 @@ import {debug} from "../../debug";
 import detach from "../../detach";
 
 export interface FetchTransportInit {
-  credentials?: "omit" | "same-origin" | "include",
-  mode?: "same-origin" | "no-cors" | "cors" | "navigate",
-  cache?: "default" | "no-store" | "reload" | "no-cache" | "force-cache" | "only-if-cached",
-  redirect?: "follow" | "error" | "manual",
+  cache?: RequestCache,
+  credentials?: RequestCredentials,
+  integrity?: string;
+  keepalive?: boolean;
+  mode?: RequestMode,
+  redirect?: RequestRedirect,
   referrer?: string,
+  referrerPolicy?: ReferrerPolicy;
 }
 
 export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
