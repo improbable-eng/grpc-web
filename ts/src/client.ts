@@ -200,6 +200,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
 
     this.onEndCallbacks.forEach(callback => {
       detach(() => {
+        if (this.closed) return;
         callback(code, message, trailers);
       });
     });
@@ -221,6 +222,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.completed = true;
     this.onEndCallbacks.forEach(callback => {
       detach(() => {
+        if (this.closed) return;
         callback(code, msg, trailers);
       });
     });
@@ -231,6 +233,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.completed || this.closed) return;
     this.onMessageCallbacks.forEach(callback => {
       detach(() => {
+        if (this.closed) return;
         callback(res);
       });
     });
