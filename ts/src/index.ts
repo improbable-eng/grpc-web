@@ -20,8 +20,8 @@ export namespace grpc {
   export interface TransportFactory extends impTransport.TransportFactory {}
   export const setDefaultTransport = impTransport.setDefaultTransportFactory;
 
-  export const HttpTransport = impTransportHttp.HttpTransport;
-  export interface HttpTransportInit extends impTransportHttp.HttpTransportInit {}
+  export const CrossBrowserHttpTransport = impTransportHttp.CrossBrowserHttpTransport;
+  export interface CrossBrowserHttpTransportInit extends impTransportHttp.CrossBrowserHttpTransportInit {}
 
   export const FetchReadableStreamTransport = impTransportFetch.FetchReadableStreamTransport;
   export interface FetchReadableStreamInit extends impTransportFetch.FetchTransportInit {}

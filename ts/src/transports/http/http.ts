@@ -2,11 +2,11 @@ import {TransportFactory} from "../Transport";
 import {detectFetchSupport, FetchReadableStreamTransport, FetchTransportInit} from "./fetch";
 import {XhrTransport} from "./xhr";
 
-export interface HttpTransportInit {
+export interface CrossBrowserHttpTransportInit {
   withCredentials?: boolean
 }
 
-export function HttpTransport(init: HttpTransportInit): TransportFactory {
+export function CrossBrowserHttpTransport(init: CrossBrowserHttpTransportInit): TransportFactory {
   if (detectFetchSupport()) {
     const fetchInit: FetchTransportInit = {
       credentials: init.withCredentials ? "include" : "same-origin"
