@@ -7,5 +7,5 @@ set -e
 pushd ts && npm link && popd
 pushd grpc-web-node-http-transport && npm link grpc-web-client && popd
 
-pushd grpc-web-node-http-transport && npm link && popd
+pushd grpc-web-node-http-transport && npm link grpc-web-client && popd
 pushd test && npm link grpc-web-node-http-transport && popd
