@@ -3,16 +3,8 @@ import {Transport, TransportFactory, TransportOptions} from "../Transport";
 import {debug} from "../../debug";
 import detach from "../../detach";
 
-export interface FetchTransportInit {
-  cache?: RequestCache,
-  credentials?: RequestCredentials,
-  integrity?: string;
-  keepalive?: boolean;
-  mode?: RequestMode,
-  redirect?: RequestRedirect,
-  referrer?: string,
-  referrerPolicy?: ReferrerPolicy;
-}
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+export type FetchTransportInit = Omit<RequestInit, "headers" | "method" | "body" | "signal">;
 
 export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
   return (opts: TransportOptions) => {
