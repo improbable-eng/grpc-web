@@ -1,7 +1,7 @@
 {
   "name": "grpc-web-ci",
   "scripts": {
-    "install": "(cd ts && npm install) && (cd test && npm install)",
+    "install": "(cd ts && npm install) && (cd test && npm install) && (cd grpc-web-node-http-transport && npm install)",
     "postinstall": "./link-npm-modules.sh",
     "test": "cd test && npm run test"
   },
