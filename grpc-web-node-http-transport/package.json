@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "github.com/grpc-web-node-http-transport"
+    "url": "github.com/improbable-eng/grpc-web"
   },
   "scripts": {
     "clean": "rm -rf lib",

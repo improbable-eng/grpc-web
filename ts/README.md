@@ -1,7 +1,7 @@
 # grpc-web-client
 > Library for making gRPC-Web requests from a browser
 
-This library is intended for both JavaScript and TypeScript usage from a web browser.
+This library is intended for both JavaScript and TypeScript usage from a web browser or NodeJS (see [Usage with NodeJS](#usage-with-nodejs)).
 
 *Note: This only works if the server supports [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md)*
 
@@ -81,6 +81,16 @@ rpc LogReadPages(stream PageRead) returns (google.protobuf.Empty) {}
 rpc ListenForBooks(stream QueryBooksRequest) returns (stream Book) {}
 ```
 
+## Usage with NodeJS
+To configure grpc-web-client for use in a NodeJS environment, you must install `grpc-web-node-http-transport` as a dependency and then configure grpc-web-client to use it by default:
+
+```
+import {grpc} from "grpc-web-client";
+import {NodeHttpTransport} from "grpc-web-node-http-transport";
+
+// Do this first, before you make any grpc requests!
+grpc.setDefaultTransport(NodeHttpTransport());
+```  
 
 ## All Docs
 
