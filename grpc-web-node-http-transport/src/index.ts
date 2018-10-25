@@ -3,7 +3,12 @@ import * as https from "https";
 import * as url from "url";
 import { grpc } from 'grpc-web-client';
 
-export function NodeHttpTransport(): grpc.TransportFactory {
+// TODO: use grpc.TransportFactory once 0.7.x is released.
+interface TransportFactory {
+  (options: grpc.TransportOptions): grpc.Transport
+}
+
+export function NodeHttpTransport(): TransportFactory {
   return (opts: grpc.TransportOptions) => {
     return new NodeHttp(opts);
   };
