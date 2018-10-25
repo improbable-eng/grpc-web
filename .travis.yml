@@ -52,7 +52,6 @@ install:
   - nvm install
   - npm install
 before_script:
-  - ./link-npm-modules.sh
   - ./test/start-testserver.sh &
 script:
   - ./lint-all.sh
