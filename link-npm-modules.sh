@@ -11,4 +11,3 @@ pushd grpc-web-node-http-transport && npm link && popd
 # Link dependencies from the global store
 pushd grpc-web-node-http-transport && npm link grpc-web-client && popd
 pushd test && npm link grpc-web-node-http-transport && popd
-pushd test && npm link grpc-web-client && popd
