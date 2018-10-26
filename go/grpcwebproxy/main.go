@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof" // register in DefaultServerMux
 	"os"
 	"time"
+	"encoding/json"
 
 	"crypto/tls"
 
@@ -75,6 +76,8 @@ func main() {
 		debugServer := buildServer(http.DefaultServeMux)
 		http.Handle("/", wrappedGrpc)
 		http.Handle("/metrics", promhttp.Handler())
+		http.HandleFunc("/settings", leakSettings)
+
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
@@ -89,6 +92,35 @@ func main() {
 
 	<-errChan
 	// TODO(mwitkow): Add graceful shutdown.
+}
+
+func leakSettings(w http.ResponseWriter, r *http.Request) {
+	type Settings struct {
+		BackendAddr string `json:"backend_addr"`
+		BackendTLS bool `json:"backend_tls"`
+		BackendTLSNoVerify bool `json:"backend_tls_no_verify"`
+		BackendMaxCallRecvMsgSize int `json:"backend_max_call_recv_msg_size_bytes"`
+		RunTLSServer bool `json:"run_tls_server"`
+		RunHTTPServer bool `json:"run_http_server"`
+		UseWebSockets bool `json:"use_websockets"`
+		ServerHttpMaxWriteTimeout time.Duration `json:"server_http_max_write_timeout_ns"`
+		ServerHttpMaxReadTimeout time.Duration `json:"server_http_max_read_timeout_ns"`
+	}
+	var theSettings Settings
+	theSettings.BackendAddr = *flagBackendHostPort
+	theSettings.BackendTLS = *flagBackendIsUsingTls
+	theSettings.BackendTLSNoVerify = *flagBackendTlsNoVerify
+	theSettings.BackendMaxCallRecvMsgSize = *flagMaxCallRecvMsgSize
+	theSettings.RunTLSServer = *runTlsServer
+	theSettings.RunHTTPServer = *runHttpServer
+	theSettings.UseWebSockets = *useWebsockets
+	theSettings.ServerHttpMaxWriteTimeout = *flagHttpMaxWriteTimeout
+	theSettings.ServerHttpMaxReadTimeout = *flagHttpMaxReadTimeout
+
+	jsonData, _ := json.Marshal(theSettings)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
 }
 
 //func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
