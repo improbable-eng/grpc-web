@@ -4,12 +4,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
+	"time"
 
 	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
 )
 
 var (
@@ -32,14 +34,26 @@ var (
 
 	flagMaxCallRecvMsgSize = pflag.Int(
 		"backend_max_call_recv_msg_size",
-		1024*1024*4, // The current maximum receive msg size per https://github.com/grpc/grpc-go/blob/v1.8.2/server.go#L54
-		"Maximum receive message size limit. If not specified, the default of 4MB will be used.",
+		1024*1024*100,
+		"Maximum receive message size limit. Defaults to 100MB",
 	)
 
 	flagBackendTlsCa = pflag.StringSlice(
 		"backend_tls_ca_files",
 		[]string{},
 		"Paths (comma separated) to PEM certificate chains used for verification of backend certificates. If empty, host CA chain will be used.",
+	)
+
+	flagKeepAliveClientInterval = pflag.Duration(
+		"keep_alive_client_interval",
+		2*time.Minute,
+		"Keep alive client interval. Defaults to 2 minutes",
+	)
+
+	flagKeepAliveClientTimeout = pflag.Duration(
+		"keep_alive_client_timeout",
+		20*time.Second,
+		"Keep alive client timeout. Defaults to 20 seconds",
 	)
 )
 
@@ -55,6 +69,15 @@ func dialBackendOrFail() *grpc.ClientConn {
 		opt = append(opt, grpc.WithInsecure())
 	}
 	opt = append(opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)))
+
+	// keepalive options
+	var kap keepalive.ClientParameters
+	kap = keepalive.ClientParameters{
+		Time:    *flagKeepAliveClientInterval, // https://github.com/grpc/grpc-go/blob/master/keepalive/keepalive.go
+		Timeout: *flagKeepAliveClientTimeout}
+	kap.PermitWithoutStream = true // this seems important
+	opt = append(opt, grpc.WithKeepaliveParams(kap))
+
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
 		logrus.Fatalf("failed dialing backend: %v", err)

@@ -105,6 +105,8 @@ func leakSettings(w http.ResponseWriter, r *http.Request) {
 		UseWebSockets bool `json:"use_websockets"`
 		ServerHttpMaxWriteTimeout time.Duration `json:"server_http_max_write_timeout_ns"`
 		ServerHttpMaxReadTimeout time.Duration `json:"server_http_max_read_timeout_ns"`
+		KeepAliveClientInterval time.Duration `json:"keep_alive_client_interval_ns"`
+		KeepAliveClientTimeout time.Duration `json:"keep_alive_client_timeout_ns"`
 	}
 	var theSettings Settings
 	theSettings.BackendAddr = *flagBackendHostPort
@@ -116,6 +118,8 @@ func leakSettings(w http.ResponseWriter, r *http.Request) {
 	theSettings.UseWebSockets = *useWebsockets
 	theSettings.ServerHttpMaxWriteTimeout = *flagHttpMaxWriteTimeout
 	theSettings.ServerHttpMaxReadTimeout = *flagHttpMaxReadTimeout
+	theSettings.KeepAliveClientInterval = *flagKeepAliveClientInterval
+	theSettings.KeepAliveClientTimeout = *flagKeepAliveClientTimeout
 
 	jsonData, _ := json.Marshal(theSettings)
 
