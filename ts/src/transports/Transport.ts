@@ -32,8 +32,3 @@ export interface TransportOptions {
 export interface TransportFactory {
   (options: TransportOptions): Transport;
 }
-
-
-
-
-
