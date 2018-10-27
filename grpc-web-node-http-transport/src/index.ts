@@ -1,21 +1,19 @@
 import * as http from "http";
 import * as https from "https";
 import * as url from "url";
-import {Transport, TransportOptions} from "./Transport";
-import {Metadata} from "../metadata";
+import { grpc } from 'grpc-web-client';
 
-/* nodeHttpRequest uses the node http and https modules */
-export default function nodeHttpRequest(options: TransportOptions): Transport {
-  options.debug && console.log("nodeHttpRequest", options);
-
-  return new NodeHttp(options);
+export function NodeHttpTransport(): grpc.TransportFactory {
+  return (opts: grpc.TransportOptions) => {
+    return new NodeHttp(opts);
+  };
 }
 
-class NodeHttp implements Transport {
-  options: TransportOptions;
+class NodeHttp implements grpc.Transport {
+  options: grpc.TransportOptions;
   request: http.ClientRequest;
 
-  constructor(transportOptions: TransportOptions) {
+  constructor(transportOptions: grpc.TransportOptions) {
     this.options = transportOptions;
   }
 
@@ -31,7 +29,7 @@ class NodeHttp implements Transport {
   responseCallback(response: http.IncomingMessage) {
     this.options.debug && console.log("NodeHttp.response", response.statusCode);
     const headers = filterHeadersForUndefined(response.headers);
-    this.options.onHeaders(new Metadata(headers), response.statusCode!);
+    this.options.onHeaders(new grpc.Metadata(headers), response.statusCode!);
 
     response.on("data", chunk => {
       this.options.debug && console.log("NodeHttp.data", chunk);
@@ -44,7 +42,7 @@ class NodeHttp implements Transport {
     });
   };
 
-  start(metadata: Metadata) {
+  start(metadata: grpc.Metadata) {
     const headers: { [key: string]: string } = {};
     metadata.forEach((key, values) => {
       headers[key] = values.join(", ");
@@ -104,8 +102,4 @@ function toBuffer(ab: Uint8Array): Buffer {
     buf[i] = ab[i];
   }
   return buf;
-}
-
-export function detectNodeHTTPSupport(): boolean {
-  return typeof module !== "undefined" && module.exports;
 }

@@ -1,52 +1,91 @@
-# Transport
+# Transports
 
-As `grpc-web-client` is an implementation of a binary protocol (gRPC) in browsers that have various methods of performing HTTP requests with varying implementations across vendors limitations there are multiple underlying transports that are used to provide support across browsers. 
+`grpc-web-client` is a library for JavaScript-based clients to communicate with servers which can talk the `grpc-web` protocol.
 
-A “transport” in this context is a wrapper of one of these methods of creating a HTTP request (e.g. `fetch` or `XMLHttpRequest`).
+To enable this communication, `grpc-web-client` uses Transports provides built-in transports which abstract the underlying browser primitives.
 
-## How does grpc-web-client pick a transport?
+## Specifying Transports
+You can tell `grpc-web-client` which Transport to use either on a per-request basis, or by configuring the Default Transport in your application.
 
-You can specify the transport that you want to use for a specific invocation through the `library` property in the [`client`](client.md), [`invoke`](invoke.md) and [`unary`](unary.md) function options.
+### Specifying the Default Transport
+The Default Transport is used for every call unless a specific transport has been provided when the call is made. `gprc-web-client` will default to using the `CrossBrowserHttpTransport`, however you can re-configure this:
 
-If a transport is not specified then a transport factory is used to determine the browser’s compatible transports. See [Available Transports](#available-transports)
+```typescript
+import {grpc} from "grpc-web-client";
 
-If none are found then an exception is thrown.
+// 'myTransport' is configured to send Browser cookies along with cross-origin requests. 
+const myTransport = grpc.CrossBrowserHttpTransport({ withCredentials: true });
 
-### Available transports 
+// Specify the default transport before any requests are made. 
+grpc.setDefaultTransport(myTransport);
+``` 
 
-In order of attempted usage.
+### Specifying the Transport on a per-request basis
+As mentioned above, `grpc-web-client` will use the Default Transport if none is specified with the call; you can override this behavior by setting the optional `transport` property when calling `unary()`, `invoke()` or `client()`:
 
-#### Fetch
-Uses [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch). Requires that the browser supports [Fetch with `body.getReader`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
+```typescript
+import {grpc} from "grpc-web-client";
 
-Supports binary request and response bodies and allows streaming the response without buffering it entirely, thereby safely enabling long-lived server streams.
+// 'myTransport' is configured to send Browser cookies along with cross-origin requests.
+const myTransport = grpc.CrossBrowserHttpTransport({ withCredentials: true });
+const client = grpc.client(BookService.QueryBooks, {
+  host: "https://example.com:9100",
+  transport: myTransport
+});
+```
+ 
 
-Supported by:
+## Built-in Transports
+`grpc-web-client` ships with two categories of Transports: [HTTP/2-based](#http/2-based-transports) and [socket-based](#socket-based-transports):
 
-* Chrome 43+
-* Edge 13+
-* Safari 10.1+
+### HTTP/2-based Transports
+It's great that we have more than one choice when it comes to Web Browsers, however the inconsistencies and limited feature-sets can be frustrating. Whilst `grpc-web-client` looks to abstract as much of this as possible with the `CrossBrowserHttpTransport` there are some caveats all application developers who make use of `grpc-web-client`'s HTTP/2 based transports should be aware of:
 
-#### XMLHttpRequest (with `moz-chunked-arraybuffer`) (only available in Firefox)
-Uses [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest) with `responseType = "moz-chunked-arraybuffer"` to enable reading the response stream chunks as binary as they arrive, rather than buffering the entire response as the standard XMLHttpRequest transport does, thereby safely enabling long-lived server streams.
+* gRPC offers four categories of request: unary, server-streaming, client-streaming and bi-directional. Due to limitations of the Browser HTTP primitives (`fetch` and `XMLHttpRequest`), the HTTP/2-based transports provided by `grpc-web-client
+   can only support unary and server-streaming requests. Attempts to invoke either client-streaming or bi-directional endpoints will result in failure.
+* Older versions of Safari (<7) and all versions of Internet Explorer do not provide an efficient way to stream data from a server; this will result in the entire response of a gRPC client-stream being buffered into memory which can cause performance and stability issues for end-users. 
+* Microsoft Edge does not propagate the cancellation of requests to the server; which can result in memory/process leaks on your server. Track this issue for status.
 
-Supported by:
+Note that the [Socket-based Transports](#socket-based-transports) alleviate the above issues.
 
-* Firefox 21+
+#### CrossBrowserHttpTransport
+The `CrossBrowserHttpTransport` is a compatibility layer which abstracts the concrete HTTP/2 based Transports described below. This is the preferred Transport if you need to support a wide-range of browsers. As it represents the greatest common divisor of the fetch and xhr-based transports, configuration is limited:
 
-#### XMLHttpRequest
-Uses [XmlHttpRequest (XHR)](https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest) with `overrideMimeType("text/plain; charset=x-user-defined")`. `overrideMimeType` allows reading the string response as individual bytes as the response arrives.
+```typescript
+interface CrossBrowserHttpTransportInit {
+  // send browser cookies along with cross-origin requests (CORS), defaults to `false`.
+  withCredentials?: boolean
+}
+``` 
 
-Supported by:
+The `CrossBrowserHttpTransport` will automatically select a concrete HTTP/2 based transport based on the capabilities exposed by the user's browser.
 
-* Safari 6
-* IE 11
+#### FetchReadableStreamTransport
+The `FetchReadableStreamTransport` is a concrete HTTP/2 based transport which uses the `fetch` browser primitive; whilst the `fetch` API is now widely available in modern browsers, [support for request ReadableStreams](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/ReadableStream#Browser_compatibility), required for implementing efficient server-streaming, is still inconsistent. This transport allows full configuration of the fetch request mirroring the [`RequestInit` browser API](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request), sans the ability to specify `headers`, `method`, `body` or `signal` properties to avoid conflicts with the gRPC protocol/implementation.
 
-**This transport is not safe for long-lived or otherwise large response streams as the entire server response is maintained in memory until the request completes.**
+```typescript
+interface FetchTransportInit {
+  // send browser cookies along with requests, defaults to 'omit'.
+  credentials?: 'omit' | 'same-origin' | 'include'
+}
+```
 
-#### Node HTTP (only available in a Node.js environment)
-Uses [http](https://nodejs.org/api/http.html)/[https](https://nodejs.org/api/https.html). This transport exists to allow usage of the `grpc-web-client` library in Node.js environments such as Electron or for server-side rendering.
+#### XhrTransport
+The `XhrTransport` is a concrete HTTP/2 based transport which uses the `XMLHttpRequest` browser primitive; there is almost never any need to use this transport directly. Configuration is minimal with no ability to set request headers to avoid conflicts with the gRPC protocol/implementation.
 
-Supported by:
+```typescript
+interface XhrTransportInit {
+  // send browser cookies along with cross-origin requests (CORS), defaults to `false`.
+  withCredentials?: boolean
+}
+```
 
-* Node.js only
+The `XhrTransport` will automatically detect the Firefox Browser v21+ and make use of the `moz-chunked-arraybuffer` feature which provides enables efficient server-streaming. All other browsers will fall-back to buffering the entire response in memory for the lifecycle of the stream (see [known limitations of HTTP/2-based transports](#http/2-based-transports)).
+
+### Socket-based Transports
+Browser based HTTP/2 transports have a number of limitations and caveats. We can work around all of these, including support for client-streams and bi-directional streams, by utilising the browser's native [`WebSocket` API](). Note that the `grpc-web-proxy` must be [configured to enable WebSocket support](../../go/grpcwebproxy/README.md#enabling-websocket-transport). 
+
+## Alternative Transports
+Custom transports can be created by implementing the `Transport` interface; the following transports exist as npm packages which you can import and make use of:
+
+* [grpc-web-node-http-transport](http://npmjs.com/package/grpc-web-node-http-transport) - Enables the use of grpc-web in NodeJS (ie: non-browser) environments.

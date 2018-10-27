@@ -21,7 +21,7 @@ grpc.unary(methodDescriptor: MethodDescriptor, props: UnaryRpcOptions): Request;
   * The metadata to send to the server
 * `onEnd: (output: UnaryOutput<TResponse>) => void)`
   * A callback for the end of the request and trailers being received
-* `transport?: TransportConstructor`
+* `transport?: TransportFactory`
   * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport.md).
 * `debug?: boolean`
   * (optional) if `true`, debug information will be printed to the console

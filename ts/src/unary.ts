@@ -1,7 +1,7 @@
 import {Metadata} from "./metadata";
 import {Code} from "./Code";
 import {UnaryMethodDefinition} from "./service";
-import {TransportConstructor} from "./transports/Transport";
+import {TransportFactory} from "./transports/Transport";
 import {Request} from "./invoke";
 import {client} from "./client";
 import {ProtobufMessage} from "./message";
@@ -19,7 +19,7 @@ export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse ext
   request: TRequest;
   metadata?: Metadata.ConstructorArg;
   onEnd: (output: UnaryOutput<TResponse>) => void;
-  transport?: TransportConstructor;
+  transport?: TransportFactory;
   debug?: boolean;
 }
 
