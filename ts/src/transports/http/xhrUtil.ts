@@ -1,4 +1,5 @@
 let xhr: XMLHttpRequest;
+
 function getXHR () {
   if (xhr !== undefined) return xhr;
 
@@ -21,4 +22,12 @@ export function xhrSupportsResponseType(type: string) {
     return xhr.responseType === type;
   } catch (e) {}
   return false
+}
+
+export function detectMozXHRSupport(): boolean {
+  return typeof XMLHttpRequest !== "undefined" && xhrSupportsResponseType("moz-chunked-arraybuffer")
+}
+
+export function detectXHROverrideMimeTypeSupport(): boolean {
+  return typeof XMLHttpRequest !== "undefined" && XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")
 }

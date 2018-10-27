@@ -1,5 +1,9 @@
 import {BrowserHeaders} from "browser-headers";
 import * as impTransport from "./transports/Transport";
+import * as impTransportFetch from "./transports/http/fetch";
+import * as impTransportWebSocket from "./transports/websocket/websocket";
+import * as impTransportXhr from "./transports/http/xhr";
+import * as impTransportHttp from "./transports/http/http";
 import * as impCode from "./Code";
 import * as impInvoke from "./invoke";
 import * as impUnary from "./unary";
@@ -13,9 +17,19 @@ export namespace grpc {
 
   export interface Transport extends impTransport.Transport {}
   export interface TransportOptions extends impTransport.TransportOptions {}
-  export interface TransportConstructor extends impTransport.TransportConstructor {}
-  export const DefaultTransportFactory = impTransport.DefaultTransportFactory;
-  export const WebsocketTransportFactory = impTransport.WebsocketTransportFactory;
+  export interface TransportFactory extends impTransport.TransportFactory {}
+  export const setDefaultTransport = impTransport.setDefaultTransportFactory;
+
+  export const CrossBrowserHttpTransport = impTransportHttp.CrossBrowserHttpTransport;
+  export interface CrossBrowserHttpTransportInit extends impTransportHttp.CrossBrowserHttpTransportInit {}
+
+  export const FetchReadableStreamTransport = impTransportFetch.FetchReadableStreamTransport;
+  export interface FetchReadableStreamInit extends impTransportFetch.FetchTransportInit {}
+
+  export const XhrTransport = impTransportXhr.XhrTransport;
+  export interface XhrTransportInit extends impTransportXhr.XhrTransportInit {}
+
+  export const WebsocketTransport = impTransportWebSocket.WebsocketTransport;
 
   export interface UnaryMethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.UnaryMethodDefinition<TRequest, TResponse> {}
   export interface MethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.MethodDefinition<TRequest, TResponse> {}

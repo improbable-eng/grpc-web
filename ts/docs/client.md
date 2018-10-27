@@ -15,7 +15,7 @@ grpc.client(methodDescriptor: MethodDescriptor, props: ClientRpcOptions): Client
 
 * `host: string`
   * The server address (`"https://example.com:9100"`)
-* `transport?: TransportConstructor`
+* `transport?: TransportFactory`
   * (optional) A function to build a `Transport` that will be used for the request. If no transport is specified then a browser-compatible transport will be used. See [transport](transport.md).
 * `debug?: boolean`
   * (optional) if `true`, debug information will be printed to the console
@@ -60,7 +60,7 @@ Sending multiple messages and indicating that the client has finished sending ar
 
 Most browser networking methods do not allow control over the sending of the body of the request, meaning that sending a single request message forces the finishing of sending, limiting these transports to unary or server-streaming methods only.
 
-For transports that do allow control over the sending of the body (e.g. websockets - coming soon), the client can optionally indicate that it has finished sending. This is useful for client-streaming or bi-directional methods in which the server will send responses after receiving all client messages. Usage with unary methods is likely not necessary as server handlers will assume the client has finished sending after receiving the single expected message.
+For transports that do allow control over the sending of the body (e.g. websockets), the client can optionally indicate that it has finished sending. This is useful for client-streaming or bi-directional methods in which the server will send responses after receiving all client messages. Usage with unary methods is likely not necessary as server handlers will assume the client has finished sending after receiving the single expected message.
 
 ## Example:
 ```javascript

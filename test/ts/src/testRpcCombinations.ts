@@ -3,6 +3,7 @@ import {
   corsHost
 } from "../../hosts-config";
 import {grpc} from "../../../ts/src/index";
+import {NodeHttpTransport} from "grpc-web-node-http-transport";
 
 type TestConfig = {
   testHostUrl: string,
@@ -52,13 +53,17 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
   });
 }
 
-export function runWithSupportedTransports(cb: (transport: grpc.TransportConstructor | undefined) => void) {
-  const transports: {[key: string]: grpc.TransportConstructor | undefined} = {
-    "defaultTransport": undefined
+export function runWithSupportedTransports(cb: (transport: grpc.TransportFactory | undefined) => void) {
+  const transports: {[key: string]: grpc.TransportFactory | undefined} = {
+    "httpTransport": undefined
   };
 
+  if (process.env.BROWSER === "nodejs") {
+    grpc.setDefaultTransport(NodeHttpTransport());
+  }
+
   if (!process.env.DISABLE_WEBSOCKET_TESTS) {
-    transports["websocketTransport"] = grpc.WebsocketTransportFactory
+    transports["websocketTransport"] = grpc.WebsocketTransport();
   }
 
   for (let transportName in transports) {

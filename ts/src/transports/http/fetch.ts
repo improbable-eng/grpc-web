@@ -1,12 +1,20 @@
-import {Metadata} from "../metadata";
-import {Transport, TransportOptions} from "./Transport";
-import {debug} from "../debug";
-import detach from "../detach";
+import {Metadata} from "../../metadata";
+import {Transport, TransportFactory, TransportOptions} from "../Transport";
+import {debug} from "../../debug";
+import detach from "../../detach";
 
-/* fetchRequest uses Fetch (with ReadableStream) to read response chunks without buffering the entire response. */
-export default function fetchRequest(options: TransportOptions): Transport {
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+export type FetchTransportInit = Omit<RequestInit, "headers" | "method" | "body" | "signal">;
+
+export function FetchReadableStreamTransport(init: FetchTransportInit): TransportFactory {
+  return (opts: TransportOptions) => {
+    return fetchRequest(opts, init);
+  }
+}
+
+function fetchRequest(options: TransportOptions, init: FetchTransportInit): Transport {
   options.debug && debug("fetchRequest", options);
-  return new Fetch(options);
+  return new Fetch(options, init);
 }
 
 declare const Response: any;
@@ -15,12 +23,14 @@ declare const Headers: any;
 class Fetch implements Transport {
   cancelled: boolean = false;
   options: TransportOptions;
+  init: FetchTransportInit;
   reader: ReadableStreamReader;
   metadata: Metadata;
   controller: AbortController | undefined = (window as any).AbortController && new AbortController();
 
-  constructor(transportOptions: TransportOptions) {
+  constructor(transportOptions: TransportOptions, init: FetchTransportInit) {
     this.options = transportOptions;
+    this.init = init;
   }
 
   pump(readerArg: ReadableStreamReader, res: Response) {
@@ -60,10 +70,10 @@ class Fetch implements Transport {
 
   send(msgBytes: Uint8Array) {
     fetch(this.options.url, {
+      ...this.init,
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
-      credentials: "same-origin",
       signal: this.controller && this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
