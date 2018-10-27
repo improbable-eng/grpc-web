@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-client",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "gRPC-Web client for browsers (JS/TS)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
