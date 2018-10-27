@@ -82,15 +82,7 @@ rpc ListenForBooks(stream QueryBooksRequest) returns (stream Book) {}
 ```
 
 ## Usage with NodeJS
-To configure grpc-web-client for use in a NodeJS environment, you must install `grpc-web-node-http-transport` as a dependency and then configure grpc-web-client to use it by default:
-
-```
-import {grpc} from "grpc-web-client";
-import {NodeHttpTransport} from "grpc-web-node-http-transport";
-
-// Do this first, before you make any grpc requests!
-grpc.setDefaultTransport(NodeHttpTransport());
-```  
+Refer to [grpc-web-node-http-transport](https://npmjs.com/package/grpc-web-node-http-transport).
 
 ## All Docs
 
