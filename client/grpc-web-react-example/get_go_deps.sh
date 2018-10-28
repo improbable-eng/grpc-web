@@ -6,6 +6,6 @@ if [[ "$DEP" == "" ]]; then
   echo "Cannot find golang's package manager 'dep'. Please follow https://github.com/golang/dep#setup"
   exit -1
 fi
-cd go
+pushd go
 dep ensure
 
