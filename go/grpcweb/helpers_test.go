@@ -7,7 +7,7 @@ import (
 	"sort"
 	"testing"
 
-	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
+	testproto "github.com/improbable-eng/grpc-web/client/grpc-web-test/go/_proto/improbable/grpcweb/test"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/stretchr/testify/assert"
