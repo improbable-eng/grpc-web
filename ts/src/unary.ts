@@ -14,13 +14,11 @@ export interface UnaryOutput<TResponse> {
   trailers: Metadata;
 }
 
-export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> {
+export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends RpcOptions {
   host: string;
   request: TRequest;
   metadata?: Metadata.ConstructorArg;
   onEnd: (output: UnaryOutput<TResponse>) => void;
-  transport?: TransportFactory;
-  debug?: boolean;
 }
 
 export function unary<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<TRequest, TResponse>): Request {
