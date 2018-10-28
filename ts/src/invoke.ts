@@ -1,8 +1,7 @@
 import {Code} from "./Code";
-import {TransportFactory} from "./transports/Transport";
 import {MethodDefinition} from "./service";
 import {Metadata} from "./metadata";
-import {client} from "./client";
+import {client, RpcOptions} from "./client";
 import {ProtobufMessage} from "./message";
 
 export interface Request {

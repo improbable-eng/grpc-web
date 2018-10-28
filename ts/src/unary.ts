@@ -1,9 +1,8 @@
 import {Metadata} from "./metadata";
 import {Code} from "./Code";
 import {UnaryMethodDefinition} from "./service";
-import {TransportFactory} from "./transports/Transport";
 import {Request} from "./invoke";
-import {client} from "./client";
+import {client, RpcOptions} from "./client";
 import {ProtobufMessage} from "./message";
 
 export interface UnaryOutput<TResponse> {
