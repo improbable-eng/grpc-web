@@ -66,11 +66,6 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 }
 
 func (w *grpcWebResponse) finishRequest(req *http.Request) {
-	// We must use lower-case header/trailer names.
-	// See "HTTP wire protocols" section in https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
-	if req.ProtoMajor == 1 {
-		w.mapHeaderKeysToLower()
-	}
 	if w.wroteHeaders || w.wroteBody {
 		w.copyTrailersToPayload()
 	} else {
@@ -119,9 +114,9 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 	w.wrapped.(http.Flusher).Flush()
 }
 
-func (w *grpcWebResponse) extractTrailerHeaders() http.Header {
+func (w *grpcWebResponse) extractTrailerHeaders() header {
 	flushedHeaders := w.wrapped.Header()
-	trailerHeaders := make(header)
+	trailerHeaders := header{make(http.Header)}
 	for k, vv := range w.headers {
 		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
 		if strings.ToLower(k) == "trailer" {
@@ -139,16 +134,5 @@ func (w *grpcWebResponse) extractTrailerHeaders() http.Header {
 			trailerHeaders.Add(k, v)
 		}
 	}
-	return trailerHeaders.toHTTPHeader()
-}
-
-func (w *grpcWebResponse) mapHeaderKeysToLower() {
-	mapped := make(header)
-	for k, vv := range w.headers {
-		lowerKey := strings.ToLower(k)
-		for _, v := range vv {
-			mapped.Add(k, v)
-		}
-	}
-	w.headers = mapped.toHTTPHeader()
+	return trailerHeaders
 }
