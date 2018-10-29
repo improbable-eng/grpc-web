@@ -10,37 +10,33 @@ import (
 	"sync"
 )
 
-// Almost of header's methods are copied from http.Header.
-type header struct {
+// Almost of trailer's methods are copied from http.Header.
+type trailer struct {
 	http.Header
 }
 
-func (h header) Add(key, value string) {
+func (t trailer) Add(key, value string) {
 	lowerKey := strings.ToLower(key)
 
 	// If trailer headers, map to lower these keys.
 	if lowerKey == "trailer" {
 		value = strings.ToLower(value)
 	}
-	h.Header[lowerKey] = append(h.Header[lowerKey], value)
-}
-
-func (h header) toHTTPHeader() http.Header {
-	return h.Header
+	t.Header[lowerKey] = append(t.Header[lowerKey], value)
 }
 
 // Write writes a header in wire format.
-func (h header) Write(w io.Writer) error {
-	return h.write(w, nil)
+func (t trailer) Write(w io.Writer) error {
+	return t.write(w, nil)
 }
 
-func (h header) write(w io.Writer, trace *httptrace.ClientTrace) error {
-	return h.writeSubset(w, nil, trace)
+func (t trailer) write(w io.Writer, trace *httptrace.ClientTrace) error {
+	return t.writeSubset(w, nil, trace)
 }
 
-func (h header) clone() header {
-	h2 := header{make(http.Header, len(h.Header))}
-	for k, vv := range h.Header {
+func (t trailer) clone() trailer {
+	h2 := trailer{make(http.Header, len(t.Header))}
+	for k, vv := range t.Header {
 		vv2 := make([]string, len(vv))
 		copy(vv2, vv)
 		h2.Header[k] = vv2
@@ -86,13 +82,13 @@ var headerSorterPool = sync.Pool{
 // sortedKeyValues returns h's keys sorted in the returned kvs
 // slice. The headerSorter used to sort is also returned, for possible
 // return to headerSorterCache.
-func (h header) sortedKeyValues(exclude map[string]bool) (kvs []keyValues, hs *headerSorter) {
+func (t trailer) sortedKeyValues(exclude map[string]bool) (kvs []keyValues, hs *headerSorter) {
 	hs = headerSorterPool.Get().(*headerSorter)
-	if cap(hs.kvs) < len(h.Header) {
-		hs.kvs = make([]keyValues, 0, len(h.Header))
+	if cap(hs.kvs) < len(t.Header) {
+		hs.kvs = make([]keyValues, 0, len(t.Header))
 	}
 	kvs = hs.kvs[:0]
-	for k, vv := range h.Header {
+	for k, vv := range t.Header {
 		if !exclude[k] {
 			kvs = append(kvs, keyValues{k, vv})
 		}
@@ -102,12 +98,12 @@ func (h header) sortedKeyValues(exclude map[string]bool) (kvs []keyValues, hs *h
 	return kvs, hs
 }
 
-func (h header) writeSubset(w io.Writer, exclude map[string]bool, trace *httptrace.ClientTrace) error {
+func (t trailer) writeSubset(w io.Writer, exclude map[string]bool, trace *httptrace.ClientTrace) error {
 	ws, ok := w.(writeStringer)
 	if !ok {
 		ws = stringWriter{w}
 	}
-	kvs, sorter := h.sortedKeyValues(exclude)
+	kvs, sorter := t.sortedKeyValues(exclude)
 	var formattedVals []string
 	for _, kv := range kvs {
 		for _, v := range kv.values {
