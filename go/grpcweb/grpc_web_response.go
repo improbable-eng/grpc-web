@@ -66,7 +66,8 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 }
 
 func (w *grpcWebResponse) finishRequest(req *http.Request) {
-	// HTTP/2 always uses lower header/trailer keys.
+	// We must use lower-case header/trailer names.
+	// See "HTTP wire protocols" section in https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
 	if req.ProtoMajor == 1 {
 		w.mapHeaderKeysToLower()
 	}
