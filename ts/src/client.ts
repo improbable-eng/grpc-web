@@ -8,10 +8,13 @@ import {MethodDefinition} from "./service";
 import {frameRequest} from "./util";
 import {ProtobufMessage} from "./message";
 
-export interface ClientRpcOptions {
-  host: string;
+export interface RpcOptions {
   transport?: TransportFactory;
   debug?: boolean;
+}
+
+export interface ClientRpcOptions extends RpcOptions {
+  host: string;
 }
 
 export interface Client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> {
