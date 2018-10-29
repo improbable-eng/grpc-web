@@ -66,6 +66,7 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 }
 
 func (w *grpcWebResponse) finishRequest(req *http.Request) {
+	w.mapHeaderKeysToLower()
 	if w.wroteHeaders || w.wroteBody {
 		w.copyTrailersToPayload()
 	} else {
@@ -116,7 +117,7 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 
 func (w *grpcWebResponse) extractTrailerHeaders() http.Header {
 	flushedHeaders := w.wrapped.Header()
-	trailerHeaders := make(http.Header)
+	trailerHeaders := make(header)
 	for k, vv := range w.headers {
 		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
 		if strings.ToLower(k) == "trailer" {
@@ -134,5 +135,22 @@ func (w *grpcWebResponse) extractTrailerHeaders() http.Header {
 			trailerHeaders.Add(k, v)
 		}
 	}
-	return trailerHeaders
+	return trailerHeaders.toHTTPHeader()
+}
+
+func (w *grpcWebResponse) mapHeaderKeysToLower() {
+	mapped := make(header)
+	for k, vv := range w.headers {
+		lowerKey := strings.ToLower(k)
+		// Use append directly instead of mapped.Add because mapped.Add calls strings.ToLower(k)
+		for _, v := range vv {
+			// If trailer headers, map to lower these keys.
+			if lowerKey == "trailer" {
+				mapped[lowerKey] = append(mapped[lowerKey], strings.ToLower(v))
+			} else {
+				mapped[lowerKey] = append(mapped[lowerKey], v)
+			}
+		}
+	}
+	w.headers = mapped.toHTTPHeader()
 }
