@@ -5,13 +5,15 @@ import (
 	"strings"
 )
 
-type header map[string][]string
+type header struct {
+	http.Header
+}
 
 func (h header) Add(key, value string) {
 	lowerKey := strings.ToLower(key)
-	h[lowerKey] = append(h[lowerKey], value)
+	h.Header[lowerKey] = append(h.Header[lowerKey], value)
 }
 
 func (h header) toHTTPHeader() http.Header {
-	return http.Header(h)
+	return h.Header
 }
