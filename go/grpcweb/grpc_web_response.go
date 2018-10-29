@@ -146,14 +146,8 @@ func (w *grpcWebResponse) mapHeaderKeysToLower() {
 	mapped := make(header)
 	for k, vv := range w.headers {
 		lowerKey := strings.ToLower(k)
-		// Use append directly instead of mapped.Add because mapped.Add calls strings.ToLower(k)
 		for _, v := range vv {
-			// If trailer headers, map to lower these keys.
-			if lowerKey == "trailer" {
-				mapped[lowerKey] = append(mapped[lowerKey], strings.ToLower(v))
-			} else {
-				mapped[lowerKey] = append(mapped[lowerKey], v)
-			}
+			mapped.Add(k, v)
 		}
 	}
 	w.headers = mapped.toHTTPHeader()
