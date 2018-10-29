@@ -66,7 +66,10 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 }
 
 func (w *grpcWebResponse) finishRequest(req *http.Request) {
-	w.mapHeaderKeysToLower()
+	// HTTP/2 always uses lower header/trailer keys.
+	if req.ProtoMajor == 1 {
+		w.mapHeaderKeysToLower()
+	}
 	if w.wroteHeaders || w.wroteBody {
 		w.copyTrailersToPayload()
 	} else {
