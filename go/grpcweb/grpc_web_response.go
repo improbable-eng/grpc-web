@@ -77,8 +77,9 @@ func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
 	w.wroteHeaders = true
 	wrappedHeader := w.wrapped.Header()
 	for k, vv := range w.headers {
+		lowerKey := strings.ToLower(k)
 		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
-		if strings.ToLower(k) == "trailer" {
+		if lowerKey == "trailer" {
 			continue
 		}
 		// Skip the Trailer prefix
@@ -86,7 +87,7 @@ func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
 			k = k[len(http2.TrailerPrefix):]
 		}
 		for _, v := range vv {
-			wrappedHeader.Add(k, v)
+			wrappedHeader.Add(lowerKey, v)
 		}
 	}
 	w.writeCorsExposedHeaders()

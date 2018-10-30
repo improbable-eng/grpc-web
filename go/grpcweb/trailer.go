@@ -1,3 +1,6 @@
+//Copyright 2017 Improbable. All Rights Reserved.
+// See LICENSE for licensing terms.
+
 package grpcweb
 
 import (
@@ -10,6 +13,10 @@ import (
 	"sync"
 )
 
+// gRPC-Web spec says that must use lower-case header/trailer names.
+// See "HTTP wire protocols" section in
+// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
+//
 // Almost of trailer's methods are copied from http.Header.
 type trailer struct {
 	http.Header
