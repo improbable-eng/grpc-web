@@ -19,3 +19,14 @@ func (t trailer) Add(key, value string) {
 	key = strings.ToLower(key)
 	t.Header[key] = append(t.Header[key], value)
 }
+
+func (t trailer) Get(key string) string {
+	if t.Header == nil {
+		return ""
+	}
+	v := t.Header[key]
+	if len(v) == 0 {
+		return ""
+	}
+	return v[0]
+}
