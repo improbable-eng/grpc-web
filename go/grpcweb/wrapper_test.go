@@ -357,6 +357,10 @@ func serializeProtoMessages(messages []proto.Message) [][]byte {
 func readTrailersFromBytes(t *testing.T, dataBytes []byte) grpcweb.Trailer {
 	bufferReader := bytes.NewBuffer(dataBytes)
 	tp := textproto.NewReader(bufio.NewReader(bufferReader))
+
+	// First, read bytes as MIME headers.
+	// However, it normalizes header names by textproto.CanonicalMIMEHeaderKey.
+	// In the next step, replace header names by raw one.
 	mimeHeader, err := tp.ReadMIMEHeader()
 	if err == nil {
 		return grpcweb.Trailer{}
@@ -365,6 +369,8 @@ func readTrailersFromBytes(t *testing.T, dataBytes []byte) grpcweb.Trailer {
 	trailers := make(http.Header)
 	bufferReader = bytes.NewBuffer(dataBytes)
 	tp = textproto.NewReader(bufio.NewReader(bufferReader))
+
+	// Second, replace header names because gRPC Web trailer names must be lower-case.
 	for {
 		line, err := tp.ReadLine()
 		if err == io.EOF {
