@@ -16,11 +16,6 @@ type trailer struct {
 }
 
 func (t trailer) Add(key, value string) {
-	lowerKey := strings.ToLower(key)
-
-	// If trailer headers, map to lower these keys.
-	if lowerKey == "trailer" {
-		value = strings.ToLower(value)
-	}
-	t.Header[lowerKey] = append(t.Header[lowerKey], value)
+	key = strings.ToLower(key)
+	t.Header[key] = append(t.Header[key], value)
 }
