@@ -129,7 +129,6 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 		return nil, grpcweb.Trailer{}, nil, err
 	}
 	reader := bytes.NewReader(contents)
-	httpTrailers := make(http.Header)
 	for {
 		grpcPreamble := []byte{0, 0, 0, 0, 0}
 		readCount, err := reader.Read(grpcPreamble)
@@ -147,12 +146,12 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 			return nil, grpcweb.Trailer{}, nil, fmt.Errorf("Unexpected end of msg: %v", err)
 		}
 		if grpcPreamble[0]&(1<<7) == (1 << 7) { // MSB signifies the trailer parser
-			httpTrailers = readHeadersFromBytes(s.T(), payloadBytes)
+			trailers = readTrailersFromBytes(s.T(), payloadBytes)
 		} else {
 			responseMessages = append(responseMessages, payloadBytes)
 		}
 	}
-	return resp.Header, grpcweb.HTTPTrailerToGrpcWebTrailer(httpTrailers), responseMessages, nil
+	return resp.Header, trailers, responseMessages, nil
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
@@ -355,15 +354,15 @@ func serializeProtoMessages(messages []proto.Message) [][]byte {
 	return out
 }
 
-func readHeadersFromBytes(t *testing.T, dataBytes []byte) http.Header {
+func readTrailersFromBytes(t *testing.T, dataBytes []byte) grpcweb.Trailer {
 	bufferReader := bytes.NewBuffer(dataBytes)
 	tp := textproto.NewReader(bufio.NewReader(bufferReader))
 	mimeHeader, err := tp.ReadMIMEHeader()
 	if err == nil {
-		return make(http.Header)
+		return grpcweb.Trailer{}
 	}
 
-	headers := make(http.Header)
+	trailers := make(http.Header)
 	bufferReader = bytes.NewBuffer(dataBytes)
 	tp = textproto.NewReader(bufio.NewReader(bufferReader))
 	for {
@@ -379,10 +378,10 @@ func readHeadersFromBytes(t *testing.T, dataBytes []byte) http.Header {
 		}
 		key := line[:i]
 		if vv, ok := mimeHeader[textproto.CanonicalMIMEHeaderKey(key)]; ok {
-			headers[key] = vv
+			trailers[key] = vv
 		}
 	}
-	return headers
+	return grpcweb.HTTPTrailerToGrpcWebTrailer(trailers)
 }
 
 func headerWithFlag(flags ...string) http.Header {
