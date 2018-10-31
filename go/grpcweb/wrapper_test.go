@@ -111,7 +111,7 @@ func (s *GrpcWebWrapperTestSuite) makeRequest(verb string, method string, header
 	return resp, err
 }
 
-func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http.Header, requestMessages [][]byte) (headers http.Header, trailers http.Header, responseMessages [][]byte, err error) {
+func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http.Header, requestMessages [][]byte) (headers http.Header, trailers grpcweb.Trailer, responseMessages [][]byte, err error) {
 	writer := new(bytes.Buffer)
 	for _, msgBytes := range requestMessages {
 		grpcPreamble := []byte{0, 0, 0, 0, 0}
@@ -121,15 +121,15 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 	}
 	resp, err := s.makeRequest("POST", method, reqHeaders, writer)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, grpcweb.Trailer{}, nil, err
 	}
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, grpcweb.Trailer{}, nil, err
 	}
 	reader := bytes.NewReader(contents)
-	trailers = make(http.Header)
+	httpTrailers := make(http.Header)
 	for {
 		grpcPreamble := []byte{0, 0, 0, 0, 0}
 		readCount, err := reader.Read(grpcPreamble)
@@ -137,22 +137,22 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 			break
 		}
 		if readCount != 5 || err != nil {
-			return nil, nil, nil, fmt.Errorf("Unexpected end of body in preamble: %v", err)
+			return nil, grpcweb.Trailer{}, nil, fmt.Errorf("Unexpected end of body in preamble: %v", err)
 		}
 		payloadLength := binary.BigEndian.Uint32(grpcPreamble[1:])
 		payloadBytes := make([]byte, payloadLength)
 
 		readCount, err = reader.Read(payloadBytes)
 		if uint32(readCount) != payloadLength || err != nil {
-			return nil, nil, nil, fmt.Errorf("Unexpected end of msg: %v", err)
+			return nil, grpcweb.Trailer{}, nil, fmt.Errorf("Unexpected end of msg: %v", err)
 		}
 		if grpcPreamble[0]&(1<<7) == (1 << 7) { // MSB signifies the trailer parser
-			trailers = readHeadersFromBytes(s.T(), payloadBytes)
+			httpTrailers = readHeadersFromBytes(s.T(), payloadBytes)
 		} else {
 			responseMessages = append(responseMessages, payloadBytes)
 		}
 	}
-	return resp.Header, trailers, responseMessages, nil
+	return resp.Header, grpcweb.HTTPTrailerToGrpcWebTrailer(httpTrailers), responseMessages, nil
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
@@ -165,7 +165,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
 	assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPing() {
@@ -178,7 +178,7 @@ func (s *GrpcWebWrapperTestSuite) TestPing() {
 	assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
 }
 
@@ -194,7 +194,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
 	assert.Equal(s.T(), 0, len(responses), "PingError is an unary response that has no payload")
 	s.assertTrailerGrpcCode(trailers, codes.Unimplemented, "Not implemented PingError")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
 }
 
@@ -208,7 +208,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 0, len(responses), "PingError is an unary response that has no payload")
-	s.assertTrailerGrpcCode(headers, codes.Unimplemented, "Not implemented PingError")
+	s.assertHeadersGrpcCode(headers, codes.Unimplemented, "Not implemented PingError")
 	// s.assertHeadersContainMetadata(headers, expectedHeaders) // TODO(mwitkow): There is a bug in gRPC where headers don't get added if no payload exists.
 	s.assertHeadersContainMetadata(headers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedTrailers)
@@ -223,7 +223,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingList() {
 	assert.Equal(s.T(), expectedListResponses, len(responses), "the number of expected proto fields shouold match")
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
 }
 
@@ -311,6 +311,14 @@ func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Head
 	}
 }
 
+func (s *GrpcWebWrapperTestSuite) assertTrailersContainMetadata(trailers grpcweb.Trailer, meta metadata.MD) {
+	for k, v := range meta {
+		for _, vv := range v {
+			assert.Equal(s.T(), trailers.Get(k), vv, "Expected there to be %v=%v", k, vv)
+		}
+	}
+}
+
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainCorsExpectedHeaders(headers http.Header, meta metadata.MD) {
 	value := headers.Get("Access-Control-Expose-Headers")
 	assert.NotEmpty(s.T(), value, "cors: access control expose headers should not be empty")
@@ -322,7 +330,15 @@ func (s *GrpcWebWrapperTestSuite) assertHeadersContainCorsExpectedHeaders(header
 	}
 }
 
-func (s *GrpcWebWrapperTestSuite) assertTrailerGrpcCode(trailers http.Header, code codes.Code, desc string) {
+func (s *GrpcWebWrapperTestSuite) assertHeadersGrpcCode(headers http.Header, code codes.Code, desc string) {
+	require.NotEmpty(s.T(), headers.Get("grpc-status"), "grpc-status must not be empty in trailers")
+	statusCode, err := strconv.Atoi(headers.Get("grpc-status"))
+	require.NoError(s.T(), err, "no error parsing grpc-status")
+	assert.EqualValues(s.T(), code, statusCode, "grpc-status must match expected code")
+	assert.EqualValues(s.T(), desc, headers.Get("grpc-message"), "grpc-message is expected to match")
+}
+
+func (s *GrpcWebWrapperTestSuite) assertTrailerGrpcCode(trailers grpcweb.Trailer, code codes.Code, desc string) {
 	require.NotEmpty(s.T(), trailers.Get("grpc-status"), "grpc-status must not be empty in trailers")
 	statusCode, err := strconv.Atoi(trailers.Get("grpc-status"))
 	require.NoError(s.T(), err, "no error parsing grpc-status")
