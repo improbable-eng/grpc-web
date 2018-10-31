@@ -114,9 +114,9 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 	w.wrapped.(http.Flusher).Flush()
 }
 
-func (w *grpcWebResponse) extractTrailerHeaders() http.Header {
+func (w *grpcWebResponse) extractTrailerHeaders() trailer {
 	flushedHeaders := w.wrapped.Header()
-	trailerHeaders := make(http.Header)
+	trailerHeaders := trailer{make(http.Header)}
 	for k, vv := range w.headers {
 		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
 		if strings.ToLower(k) == "trailer" {
