@@ -22,6 +22,10 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	google_protobuf "github.com/golang/protobuf/ptypes/empty"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
+	"github.com/mwitkow/go-conntrack/connhelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -32,11 +36,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
-
-	google_protobuf "github.com/golang/protobuf/ptypes/empty"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
-	"github.com/mwitkow/go-conntrack/connhelpers"
 )
 
 var (
@@ -148,7 +147,7 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 			return nil, nil, nil, fmt.Errorf("Unexpected end of msg: %v", err)
 		}
 		if grpcPreamble[0]&(1<<7) == (1 << 7) { // MSB signifies the trailer parser
-			trailers = readHeadersFromBytes(payloadBytes)
+			trailers = readHeadersFromBytes(s.T(), payloadBytes)
 		} else {
 			responseMessages = append(responseMessages, payloadBytes)
 		}
@@ -340,14 +339,34 @@ func serializeProtoMessages(messages []proto.Message) [][]byte {
 	return out
 }
 
-func readHeadersFromBytes(dataBytes []byte) http.Header {
+func readHeadersFromBytes(t *testing.T, dataBytes []byte) http.Header {
 	bufferReader := bytes.NewBuffer(dataBytes)
 	tp := textproto.NewReader(bufio.NewReader(bufferReader))
 	mimeHeader, err := tp.ReadMIMEHeader()
 	if err == nil {
 		return make(http.Header)
 	}
-	return http.Header(mimeHeader)
+
+	headers := make(http.Header)
+	bufferReader = bytes.NewBuffer(dataBytes)
+	tp = textproto.NewReader(bufio.NewReader(bufferReader))
+	for {
+		line, err := tp.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err, "failed to read header line")
+
+		i := strings.IndexByte(line, ':')
+		if i == -1 {
+			require.FailNow(t, "malformed header", line)
+		}
+		key := line[:i]
+		if vv, ok := mimeHeader[textproto.CanonicalMIMEHeaderKey(key)]; ok {
+			headers[key] = vv
+		}
+	}
+	return headers
 }
 
 func headerWithFlag(flags ...string) http.Header {
