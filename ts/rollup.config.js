@@ -15,8 +15,7 @@ export default {
       name: pkg.name,
       file: pkg.browser,
       format: 'umd',
-      globals: [
-      ]
+      globals: [],
     }
   ],
   plugins: [
@@ -28,6 +27,6 @@ export default {
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
     // Suppress warnings for modules that will not be included in the bundle
-    'http', 'https', 'url'
+    'http', 'https', 'url', 'browser-headers',
   ],
 }
