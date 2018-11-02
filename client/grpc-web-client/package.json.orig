@@ -12,8 +12,8 @@
     "postbootstrap": "npm run lib:build",
     "lib:build": "npm run clean && tsc && cp -R build/ dist/",
 =======
-    "build": "npm run clean && rollup -c",
->>>>>>> Initial implementation of rollup config.:ts/package.json
+    "lib:build": "npm run clean && rollup -c",
+>>>>>>> - Revered unnecessary changes in the package.json and tsconfig.json:ts/package.json
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
   "author": "Improbable",
