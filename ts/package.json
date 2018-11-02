@@ -8,7 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf build && rm -rf dist",
-    "build": "npm run clean && rollup -c",
+    "lib:build": "npm run clean && rollup -c",
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
   "author": "Improbable",
