@@ -42,6 +42,7 @@ export namespace grpc {
   export function client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: ClientRpcOptions): Client<TRequest, TResponse> {
     return impClient.client(methodDescriptor, props);
   }
+  export interface RpcOptions extends impClient.RpcOptions {}
   export interface ClientRpcOptions extends impClient.ClientRpcOptions {}
 
   export const invoke = impInvoke.invoke;

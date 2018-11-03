@@ -4,10 +4,9 @@
 package grpcweb
 
 import (
+	"context"
 	"net/http"
 	"net/url"
-
-	"context"
 	"strings"
 	"time"
 

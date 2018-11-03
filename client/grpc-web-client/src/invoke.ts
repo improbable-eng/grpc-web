@@ -1,23 +1,20 @@
 import {Code} from "./Code";
-import {TransportFactory} from "./transports/Transport";
 import {MethodDefinition} from "./service";
 import {Metadata} from "./metadata";
-import {client} from "./client";
+import {client, RpcOptions} from "./client";
 import {ProtobufMessage} from "./message";
 
 export interface Request {
   close: () => void;
 }
 
-export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> {
+export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends RpcOptions {
   host: string;
   request: TRequest;
   metadata?: Metadata.ConstructorArg;
   onHeaders?: (headers: Metadata) => void;
   onMessage?: (res: TResponse) => void;
   onEnd: (code: Code, message: string, trailers: Metadata) => void;
-  transport?: TransportFactory;
-  debug?: boolean;
 }
 
 
