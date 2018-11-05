@@ -1,5 +1,5 @@
 {
-  "name": "grpc-web-test",
+  "name": "grpc-web-integration-test",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -8,12 +8,12 @@
     "build:proto": "./protogen_go.sh && ./protogen_ts.sh",
     "build:ts": "cd ts && rm -rf build && webpack-cli",
     "build:dev": "cd ts && rm -rf build && webpack-cli --watch",
-    "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp _proto/improbable/grpcweb/test/test_pb.js build-node/grpc-web-test/ts/_proto/improbable/grpcweb/test/test_pb.js)",
+    "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp _proto/improbable/grpcweb/test/test_pb.js build-node/integration_test/ts/_proto/improbable/grpcweb/test/test_pb.js)",
     "build": "npm run build:proto && npm run build:ts && npm run build:node",
     "lint": "tslint -c ./ts/tslint.json ./ts/src/**/*.ts",
     "test": "./test.sh",
     "test:browser": "./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
-    "test:node": "./run-with-testserver.sh jasmine ts/build-node/grpc-web-test/ts/node-src/node.spec.js",
+    "test:node": "./run-with-testserver.sh jasmine ts/build-node/integration_test/ts/node-src/node.spec.js",
     "test:dev": "npm run build && ./run-with-testserver.sh karma start ./karma.conf.ts",
     "test:karma-single-run": "karma start ./karma.conf.ts --single-run",
     "test:karma-dev": "karma start ./karma.conf.ts"

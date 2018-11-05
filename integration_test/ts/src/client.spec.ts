@@ -1,7 +1,7 @@
 // gRPC-Web library
 import {grpc} from "grpc-web-client";
 
-import {debug} from "../../../grpc-web-client/src/debug";
+import {debug} from "../../../client/grpc-web-client/src/debug";
 import {assert} from "chai";
 // Generated Test Classes
 import {Empty, } from "google-protobuf/google/protobuf/empty_pb";

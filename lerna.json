@@ -1,6 +1,7 @@
 {
   "packages": [
-    "client/*"
+    "client/*",
+    "integration_test"
   ],
   "version": "independent"
 }

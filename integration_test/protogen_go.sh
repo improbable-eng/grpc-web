@@ -18,7 +18,7 @@ if [[ "$GOBIN" == "" ]]; then
 fi
 
 # Install protoc-gen-go from the vendored protobuf package to $GOBIN
-(cd ../../vendor/github.com/golang/protobuf && make install)
+(cd ../vendor/github.com/golang/protobuf && make install)
 
 # Builds all .proto files in a given package dirctory.
 # NOTE: All .proto files in a given package must be processed *together*, otherwise the self-referencing

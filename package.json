@@ -5,7 +5,7 @@
     "bootstrap": "lerna bootstrap",
     "postbootstrap": "(cd client/grpc-web-client && npm run postbootstrap) && (cd client/grpc-web-node-http-transport && npm run postbootstrap)",
     "clean": "lerna clean --yes --private && lerna run clean",
-    "test": "cd client/grpc-web-test && npm run test",
+    "test": "cd integration_test && npm run test",
     "lint": "lerna run lint"
   },
   "author": "Improbable",

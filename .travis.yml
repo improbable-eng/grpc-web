@@ -52,7 +52,7 @@ install:
   - nvm install
   - npm install
 before_script:
-  - ./client/grpc-web-test/start-testserver.sh &
+  - ./integration-test/start-testserver.sh &
 script:
   - ./lint-all.sh
   - travis_retry npm run test
