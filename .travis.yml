@@ -52,7 +52,7 @@ install:
   - nvm install
   - npm install
 before_script:
-  - ./integration-test/start-testserver.sh &
+  - ./integration_test/start-testserver.sh &
 script:
   - ./lint-all.sh
   - travis_retry npm run test
