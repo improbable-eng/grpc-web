@@ -1,0 +1,7 @@
+{
+  "packages": [
+    "client/*",
+    "integration_test"
+  ],
+  "version": "independent"
+}

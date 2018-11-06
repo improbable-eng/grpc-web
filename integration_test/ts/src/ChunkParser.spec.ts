@@ -1,5 +1,5 @@
 import { assert } from "chai";
-import { decodeASCII, encodeASCII } from "../../../ts/src/ChunkParser";
+import { decodeASCII, encodeASCII } from "../../../client/grpc-web-client/src/ChunkParser";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.ChunkParser, () => {

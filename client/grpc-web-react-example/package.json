@@ -1,5 +1,5 @@
 {
-  "name": "grpc-web-example",
+  "name": "grpc-web-react-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,11 +14,11 @@
   },
   "license": "none",
   "dependencies": {
-    "@types/google-protobuf": "^3.2.5",
     "google-protobuf": "^3.6.1",
     "grpc-web-client": "0.6.2"
   },
   "devDependencies": {
+    "@types/google-protobuf": "^3.2.5",
     "concurrently": "^3.6.1",
     "ts-loader": "^4.5.0",
     "ts-protoc-gen": "0.7.6",

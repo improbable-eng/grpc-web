@@ -26,8 +26,8 @@ export default (config) => {
     hostname: testHost,
     port: 9876,
     httpsServerOptions: {
-      key: fs.readFileSync('../misc/localhost.key', 'utf8'),
-      cert: fs.readFileSync('../misc/localhost.crt', 'utf8')
+      key: fs.readFileSync('..//misc/localhost.key', 'utf8'),
+      cert: fs.readFileSync('..//misc/localhost.crt', 'utf8')
     },
     colors: true,
     logLevel: DEBUG ? 'DEBUG' : 'INFO',

@@ -2,7 +2,7 @@ import {ContinueStreamRequest} from "../_proto/improbable/grpcweb/test/test_pb";
 import {TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {
   grpc,
-} from "../../../ts/src/index";
+} from "grpc-web-client";
 
 export const DEBUG: boolean = (global as any).DEBUG;
 

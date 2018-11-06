@@ -12,7 +12,7 @@ import (
 
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
+	testproto "github.com/improbable-eng/grpc-web/integration_test/go/_proto/improbable/grpcweb/test"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

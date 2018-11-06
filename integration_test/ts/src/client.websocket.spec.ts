@@ -1,7 +1,7 @@
 // gRPC-Web library
-import { grpc } from "../../../ts/src/index";
+import { grpc } from "grpc-web-client";
 
-import { debug } from "../../../ts/src/debug";
+import { debug } from "../../../client/grpc-web-client/src/debug";
 import { assert } from "chai";
 // Generated Test Classes
 import { PingRequest, PingResponse } from "../_proto/improbable/grpcweb/test/test_pb";

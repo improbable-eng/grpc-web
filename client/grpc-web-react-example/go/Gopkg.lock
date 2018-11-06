@@ -2,6 +2,7 @@
 
 
 [[projects]]
+  branch = "master"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -10,8 +11,7 @@
     "ptypes/duration",
     "ptypes/timestamp"
   ]
-  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
-  version = "v1.1.0"
+  revision = "d3de96c4c28ef8af3aa1a892fc481e0f103c01ff"
 
 [[projects]]
   name = "github.com/gorilla/websocket"
@@ -21,7 +21,10 @@
 
 [[projects]]
   name = "github.com/improbable-eng/grpc-web"
-  packages = ["go/grpcweb"]
+  packages = [
+    "example/go/_proto/examplecom/library",
+    "go/grpcweb"
+  ]
   revision = "72eb701d6f320ca324b3347c7925a720b553eae5"
   version = "0.6.2"
 
@@ -106,6 +109,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "598798da73ac3aafbe7480881b34ca484075a60341d62f3045b8de79dee51144"
+  inputs-digest = "8ef08c4d978ca0c1fa481e302579b513c76725cfbdea0faad298c94907564269"
   solver-name = "gps-cdcl"
   solver-version = 1
