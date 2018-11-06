@@ -6,7 +6,7 @@
   "browser": "dist/grpc-web-client.umd.js",
   "types": "dist/typings/index.d.ts",
   "scripts": {
-    "clean": "rm -rf build && rm -rf dist",
+    "clean": "rm -rf dist",
     "lib:build": "npm run clean && webpack",
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
