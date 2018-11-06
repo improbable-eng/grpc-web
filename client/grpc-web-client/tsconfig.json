@@ -3,7 +3,7 @@
     "alwaysStrict": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "build",
+    "declarationDir": "typings",
     "target": "es5",
     "removeComments": true,
     "noImplicitReturns": true,
