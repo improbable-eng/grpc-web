@@ -41,7 +41,6 @@
     "tslint": "^5.9.1",
     "typescript": "3.0.1",
     "ts-loader": "^2.0.1",
-    "tslib": "^1.9.3",
     "webpack": "^2.2.1"
   }
 }
