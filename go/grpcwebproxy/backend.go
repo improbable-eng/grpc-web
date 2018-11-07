@@ -72,8 +72,10 @@ func dialBackendOrFail() *grpc.ClientConn {
 		opt = append(opt, grpc.WithInsecure())
 	}
 
-	opt = append(opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)))
-	opt = append(opt, grpc.WithBackoffMaxDelay(*flagBackendBackoffMaxDelay))
+	opt = append(opt,
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)),
+		grpc.WithBackoffMaxDelay(*flagBackendBackoffMaxDelay),
+	)
 
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
