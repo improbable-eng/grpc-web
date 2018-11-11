@@ -2,12 +2,13 @@
   "name": "grpc-web-client",
   "version": "0.7.0",
   "description": "gRPC-Web client for browsers (JS/TS)",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/grpc-web-client.js",
+  "browser": "dist/grpc-web-client.umd.js",
+  "types": "dist/typings/index.d.ts",
   "scripts": {
-    "clean": "rm -rf build && rm -rf dist",
+    "clean": "rm -rf dist",
     "postbootstrap": "npm run lib:build",
-    "lib:build": "npm run clean && tsc && cp -R build/ dist/",
+    "lib:build": "npm run clean && webpack",
     "lint": "tslint -c ./tslint.json ./src/**/*.ts"
   },
   "author": "Improbable",
@@ -34,9 +35,12 @@
     "browser-headers": "^0.4.0"
   },
   "devDependencies": {
+    "@types/node": "^7.0.5",
     "@types/google-protobuf": "^3.2.5",
     "google-protobuf": "^3.2.0",
     "tslint": "^5.9.1",
-    "typescript": "3.0.1"
+    "typescript": "3.0.1",
+    "ts-loader": "^2.0.1",
+    "webpack": "^2.2.1"
   }
 }
