@@ -17,10 +17,10 @@
 
 Components of the stack are based on Golang and TypeScript:
 
- * [`grpcweb`](go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1.
- * [`grpcwebproxy`](go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers.
+ * [`grpcweb`](./go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1.
+ * [`grpcwebproxy`](./go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers.
  * [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) - a TypeScript plugin for the protocol buffers compiler that provides strongly typed message classes and method definitions.
- * [`grpc-web-client`](ts) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
+ * [`grpc-web-client`](./client/grpc-web-client) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
  
 ## Why?
 
@@ -40,7 +40,7 @@ In short, gRPC-Web moves the interaction between frontend code and microservices
 
 **Note: You'll need to add gRPC-Web compatibility to your server through either [`grpcweb`](go/grpcweb) or [`grpcwebproxy`](go/grpcwebproxy).**
 
-[API Docs for `grpc-web-client` can be found here](ts)
+[API Docs for `grpc-web-client` can be found here](./client/grpc-web-client)
 
 ## Example 
 
@@ -144,7 +144,7 @@ This library is tested against:
   
 ## Node.js Support
 
-`grpc-web-client` also [supports Node.js through a transport](ts/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
+`grpc-web-client` also [supports Node.js through a transport](./client/grpc-web-client/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
 If you want to use `grpc-web-client` in a node.js environment with Typescript, you must include `dom` in the `"lib"` Array in your `tsconfig.json` otherwise `tsc` will be unable to find some type declarations to compile. Note that `dom` will be included automatically if you do not declare `lib` in your configration and your target is one of `es5` or `es6`. (See [Typescript compiler options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)).
 
@@ -171,8 +171,7 @@ This, however, is useful for a lot of frontend functionality.
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
 
 ## Known Limitations
-See the grpc-web-client's Transport Documentation for [a list of Web Browser caveats](./ts/docs/transport.md#http/2-based-transports).
+See the grpc-web-client's Transport Documentation for [a list of Web Browser caveats](./client/grpc-web-client/docs/transport.md#http/2-based-transports).
 
-### Running the tests
-
-[See test README](test)
+### Contributing
+See [CONTRIBUTING](./CONTRIBUTING.md)

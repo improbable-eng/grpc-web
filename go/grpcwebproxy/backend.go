@@ -47,6 +47,12 @@ var (
 		"",
 		"Default value to use for the HTTP/2 :authority header commonly used for routing gRPC calls through a backend gateway.",
 	)
+
+	flagBackendBackoffMaxDelay = pflag.Duration(
+		"backend_backoff_max_delay",
+		grpc.DefaultBackoffConfig.MaxDelay,
+		"Maximum delay when backing off after failed connection attempts to the backend.",
+	)
 )
 
 func dialBackendOrFail() *grpc.ClientConn {
@@ -65,7 +71,12 @@ func dialBackendOrFail() *grpc.ClientConn {
 	} else {
 		opt = append(opt, grpc.WithInsecure())
 	}
-	opt = append(opt, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)))
+
+	opt = append(opt,
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)),
+		grpc.WithBackoffMaxDelay(*flagBackendBackoffMaxDelay),
+	)
+
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
 		logrus.Fatalf("failed dialing backend: %v", err)
