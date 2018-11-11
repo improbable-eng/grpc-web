@@ -36,5 +36,6 @@ jobs:
   include:
     - stage: Lint
       script: ./lint-all.sh
-    - stage Integration Tests
-      script: echo "run integration tests"
+
+    - stage: Integration Tests
+      script: echo ok
