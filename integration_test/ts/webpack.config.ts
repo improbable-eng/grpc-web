@@ -1,18 +1,18 @@
-const path = require('path');
-const webpack = require('webpack');
+const path = require("path");
+const webpack = require("webpack");
 module.exports = {
   entry: "./src/spec.ts",
   mode: "development",
   output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'integration-tests.js'
+    path: path.resolve(__dirname, "build"),
+    filename: "integration-tests.js"
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env': JSON.stringify(process.env),
+      "process.env": JSON.stringify(process.env),
     }),
   ],
-  devtool: 'inline-source-map',
+  devtool: "inline-source-map",
   module: {
     rules: [
       {
