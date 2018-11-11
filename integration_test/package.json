@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-integration-test",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "scripts": {
     "clean": "rm -rf ts/build && rm -rf ts/build-node",
