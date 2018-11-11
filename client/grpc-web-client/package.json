@@ -8,8 +8,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "postbootstrap": "npm run lib:build",
-    "lib:build": "npm run clean && webpack",
-    "lint": "tslint -c ./tslint.json ./src/**/*.ts"
+    "lib:build": "npm run clean && webpack"
   },
   "author": "Improbable",
   "license": "Apache-2.0",
@@ -39,7 +38,6 @@
     "@types/node": "^7.0.5",
     "google-protobuf": "^3.2.0",
     "ts-loader": "^2.0.1",
-    "tslint": "^5.9.1",
     "typescript": "3.0.1",
     "webpack": "^2.2.1"
   }

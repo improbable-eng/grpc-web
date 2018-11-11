@@ -6,12 +6,14 @@
     "postbootstrap": "(cd client/grpc-web-client && npm run postbootstrap) && (cd client/grpc-web-node-http-transport && npm run postbootstrap)",
     "clean": "lerna clean --yes --private && lerna run clean",
     "test": "cd integration_test && npm run test",
-    "lint": "lerna run lint"
+    "lint": "tslint -c ./tslint.json ./client/**/*.ts ./integration_test/ts/*.ts ./integration_test/ts/**/*.ts"
   },
   "author": "Improbable",
   "license": "Apache-2.0",
   "repository": "github:improbable-eng/grpc-web",
   "devDependencies": {
-    "lerna": "^3.4.3"
+    "lerna": "^3.4.3",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.6"
   }
 }
