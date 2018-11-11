@@ -54,5 +54,16 @@ install:
 before_script:
   - ./integration_test/start-testserver.sh &
 script:
-  - ./lint-all.sh
-  - travis_retry npm run test
+  - npm run test
+
+stages:
+  - lint
+  - test
+  - deploy
+
+jobs:
+  include:
+    - stage: lint
+      script: ./lint-all.sh
+    - stage: deploy
+      script: echo OK
