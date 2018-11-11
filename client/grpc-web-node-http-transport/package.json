@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-node-http-transport",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Node HTTP Transport for use with grpc-web-client",
   "main": "lib/index.js",
   "repository": {
