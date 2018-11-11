@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-node-http-transport",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Node HTTP Transport for use with grpc-web-client",
   "main": "lib/index.js",
   "repository": {
@@ -14,7 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "grpc-web-client": "^0.7.1"
+    "grpc-web-client": "^0.7.0"
   },
   "author": "",
   "license": "Apache-2.0",
