@@ -29,7 +29,7 @@ export interface Middleware<
   // onStart is invoked immediately before a request is initiated.
   // onStart can return a modified set of Metadata which will be used
   // to make the request instead of the original headers.
-  onStart(metadata: Metadata): Metadata | undefined;
+  onStart(metadata: Metadata): Metadata | undefined | void;
 
   // onSend is invoked immediately before a new message is send to the server
   // from the client.
