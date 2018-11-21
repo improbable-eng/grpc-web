@@ -7,13 +7,23 @@ import {Transport, TransportFactory, makeDefaultTransport} from "./transports/Tr
 import {MethodDefinition} from "./service";
 import {frameRequest} from "./util";
 import {ProtobufMessage} from "./message";
+import {IdentityMiddleware, Middleware, MiddlewareConstructor} from "./middleware";
 
-export interface RpcOptions {
+export interface RpcOptions<
+  TRequest extends ProtobufMessage,
+  TResponse extends ProtobufMessage,
+  M extends MethodDefinition<TRequest, TResponse>,
+> {
   transport?: TransportFactory;
   debug?: boolean;
+  middleware?: MiddlewareConstructor<TRequest, TResponse, M>;
 }
 
-export interface ClientRpcOptions extends RpcOptions {
+export interface ClientRpcOptions<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
+> extends RpcOptions<TRequest, TResponse, M> {
   host: string;
 }
 
@@ -28,13 +38,13 @@ export interface Client<TRequest extends ProtobufMessage, TResponse extends Prot
   onEnd(callback: (code: Code, message: string, trailers: Metadata) => void): void;
 }
 
-export function client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: ClientRpcOptions): Client<TRequest, TResponse> {
+export function client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: ClientRpcOptions<TRequest, TResponse, M>): Client<TRequest, TResponse> {
   return new GrpcClient<TRequest, TResponse, M>(methodDescriptor, props);
 }
 
 class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>> {
   methodDefinition: M;
-  props: ClientRpcOptions;
+  props: ClientRpcOptions<TRequest, TResponse, M>;
 
   started: boolean = false;
   sentFirstMessage: boolean = false;
@@ -52,9 +62,14 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
   responseHeaders: Metadata;
   responseTrailers: Metadata;
 
-  constructor(methodDescriptor: M, props: ClientRpcOptions) {
+  middleware: Middleware<TRequest, TResponse>;
+
+  constructor(methodDescriptor: M, props: ClientRpcOptions<TRequest, TResponse, M>) {
     this.methodDefinition = methodDescriptor;
     this.props = props;
+    this.middleware = props.middleware
+      ? { ...IdentityMiddleware, ...props.middleware(methodDescriptor, props) }
+      : IdentityMiddleware;
 
     this.createTransport();
   }
@@ -201,6 +216,11 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.completed) return;
     this.completed = true;
 
+    detach(() => {
+      if (this.closed) return;
+      this.middleware.onEnd(code, message, trailers);
+    });
+
     this.onEndCallbacks.forEach(callback => {
       detach(() => {
         if (this.closed) return;
@@ -212,6 +232,8 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
   rawOnHeaders(headers: Metadata) {
     this.props.debug && debug("rawOnHeaders", headers);
     if (this.completed) return;
+
+    detach(() => this.middleware.onHeaders(headers));
     this.onHeadersCallbacks.forEach(callback => {
       detach(() => {
         callback(headers);
@@ -223,6 +245,12 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.props.debug && debug("rawOnError", code, msg);
     if (this.completed) return;
     this.completed = true;
+
+    detach(() => {
+      if (this.closed) return;
+      this.middleware.onEnd(code, msg, trailers);
+    });
+
     this.onEndCallbacks.forEach(callback => {
       detach(() => {
         if (this.closed) return;
@@ -234,6 +262,12 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
   rawOnMessage(res: TResponse) {
     this.props.debug && debug("rawOnMessage", res.toObject());
     if (this.completed || this.closed) return;
+
+    detach(() => {
+      if (this.closed) return;
+      this.middleware.onMessage(res);
+    });
+
     this.onMessageCallbacks.forEach(callback => {
       detach(() => {
         if (this.closed) return;
@@ -264,7 +298,8 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     requestHeaders.set("content-type", "application/grpc-web+proto");
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
-    this.transport.start(requestHeaders);
+    const middlewareHeaders = this.middleware.onStart(requestHeaders) || requestHeaders;
+    this.transport.start(middlewareHeaders);
   }
 
   send(msg: TRequest) {
@@ -282,6 +317,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       throw new Error("Message already sent for non-client-streaming method - cannot .send()");
     }
     this.sentFirstMessage = true;
+    this.middleware.onSend(msg);
     const msgBytes = frameRequest(msg);
     this.transport.sendMessage(msgBytes);
   }
@@ -297,6 +333,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       throw new Error("Client already finished sending - cannot .finishSend()");
     }
     this.finishedSending = true;
+    this.middleware.onFinishSend();
     this.transport.finishSend();
   }
 
@@ -307,6 +344,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (!this.closed) {
       this.closed = true;
       this.props.debug && debug("request.abort aborting request");
+      this.middleware.onClose();
       this.transport.cancel();
     } else {
       throw new Error("Client already closed - cannot .close()");

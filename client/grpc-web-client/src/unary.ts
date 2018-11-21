@@ -1,6 +1,6 @@
 import {Metadata} from "./metadata";
 import {Code} from "./Code";
-import {UnaryMethodDefinition} from "./service";
+import {MethodDefinition, UnaryMethodDefinition} from "./service";
 import {Request} from "./invoke";
 import {client, RpcOptions} from "./client";
 import {ProtobufMessage} from "./message";
@@ -13,14 +13,22 @@ export interface UnaryOutput<TResponse> {
   trailers: Metadata;
 }
 
-export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends RpcOptions {
+export interface UnaryRpcOptions<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
+> extends RpcOptions<TRequest, TResponse, M> {
   host: string;
   request: TRequest;
   metadata?: Metadata.ConstructorArg;
   onEnd: (output: UnaryOutput<TResponse>) => void;
 }
 
-export function unary<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends UnaryMethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: UnaryRpcOptions<TRequest, TResponse>): Request {
+export function unary<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends UnaryMethodDefinition<TRequest, TResponse>,
+>(methodDescriptor: M, props: UnaryRpcOptions<TRequest, TResponse, M>): Request {
   if (methodDescriptor.responseStream) {
     throw new Error(".unary cannot be used with server-streaming methods. Use .invoke or .client instead.");
   }
@@ -35,6 +43,7 @@ export function unary<TRequest extends ProtobufMessage, TResponse extends Protob
     host: props.host,
     transport: props.transport,
     debug: props.debug,
+    middleware: props.middleware,
   });
   grpcClient.onHeaders((headers: Metadata) => {
     responseHeaders = headers;

@@ -8,7 +8,11 @@ export interface Request {
   close: () => void;
 }
 
-export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends RpcOptions {
+export interface InvokeRpcOptions<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
+> extends RpcOptions<TRequest, TResponse, M> {
   host: string;
   request: TRequest;
   metadata?: Metadata.ConstructorArg;
@@ -18,7 +22,11 @@ export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse ex
 }
 
 
-export function invoke<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: InvokeRpcOptions<TRequest, TResponse>): Request {
+export function invoke<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>
+>(methodDescriptor: M, props: InvokeRpcOptions<TRequest, TResponse, M>): Request {
   if (methodDescriptor.requestStream) {
     throw new Error(".invoke cannot be used with client-streaming methods. Use .client instead.");
   }
@@ -28,6 +36,7 @@ export function invoke<TRequest extends ProtobufMessage, TResponse extends Proto
     host: props.host,
     transport: props.transport,
     debug: props.debug,
+    middleware: props.middleware,
   });
 
   if (props.onHeaders) {

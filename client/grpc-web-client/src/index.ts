@@ -39,17 +39,35 @@ export namespace grpc {
   export import Metadata = BrowserHeaders;
 
   export interface Client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impClient.Client<TRequest, TResponse> {}
-  export function client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: ClientRpcOptions): Client<TRequest, TResponse> {
+  export function client<
+      TRequest extends ProtobufMessage,
+      TResponse extends ProtobufMessage,
+      M extends MethodDefinition<TRequest, TResponse>,
+  >(methodDescriptor: M, props: ClientRpcOptions<TRequest, TResponse, M>): Client<TRequest, TResponse> {
     return impClient.client(methodDescriptor, props);
   }
-  export interface RpcOptions extends impClient.RpcOptions {}
-  export interface ClientRpcOptions extends impClient.ClientRpcOptions {}
+  export interface RpcOptions<TRequest extends ProtobufMessage,
+      TResponse extends ProtobufMessage,
+      M extends MethodDefinition<TRequest, TResponse>,
+  > extends impClient.RpcOptions<TRequest, TResponse, M> {}
+  export interface ClientRpcOptions<TRequest extends ProtobufMessage,
+      TResponse extends ProtobufMessage,
+      M extends MethodDefinition<TRequest, TResponse>,
+  > extends impClient.ClientRpcOptions<TRequest, TResponse, M> {}
 
   export const invoke = impInvoke.invoke;
   export interface Request extends impInvoke.Request {}
-  export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impInvoke.InvokeRpcOptions<TRequest, TResponse> {}
+  export interface InvokeRpcOptions<
+      TRequest extends ProtobufMessage,
+      TResponse extends ProtobufMessage,
+      M extends MethodDefinition<TRequest, TResponse>,
+  > extends impInvoke.InvokeRpcOptions<TRequest, TResponse, M> {}
 
   export const unary = impUnary.unary;
   export interface UnaryOutput<TResponse extends ProtobufMessage> extends impUnary.UnaryOutput<TResponse> {}
-  export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impUnary.UnaryRpcOptions<TRequest, TResponse> {}
+  export interface UnaryRpcOptions<
+      TRequest extends ProtobufMessage,
+      TResponse extends ProtobufMessage,
+      M extends MethodDefinition<TRequest, TResponse>,
+  > extends impUnary.UnaryRpcOptions<TRequest, TResponse, M> {}
 }
