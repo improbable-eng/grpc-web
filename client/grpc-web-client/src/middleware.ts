@@ -68,28 +68,3 @@ export const IdentityMiddleware: Middleware<any, any> = {
   onHeaders: noop,
   onEnd: noop,
 };
-
-// export const debugMiddleware = newMiddleware({
-//   onStart: metadata => {
-//     debug("Request started", metadata)
-//     return metadata;
-//   },
-//   onSend: (message: ProtobufMessage) => {
-//     debug("onSend", message.toObject())
-//     return message;
-//   },
-//   onFinishSend: () => debug("onFinishSend"),
-//   onClose: () => debug("onClose"),
-//   onHeaders: (headers: Metadata) => {
-//     debug("onHeaders", headers);
-//     return headers;
-//   },
-//   onMessage: (message: ProtobufMessage) => {
-//     debug("onMessage", message.toObject());
-//     return message;
-//   },
-//   onEnd: (status, statusMessage, trailers) => {
-//     debug("onEnd", status, statusMessage, trailers);
-//     return [status, statusMessage, trailers];
-//   }
-// })
