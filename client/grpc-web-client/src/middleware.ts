@@ -13,10 +13,13 @@ const noop = () => void 0;
  * a middleware in order to function correctly. The partial implementation
  * will be merged with a default implementation which has no side effects.
  */
-export type MiddlewareConstructor<TRequest extends ProtobufMessage,
+export interface MiddlewareConstructor<
+  TRequest extends ProtobufMessage,
   TResponse extends ProtobufMessage,
   M extends MethodDefinition<TRequest, TResponse>,
-> = (descriptor: M, props: ClientRpcOptions<TRequest, TResponse, M>) => Partial<Middleware<TRequest, TResponse>>;
+> {
+  (descriptor: M, props: ClientRpcOptions<TRequest, TResponse, M>): Partial<Middleware<TRequest, TResponse>>
+}
 
 // Middleware is the canonical definition of a Middleware.
 export interface Middleware<

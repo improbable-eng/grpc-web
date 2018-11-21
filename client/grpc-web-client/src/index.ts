@@ -10,6 +10,7 @@ import * as impUnary from "./unary";
 import * as impClient from "./client";
 import * as impService from "./service";
 import * as impMessage from "./message";
+import * as impMiddleware from "./middleware";
 
 export namespace grpc {
   export interface ProtobufMessageClass<T extends ProtobufMessage> extends impMessage.ProtobufMessageClass<T> {}
@@ -40,34 +41,45 @@ export namespace grpc {
 
   export interface Client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impClient.Client<TRequest, TResponse> {}
   export function client<
-      TRequest extends ProtobufMessage,
-      TResponse extends ProtobufMessage,
-      M extends MethodDefinition<TRequest, TResponse>,
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
   >(methodDescriptor: M, props: ClientRpcOptions<TRequest, TResponse, M>): Client<TRequest, TResponse> {
     return impClient.client(methodDescriptor, props);
   }
   export interface RpcOptions<TRequest extends ProtobufMessage,
-      TResponse extends ProtobufMessage,
-      M extends MethodDefinition<TRequest, TResponse>,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
   > extends impClient.RpcOptions<TRequest, TResponse, M> {}
   export interface ClientRpcOptions<TRequest extends ProtobufMessage,
-      TResponse extends ProtobufMessage,
-      M extends MethodDefinition<TRequest, TResponse>,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
   > extends impClient.ClientRpcOptions<TRequest, TResponse, M> {}
 
   export const invoke = impInvoke.invoke;
   export interface Request extends impInvoke.Request {}
   export interface InvokeRpcOptions<
-      TRequest extends ProtobufMessage,
-      TResponse extends ProtobufMessage,
-      M extends MethodDefinition<TRequest, TResponse>,
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
   > extends impInvoke.InvokeRpcOptions<TRequest, TResponse, M> {}
 
   export const unary = impUnary.unary;
   export interface UnaryOutput<TResponse extends ProtobufMessage> extends impUnary.UnaryOutput<TResponse> {}
   export interface UnaryRpcOptions<
-      TRequest extends ProtobufMessage,
-      TResponse extends ProtobufMessage,
-      M extends MethodDefinition<TRequest, TResponse>,
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
   > extends impUnary.UnaryRpcOptions<TRequest, TResponse, M> {}
+
+  export interface MiddlewareConstructor<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+    M extends MethodDefinition<TRequest, TResponse>,
+  > extends impMiddleware.MiddlewareConstructor<TRequest, TResponse, M> {}
+  export interface Middleware<
+    TRequest extends ProtobufMessage,
+    TResponse extends ProtobufMessage,
+  > extends impMiddleware.Middleware<TRequest, TResponse> {}
+
 }
