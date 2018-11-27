@@ -20,6 +20,7 @@
   "license": "none",
   "dependencies": {
     "browser-headers": "^0.4.0",
+    "event-stream": "^3.3.4",
     "google-protobuf": "^3.2.0",
     "grpc-web-client": "^0.7.0",
     "grpc-web-node-http-transport": "^0.0.1",
