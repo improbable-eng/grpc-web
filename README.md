@@ -44,7 +44,7 @@ In short, gRPC-Web moves the interaction between frontend code and microservices
 
 ## Example 
 
-For a self-contained demo of a Golang gRPC service called from a TypeScript project, see [example](example). It contains most of the initialization code that performs the magic. Here's the application code extracted from the example:
+For a self-contained demo of a Golang gRPC service called from a TypeScript project, see [example](client/grpc-web-react-example). It contains most of the initialization code that performs the magic. Here's the application code extracted from the example:
 
 You use `.proto` files to define your service. In this example, one normal RPC (`GetBook`) and one server-streaming RPC (`QueryBooks`):
 
