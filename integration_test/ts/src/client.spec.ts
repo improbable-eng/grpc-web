@@ -193,6 +193,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
         it(`should handle a streaming response of multiple messages`, (done) => {
           let didGetOnHeaders = false;
           let onMessageId = 0;
+          let middleware: TestMiddleware;
 
           const ping = new PingRequest();
           ping.setValue("hello world");
@@ -204,21 +205,28 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
             debug: DEBUG,
             transport: transport,
             host: testHostUrl,
+            middleware: (descriptor, props) => {
+              middleware = new TestMiddleware(descriptor, props);
+              return middleware;
+            }
           });
           client.onHeaders((headers: grpc.Metadata) => {
             DEBUG && debug("headers", headers);
             didGetOnHeaders = true;
+            assert.deepEqual(middleware.calls.onHeaders, headers);
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
               assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
             }
           });
           client.onMessage((message: PingResponse) => {
+            assert.deepEqual(middleware.calls.onMessage, message);
             assert.ok(message instanceof PingResponse);
             assert.strictEqual(message.getCounter(), onMessageId++);
           });
           client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+            assert.deepEqual(middleware.calls.onEnd, [status, statusMessage, trailers]);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
             assert.isNotOk(statusMessage, "expected no message");
             if (withTrailers) {
