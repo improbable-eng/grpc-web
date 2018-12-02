@@ -298,8 +298,8 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     requestHeaders.set("content-type", "application/grpc-web+proto");
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
-    const middlewareHeaders = this.middleware.onStart(requestHeaders) || requestHeaders;
-    this.transport.start(middlewareHeaders);
+    this.middleware.onStart(requestHeaders);
+    this.transport.start(requestHeaders);
   }
 
   send(msg: TRequest) {
