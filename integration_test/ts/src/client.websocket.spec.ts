@@ -9,6 +9,7 @@ import { TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
 import { DEBUG } from "./util";
 import { headerTrailerCombos, runWithHttp1AndHttp2 } from "./testRpcCombinations";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
+import {TestMiddleware} from "./middleware";
 
 if (process.env.DISABLE_WEBSOCKET_TESTS) {
   console.log(`Skipping "clientWebsockets" suite as "DISABLE_WEBSOCKET_TESTS" is set`);
@@ -25,14 +26,21 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
           it("should make a client-streaming request", (done) => {
             let didGetOnHeaders = false;
             let didGetMessage = false;
+            let middleware: TestMiddleware;
+
             const client = grpc.client(TestService.PingStream, {
               debug: DEBUG,
               host: testHostUrl,
               transport: grpc.WebsocketTransport(),
+              middleware: (descriptor, props) => {
+                middleware = new TestMiddleware(descriptor, props);
+                return middleware;
+              }
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);
               didGetOnHeaders = true;
+              assert.deepEqual(middleware.calls.onHeaders, headers);
               if (withHeaders) {
                 assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
@@ -41,10 +49,12 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             client.onMessage((message: PingResponse) => {
               assert.ok(message instanceof PingResponse);
               assert.deepEqual(message.getValue(), "one,two");
+              assert.deepEqual(middleware.calls.onMessage, message);
               didGetMessage = true;
             });
             client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
+              assert.deepEqual(middleware.calls.onEnd, [status, statusMessage, trailers]);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.strictEqual(statusMessage, "", "expected no message");
               if (withTrailers) {
@@ -53,8 +63,10 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
               }
               assert.ok(didGetOnHeaders, "didGetOnHeaders");
               assert.ok(didGetMessage, "didGetMessage");
+              assert.deepEqual(middleware.calls.onFinishSend, true);
               done();
             });
+
             client.start();
 
             const pingOne = new PingRequest();
@@ -78,6 +90,8 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             let didGetOnHeaders = false;
             let counter = 1;
             let lastMessage = `helloworld:${counter}`;
+            let middleware: TestMiddleware;
+
             const ping = new PingRequest();
             ping.setSendHeaders(withHeaders);
             ping.setSendTrailers(withTrailers);
@@ -87,16 +101,22 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
               debug: DEBUG,
               host: testHostUrl,
               transport: grpc.WebsocketTransport(),
+              middleware: (descriptor, props) => {
+                middleware = new TestMiddleware(descriptor, props);
+                return middleware;
+              }
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);
               didGetOnHeaders = true;
+              assert.deepEqual(middleware.calls.onHeaders, headers);
               if (withHeaders) {
                 assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
                 assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
               }
             });
             client.onMessage((message: PingResponse) => {
+              assert.deepEqual(middleware.calls.onMessage, message);
               assert.ok(message instanceof PingResponse);
               assert.deepEqual(message.getValue(), lastMessage);
 
@@ -112,6 +132,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             });
             client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage);
+              assert.deepEqual(middleware.calls.onEnd, [status, statusMessage, trailers]);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.strictEqual(statusMessage, "", "expected no message");
               if (withTrailers) {
