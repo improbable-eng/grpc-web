@@ -12,6 +12,7 @@ import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
+import {TestMiddleware} from "./middleware";
 
 conditionallyRunTestSuite(SuiteEnum.client, () => {
   runWithHttp1AndHttp2(({testHostUrl, corsHostUrl, unavailableHost, emptyHost}) => {
@@ -86,6 +87,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
         it(`should make a unary request`, (done) => {
           let didGetOnHeaders = false;
           let didGetOnMessage = false;
+          let middleware: TestMiddleware;
 
           const ping = new PingRequest();
           ping.setValue("hello world");
@@ -96,10 +98,17 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
             debug: DEBUG,
             transport: transport,
             host: testHostUrl,
+            middleware: (descriptor, props) => {
+              middleware = new TestMiddleware(descriptor, props);
+              return middleware;
+            }
           });
           client.onHeaders((headers: grpc.Metadata) => {
             DEBUG && debug("headers", headers);
             didGetOnHeaders = true;
+
+            assert.deepEqual(middleware.calls.onHeaders, headers);
+
             if (withHeaders) {
               assert.deepEqual(headers.get("HeaderTestKey1"), ["ServerValue1"]);
               assert.deepEqual(headers.get("HeaderTestKey2"), ["ServerValue2"]);
@@ -107,6 +116,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
           });
           client.onMessage((message: PingResponse) => {
             didGetOnMessage = true;
+            assert.deepEqual(middleware.calls.onMessage, message);
             assert.ok(message instanceof PingResponse);
             assert.deepEqual(message.getValue(), "hello world");
             assert.deepEqual(message.getCounter(), 252);
@@ -114,6 +124,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
           client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage);
             assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
+            assert.strictEqual(middleware.calls.onEnd, [status, statusMessage, trailers]);
             assert.isNotOk(statusMessage, "expected no message");
             if (withTrailers) {
               assert.deepEqual(trailers.get("TrailerTestKey1"), ["ServerValue1"]);
