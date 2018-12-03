@@ -92,3 +92,4 @@ Refer to [grpc-web-node-http-transport](https://npmjs.com/package/grpc-web-node-
 * [Code Generation](docs/code-generation.md)
 * [Concepts](docs/concepts.md)
 * [Transport](docs/transport.md)
+* [Middleware](docs/middleware.md)
