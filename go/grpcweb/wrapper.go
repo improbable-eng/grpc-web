@@ -23,12 +23,13 @@ var (
 )
 
 type WrappedGrpcServer struct {
-	server              *grpc.Server
-	opts                *options
-	corsWrapper         *cors.Cors
-	originFunc          func(origin string) bool
-	enableWebsockets    bool
-	websocketOriginFunc func(req *http.Request) bool
+	server                      *grpc.Server
+	opts                        *options
+	corsWrapper                 *cors.Cors
+	originFunc                  func(origin string) bool
+	enableWebsockets            bool
+	websocketOriginFunc         func(req *http.Request) bool
+	websocketContextInterceptor func(ctx context.Context, header http.Header) context.Context
 }
 
 // WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that provides gRPC-Web Compatibility.
@@ -58,13 +59,16 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 			return parsedUrl.Host == req.Host
 		}
 	}
+	websocketContextInterceptor := opts.websocketContextInterceptor
+
 	return &WrappedGrpcServer{
-		server:              server,
-		opts:                opts,
-		corsWrapper:         corsWrapper,
-		originFunc:          opts.originFunc,
-		enableWebsockets:    opts.enableWebsockets,
-		websocketOriginFunc: websocketOriginFunc,
+		server:                      server,
+		opts:                        opts,
+		corsWrapper:                 corsWrapper,
+		originFunc:                  opts.originFunc,
+		enableWebsockets:            opts.enableWebsockets,
+		websocketOriginFunc:         websocketOriginFunc,
+		websocketContextInterceptor: websocketContextInterceptor,
 	}
 }
 
@@ -157,6 +161,10 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 	req.Body = wrappedReader
 	req.Method = http.MethodPost
 	req.Header = headers
+
+	if w.websocketContextInterceptor != nil {
+		ctx = w.websocketContextInterceptor(ctx, headers)
+	}
 
 	w.server.ServeHTTP(respWriter, hackIntoNormalGrpcRequest(req.WithContext(ctx)))
 }

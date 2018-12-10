@@ -3,7 +3,10 @@
 
 package grpcweb
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 var (
 	defaultOptions = &options{
@@ -19,6 +22,7 @@ type options struct {
 	originFunc                     func(origin string) bool
 	enableWebsockets               bool
 	websocketOriginFunc            func(req *http.Request) bool
+	websocketContextInterceptor    func(ctx context.Context, header http.Header) context.Context
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -97,5 +101,12 @@ func WithWebsockets(enableWebsockets bool) Option {
 func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) Option {
 	return func(o *options) {
 		o.websocketOriginFunc = websocketOriginFunc
+	}
+}
+
+// WithWebsocketContextInterceptor provides a hook to add values to context by using headers from websocket connection
+func WithWebsocketContextInterceptor(websocketContextInterceptor func(ctx context.Context, req http.Header) context.Context) Option {
+	return func(o *options) {
+		o.websocketContextInterceptor = websocketContextInterceptor
 	}
 }
