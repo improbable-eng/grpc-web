@@ -5,6 +5,8 @@ package grpcweb
 
 import (
 	"context"
+	"encoding/base64"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -21,6 +23,10 @@ var (
 		"U-A", // for gRPC-Web User Agent indicator.
 	}
 )
+
+const grpcContentType = "application/grpc"
+const grpcWebContentType = "application/grpc-web"
+const grpcWebTextContentType = "application/grpc-web-text"
 
 type WrappedGrpcServer struct {
 	server              *grpc.Server
@@ -105,10 +111,12 @@ func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 // layer to transform it to a standard gRPC request for the wrapped gRPC server and transforms the response to comply
 // with the gRPC-Web protocol.
 func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *http.Request) {
-	intReq := hackIntoNormalGrpcRequest(req)
-	intResp := newGrpcWebResponse(resp)
+
+	intReq, isTextFormat := hackIntoNormalGrpcRequest(req)
+	intResp := newGrpcWebResponse(resp, isTextFormat)
 	w.server.ServeHTTP(intResp, intReq)
 	intResp.finishRequest(req)
+	grpclog.Infof("WTF textFormat:%v finished", isTextFormat)
 }
 
 var websocketUpgrader = websocket.Upgrader{
@@ -158,13 +166,19 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 	req.Method = http.MethodPost
 	req.Header = headers
 
-	w.server.ServeHTTP(respWriter, hackIntoNormalGrpcRequest(req.WithContext(ctx)))
+	// TODO: pass isTextFormat into newWebSocketResponseWriter and figure out how that works
+	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
+	if isTextFormat {
+		grpclog.Errorf("web socket text format requests not yet supported")
+		return
+	}
+	w.server.ServeHTTP(respWriter, interceptedRequest)
 }
 
 // IsGrpcWebRequest determines if a request is a gRPC-Web request by checking that the "content-type" is
 // "application/grpc-web" and that the method is POST.
 func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool {
-	return req.Method == http.MethodPost && strings.HasPrefix(req.Header.Get("content-type"), "application/grpc-web")
+	return req.Method == http.MethodPost && strings.HasPrefix(req.Header.Get("content-type"), grpcWebContentType)
 }
 
 // IsAcceptableGrpcCorsRequest determines if a request is a CORS pre-flight request for a gRPC-Web request and that this
@@ -193,11 +207,49 @@ func (w *WrappedGrpcServer) isRequestForRegisteredEndpoint(req *http.Request) bo
 	return false
 }
 
-func hackIntoNormalGrpcRequest(req *http.Request) *http.Request {
+// Returns a reader that will read base64 encoded bytes from r, decode them, and hand them back.
+// This starts a goroutine to avoid excessive buffering.
+func decodeBase64Reader(r io.ReadCloser) io.ReadCloser {
+	pipeReader, pipeWriter := io.Pipe()
+	decoder := base64.NewDecoder(base64.StdEncoding, r)
+
+	go func() {
+		// read from decoder, put data into the pipe; always close the original reader
+		_, err := io.Copy(pipeWriter, decoder)
+		closeErr := r.Close()
+		if err != nil {
+			// error occurred: return it on the reader side
+			pipeReader.CloseWithError(err)
+		}
+		if closeErr != nil {
+			pipeReader.CloseWithError(closeErr)
+		}
+
+		// decoded everything: close the pipe
+		err = pipeWriter.Close()
+		if err != nil {
+			pipeReader.CloseWithError(err)
+		}
+	}()
+
+	return pipeReader
+}
+
+func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	// Hack, this should be a shallow copy, but let's see if this works
 	req.ProtoMajor = 2
 	req.ProtoMinor = 0
+
 	contentType := req.Header.Get("content-type")
-	req.Header.Set("content-type", strings.Replace(contentType, "application/grpc-web", "application/grpc", 1))
-	return req
+	incomingContentType := grpcWebContentType
+	isTextFormat := strings.HasPrefix(contentType, grpcWebTextContentType)
+	if isTextFormat {
+		// body is base64-encoded: decode it
+		req.Body = decodeBase64Reader(req.Body)
+		incomingContentType = grpcWebTextContentType
+	}
+	req.Header.Set("content-type", strings.Replace(contentType, incomingContentType, grpcContentType, 1))
+	grpclog.Infof("WTF in:%s search:%s out:%s", contentType, incomingContentType, req.Header.Get("content-type"))
+
+	return req, isTextFormat
 }

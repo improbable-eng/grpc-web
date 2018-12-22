@@ -5,11 +5,14 @@ package grpcweb
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
+	"io"
 	"net/http"
 	"strings"
 
 	"golang.org/x/net/http2"
+	"google.golang.org/grpc/grpclog"
 )
 
 // grpcWebResponse implements http.ResponseWriter.
@@ -18,10 +21,54 @@ type grpcWebResponse struct {
 	wroteBody    bool
 	headers      http.Header
 	wrapped      http.ResponseWriter
+
+	// Data in the body of the response must be written with writer
+	writer io.Writer
+	// If not nil, must be closed at the end of the response
+	closer io.Closer
+	// The output content type: will replace the base application/grpc with this
+	contentType string
 }
 
-func newGrpcWebResponse(resp http.ResponseWriter) *grpcWebResponse {
-	return &grpcWebResponse{headers: make(http.Header), wrapped: resp}
+func newGrpcWebResponse(resp http.ResponseWriter, isTextFormat bool) *grpcWebResponse {
+	g := &grpcWebResponse{headers: make(http.Header), wrapped: resp}
+	g.writer = resp
+	g.contentType = grpcWebContentType
+	if isTextFormat {
+		w := encodeBase64Writer(resp)
+		g.writer = w
+		g.closer = w
+		g.contentType = grpcWebTextContentType
+	}
+	return g
+}
+
+// Returns a writer that will write base64 encoded bytes to w.
+// This starts a goroutine to avoid excessive buffering.
+func encodeBase64Writer(w io.Writer) io.WriteCloser {
+	pipeReader, pipeWriter := io.Pipe()
+	encoder := base64.NewEncoder(base64.StdEncoding, w)
+
+	go func() {
+		// read from the pipe and copy it to the encoder which writes to w; always close the original writer
+		_, err := io.Copy(encoder, pipeReader)
+		encoderCloseErr := encoder.Close()
+		if err != nil {
+			// error occurred: return it on the reader side
+			pipeWriter.CloseWithError(err)
+		}
+		if encoderCloseErr != nil {
+			pipeWriter.CloseWithError(encoderCloseErr)
+		}
+
+		// close the pipe
+		err = pipeReader.Close()
+		if err != nil {
+			pipeWriter.CloseWithError(err)
+		}
+	}()
+
+	return pipeWriter
 }
 
 func (w *grpcWebResponse) Header() http.Header {
@@ -30,7 +77,7 @@ func (w *grpcWebResponse) Header() http.Header {
 
 func (w *grpcWebResponse) Write(b []byte) (int, error) {
 	w.wroteBody = true
-	return w.wrapped.Write(b)
+	return w.writer.Write(b)
 }
 
 func (w *grpcWebResponse) WriteHeader(code int) {
@@ -59,6 +106,10 @@ func (w *grpcWebResponse) copyJustHeadersToWrapped() {
 		if strings.ToLower(k) == "trailer" {
 			continue
 		}
+		// Convert the content-type to the appropriate kind
+		if strings.ToLower(k) == "content-type" {
+			vv[0] = strings.Replace(vv[0], grpcContentType, w.contentType, 1)
+		}
 		for _, v := range vv {
 			wrappedHeader.Add(k, v)
 		}
@@ -70,6 +121,12 @@ func (w *grpcWebResponse) finishRequest(req *http.Request) {
 		w.copyTrailersToPayload()
 	} else {
 		w.copyTrailersAndHeadersToWrapped()
+	}
+	if w.closer != nil {
+		err := w.closer.Close()
+		if err != nil {
+			grpclog.Errorf("grpcWebResponse: Unexpected error finishing request: %v", err)
+		}
 	}
 }
 
@@ -109,8 +166,8 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 	trailers.Write(trailerBuffer)
 	trailerGrpcDataHeader := []byte{1 << 7, 0, 0, 0, 0} // MSB=1 indicates this is a trailer data frame.
 	binary.BigEndian.PutUint32(trailerGrpcDataHeader[1:5], uint32(trailerBuffer.Len()))
-	w.wrapped.Write(trailerGrpcDataHeader)
-	w.wrapped.Write(trailerBuffer.Bytes())
+	w.writer.Write(trailerGrpcDataHeader)
+	w.writer.Write(trailerBuffer.Bytes())
 	w.wrapped.(http.Flusher).Flush()
 }
 
