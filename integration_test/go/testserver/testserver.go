@@ -147,7 +147,7 @@ func (s *testSrv) Echo(ctx context.Context, text *testproto.TextMessage) (*testp
 func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*google_protobuf.Empty, error) {
 	if ping.FailureType == testproto.PingRequest_DROP {
 		t := grpc.ServerTransportStreamFromContext(ctx)
-		t.ServerTransport().Close()
+		t.(io.Closer).Close()
 		return nil, grpc.Errorf(codes.Unavailable, "You got closed. You probably won't see this error")
 
 	}
@@ -197,9 +197,8 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 		stream.SetTrailer(metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	}
 	if ping.FailureType == testproto.PingRequest_DROP {
-		t, _ := transport.StreamFromContext(stream.Context())
-		t.ServerTransport().Close()
-		return nil
+		t := grpc.ServerTransportStreamFromContext(stream.Context())
+		return t.(io.Closer).Close()
 	}
 
 	var channel chan bool
@@ -232,12 +231,12 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 		}
 		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
 
-		// Flush the stream
-		lowLevelServerStream := grpc.ServerTransportStreamFromContext(stream.Context())
-		zeroBytes := make([]byte, 0)
-		lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, zeroBytes, &transport.Options{
-			Delay: false,
-		})
+		// TODO: Find a way to flush the low level stream; Maybe using reflect?
+		// lowLevelServerStream := grpc.ServerTransportStreamFromContext(stream.Context())
+		// zeroBytes := make([]byte, 0)
+		// lowLevelServerStream.Write(lowLevelServerStream, zeroBytes, zeroBytes, &transport.Options{
+		// 	Delay: false,
+		// })
 	}
 	return nil
 }
