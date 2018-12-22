@@ -1,4 +1,4 @@
-# grpc-web-client
+# @improbable-eng/grpc-web
 > Library for making gRPC-Web requests from a browser
 
 This library is intended for both JavaScript and TypeScript usage from a web browser or NodeJS (see [Usage with NodeJS](#usage-with-nodejs)).
@@ -11,9 +11,9 @@ Please see the full [gRPC-Web README](https://github.com/improbable-eng/grpc-web
 
 ## Installation
 
-`grpc-web-client` has peer dependencies of `google-protobuf` and `@types/google-protobuf`.
+`@improbable-eng/grpc-web` has peer dependencies of `google-protobuf` and `@types/google-protobuf`.
 
-`npm install google-protobuf @types/google-protobuf grpc-web-client --save`
+`npm install google-protobuf @types/google-protobuf @improbable-eng/grpc-web --save`
 
 ## Example Project
 
@@ -25,7 +25,7 @@ There is an [example project available here](https://github.com/improbable-eng/g
 * Make a request using [`unary()`](docs/unary.md), [`invoke()`](docs/invoke.md) or [`client()`](docs/client.md)
 
 ```javascript
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 
 // Import code-generated data structures.
 import {BookService} from "./generated/proto/examplecom/library/book_service_pb_service";
@@ -82,7 +82,7 @@ rpc ListenForBooks(stream QueryBooksRequest) returns (stream Book) {}
 ```
 
 ## Usage with NodeJS
-Refer to [grpc-web-node-http-transport](https://npmjs.com/package/grpc-web-node-http-transport).
+Refer to [@improbable-eng/grpc-web-node-http-transport](https://npmjs.com/package/@improbable-eng/grpc-web-node-http-transport).
 
 ## All Docs
 

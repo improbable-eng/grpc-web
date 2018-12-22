@@ -56,7 +56,7 @@ A gRPC request goes through the following stages:
 
 ### Transport Limitations
 
-Sending multiple messages and indicating that the client has finished sending are complicated by the nature of some of the transports used by `grpc-web-client`:
+Sending multiple messages and indicating that the client has finished sending are complicated by the nature of some of the transports used by `@improbable-eng/grpc-web`.
 
 Most browser networking methods do not allow control over the sending of the body of the request, meaning that sending a single request message forces the finishing of sending, limiting these transports to unary or server-streaming methods only.
 
