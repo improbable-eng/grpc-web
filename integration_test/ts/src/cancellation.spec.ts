@@ -3,7 +3,7 @@ import {
   grpc,
 } from "grpc-web-client";
 
-import {debug} from "../../../client/grpc-web-client/src/debug";
+import {debug} from "../../../client/grpc-web/src/debug";
 import {assert} from "chai";
 
 // Generated Test Classes

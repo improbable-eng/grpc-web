@@ -1,5 +1,5 @@
 import {assert} from "chai";
-import detach from "../../../client/grpc-web-client/src/detach";
+import detach from "../../../client/grpc-web/src/detach";
 import {UncaughtExceptionListener} from "./util";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
