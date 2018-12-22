@@ -18,7 +18,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/transport"
 )
 
 var (
@@ -147,7 +146,7 @@ func (s *testSrv) Echo(ctx context.Context, text *testproto.TextMessage) (*testp
 
 func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*google_protobuf.Empty, error) {
 	if ping.FailureType == testproto.PingRequest_DROP {
-		t, _ := transport.StreamFromContext(ctx)
+		t := grpc.ServerTransportStreamFromContext(ctx)
 		t.ServerTransport().Close()
 		return nil, grpc.Errorf(codes.Unavailable, "You got closed. You probably won't see this error")
 
@@ -159,9 +158,9 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 		grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	}
 	if ping.FailureType == testproto.PingRequest_CODE {
-	    return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
+		return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
 	} else {
-	    return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "💣")
+		return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "💣")
 	}
 }
 
@@ -234,10 +233,7 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
 
 		// Flush the stream
-		lowLevelServerStream, ok := transport.StreamFromContext(stream.Context())
-		if !ok {
-			return grpc.Errorf(codes.Internal, "lowLevelServerStream does not exist in context")
-		}
+		lowLevelServerStream := grpc.ServerTransportStreamFromContext(stream.Context())
 		zeroBytes := make([]byte, 0)
 		lowLevelServerStream.ServerTransport().Write(lowLevelServerStream, zeroBytes, zeroBytes, &transport.Options{
 			Delay: false,

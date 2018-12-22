@@ -254,8 +254,11 @@ func (s *GrpcWebWrapperTestSuite) TestPingList_NormalGrpcWorks() {
 	}
 	recvHeaders, err := pingListClient.Header()
 	require.NoError(s.T(), err, "no error during execution")
+	assert.Equal(s.T(), len(expectedHeaders)+2 /*trailers content-type*/, len(recvHeaders), "expected headers must be received")
+	assert.Equal(s.T(), recvHeaders.Get("Content-Type"), []string{"application/grpc"})
+	assert.Contains(s.T(), recvHeaders, "trailer")
+
 	recvTrailers := pingListClient.Trailer()
-	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 
@@ -274,8 +277,11 @@ func (s *GrpcWebWrapperTestSuite) TestPingStream_NormalGrpcWorks() {
 	assert.Equal(s.T(), "one,two", resp.GetValue(), "expected concatenated value must be received")
 	recvHeaders, err := bidiClient.Header()
 	require.NoError(s.T(), err, "no error during execution")
+	assert.Equal(s.T(), len(expectedHeaders)+2 /*trailers content-type*/, len(recvHeaders), "expected headers must be received")
+	assert.Equal(s.T(), recvHeaders.Get("Content-Type"), []string{"application/grpc"})
+	assert.Contains(s.T(), recvHeaders, "trailer")
+
 	recvTrailers := bidiClient.Trailer()
-	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 
