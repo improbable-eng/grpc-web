@@ -111,12 +111,10 @@ func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 // layer to transform it to a standard gRPC request for the wrapped gRPC server and transforms the response to comply
 // with the gRPC-Web protocol.
 func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *http.Request) {
-
 	intReq, isTextFormat := hackIntoNormalGrpcRequest(req)
 	intResp := newGrpcWebResponse(resp, isTextFormat)
 	w.server.ServeHTTP(intResp, intReq)
 	intResp.finishRequest(req)
-	grpclog.Infof("WTF textFormat:%v finished", isTextFormat)
 }
 
 var websocketUpgrader = websocket.Upgrader{
@@ -249,7 +247,6 @@ func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 		incomingContentType = grpcWebTextContentType
 	}
 	req.Header.Set("content-type", strings.Replace(contentType, incomingContentType, grpcContentType, 1))
-	grpclog.Infof("WTF in:%s search:%s out:%s", contentType, incomingContentType, req.Header.Get("content-type"))
 
 	return req, isTextFormat
 }
