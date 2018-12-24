@@ -43,32 +43,64 @@ func newGrpcWebResponse(resp http.ResponseWriter, isTextFormat bool) *grpcWebRes
 	return g
 }
 
+// The standard io.PipeWriter returns immediately after calling Close. This waits for the reader
+// to completely finish processing everything, and returns any errors that might occur. This
+// avoids races when the reader needs to flush something. In this case: we need the base64 writer
+// to flush its internal buffer before we attempt to use the underlying writer.
+type blockingPipeWriter struct {
+	w    *io.PipeWriter
+	done chan error
+}
+
+func (b *blockingPipeWriter) Write(data []byte) (int, error) {
+	return b.w.Write(data)
+}
+func (b *blockingPipeWriter) Close() error {
+	err := b.w.Close()
+	if err != nil {
+		return err
+	}
+	// wait for the reading end to finish, returning any error it returns
+	return <-b.done
+}
+
 // Returns a writer that will write base64 encoded bytes to w.
 // This starts a goroutine to avoid excessive buffering.
+// This is perhaps overly clever: It would be simpler to buffer the entire thing and encode
+// it in one block.
 func encodeBase64Writer(w io.Writer) io.WriteCloser {
 	pipeReader, pipeWriter := io.Pipe()
 	encoder := base64.NewEncoder(base64.StdEncoding, w)
+
+	blockingWriter := &blockingPipeWriter{pipeWriter, make(chan error)}
 
 	go func() {
 		// read from the pipe and copy it to the encoder which writes to w; always close the original writer
 		_, err := io.Copy(encoder, pipeReader)
 		encoderCloseErr := encoder.Close()
 		if err != nil {
-			// error occurred: return it on the reader side
-			pipeWriter.CloseWithError(err)
+			// error occurred: return it on the writing side
+			blockingWriter.done <- err
+			pipeReader.CloseWithError(err)
+			close(blockingWriter.done)
+			return
 		}
 		if encoderCloseErr != nil {
-			pipeWriter.CloseWithError(encoderCloseErr)
+			blockingWriter.done <- encoderCloseErr
+			pipeReader.CloseWithError(encoderCloseErr)
+			close(blockingWriter.done)
+			return
 		}
 
-		// close the pipe
+		// close the pipe, signal the blockingWriter we are done
 		err = pipeReader.Close()
 		if err != nil {
-			pipeWriter.CloseWithError(err)
+			blockingWriter.done <- err
 		}
+		close(blockingWriter.done)
 	}()
 
-	return pipeWriter
+	return blockingWriter
 }
 
 func (w *grpcWebResponse) Header() http.Header {
