@@ -11,6 +11,7 @@ import {ProtobufMessage} from "./message";
 export interface RpcOptions {
   transport?: TransportFactory;
   debug?: boolean;
+  format?: "text" | "binary"
 }
 
 export interface ClientRpcOptions extends RpcOptions {
@@ -261,7 +262,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.started = true;
 
     const requestHeaders = new Metadata(metadata ? metadata : {});
-    requestHeaders.set("content-type", "application/grpc-web+proto");
+
+    if (this.props.format === "text") {
+      requestHeaders.set("content-type", "application/grpc-web-text");
+      requestHeaders.set("accept", "application/grpc-web-text");
+    } else {
+        requestHeaders.set("content-type", "application/grpc-web+proto");
+    }
     requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
     this.transport.start(requestHeaders);
