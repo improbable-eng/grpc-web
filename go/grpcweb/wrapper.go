@@ -233,6 +233,18 @@ func decodeBase64Reader(r io.ReadCloser) io.ReadCloser {
 	return pipeReader
 }
 
+type readerCloser struct {
+	reader io.Reader
+	closer io.Closer
+}
+
+func (r *readerCloser) Read(dest []byte) (int, error) {
+	return r.reader.Read(dest)
+}
+func (r *readerCloser) Close() error {
+	return r.closer.Close()
+}
+
 func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	// Hack, this should be a shallow copy, but let's see if this works
 	req.ProtoMajor = 2
@@ -242,8 +254,9 @@ func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	incomingContentType := grpcWebContentType
 	isTextFormat := strings.HasPrefix(contentType, grpcWebTextContentType)
 	if isTextFormat {
-		// body is base64-encoded: decode it
-		req.Body = decodeBase64Reader(req.Body)
+		// body is base64-encoded: decode it; Wrap it in readerCloser so Body is still closed
+		decoder := base64.NewDecoder(base64.StdEncoding, req.Body)
+		req.Body = &readerCloser{decoder, req.Body}
 		incomingContentType = grpcWebTextContentType
 	}
 	req.Header.Set("content-type", strings.Replace(contentType, incomingContentType, grpcContentType, 1))
