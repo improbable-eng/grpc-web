@@ -205,34 +205,7 @@ func (w *WrappedGrpcServer) isRequestForRegisteredEndpoint(req *http.Request) bo
 	return false
 }
 
-// Returns a reader that will read base64 encoded bytes from r, decode them, and hand them back.
-// This starts a goroutine to avoid excessive buffering.
-func decodeBase64Reader(r io.ReadCloser) io.ReadCloser {
-	pipeReader, pipeWriter := io.Pipe()
-	decoder := base64.NewDecoder(base64.StdEncoding, r)
-
-	go func() {
-		// read from decoder, put data into the pipe; always close the original reader
-		_, err := io.Copy(pipeWriter, decoder)
-		closeErr := r.Close()
-		if err != nil {
-			// error occurred: return it on the reader side
-			pipeReader.CloseWithError(err)
-		}
-		if closeErr != nil {
-			pipeReader.CloseWithError(closeErr)
-		}
-
-		// decoded everything: close the pipe
-		err = pipeWriter.Close()
-		if err != nil {
-			pipeReader.CloseWithError(err)
-		}
-	}()
-
-	return pipeReader
-}
-
+// readerCloser combines an io.Reader and an io.Closer into an io.ReadCloser.
 type readerCloser struct {
 	reader io.Reader
 	closer io.Closer
@@ -256,7 +229,7 @@ func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	if isTextFormat {
 		// body is base64-encoded: decode it; Wrap it in readerCloser so Body is still closed
 		decoder := base64.NewDecoder(base64.StdEncoding, req.Body)
-		req.Body = &readerCloser{decoder, req.Body}
+		req.Body = &readerCloser{reader: decoder, closer: req.Body}
 		incomingContentType = grpcWebTextContentType
 	}
 	req.Header.Set("content-type", strings.Replace(contentType, incomingContentType, grpcContentType, 1))

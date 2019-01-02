@@ -22,18 +22,21 @@ type grpcWebResponse struct {
 	headers      http.Header
 	wrapped      http.ResponseWriter
 
-	// Data in the body of the response must be written with writer
+	// Data in the body of the response must be written to writer.
 	writer io.Writer
-	// If not nil, must be closed at the end of the response
+	// If not nil, must be closed at the end of the response.
 	closer io.Closer
-	// The output content type: will replace the base application/grpc with this
+	// The standard "application/grpc" content-type will be replaced with this.
 	contentType string
 }
 
 func newGrpcWebResponse(resp http.ResponseWriter, isTextFormat bool) *grpcWebResponse {
-	g := &grpcWebResponse{headers: make(http.Header), wrapped: resp}
-	g.writer = resp
-	g.contentType = grpcWebContentType
+	g := &grpcWebResponse{
+		headers:     make(http.Header),
+		wrapped:     resp,
+		writer:      resp,
+		contentType: grpcWebContentType,
+	}
 	if isTextFormat {
 		encoder := base64.NewEncoder(base64.StdEncoding, resp)
 		g.writer = encoder
