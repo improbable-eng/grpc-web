@@ -134,7 +134,7 @@ func (s *GrpcWebWrapperTestSuite) makeRequest(
 
 func decodeMultipleBase64Chunks(b []byte) ([]byte, error) {
 	// grpc-web allows multiple base64 chunks: the implementation may send base64-encoded
-	// "chunks" with potential padding whenever the runtime needs to flush a byte buffer"
+	// "chunks" with potential padding whenever the runtime needs to flush a byte buffer.
 	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md
 	output := make([]byte, base64.StdEncoding.DecodedLen(len(b)))
 	outputEnd := 0

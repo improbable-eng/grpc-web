@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"golang.org/x/net/http2"
+	"google.golang.org/grpc/grpclog"
 )
 
 // grpcWebResponse implements http.ResponseWriter.
@@ -186,10 +187,13 @@ func (w *base64ResponseWriter) WriteHeader(code int) {
 }
 
 func (w *base64ResponseWriter) Flush() {
-	// Flush the base64 encoder by closing it; unfortunately we must ignore the error
-	// grpc-web allows the body to contain multiple padded base64-parts:
+	// Flush the base64 encoder by closing it. Grpc-web permits multiple padded base64 parts:
 	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md
-	w.encoder.Close()
+	err := w.encoder.Close()
+	if err != nil {
+		// Must ignore this error since Flush() is not defined as returning an error
+		grpclog.Errorf("ignoring error Flushing base64 encoder: %v", err)
+	}
 	w.newEncoder()
 	w.wrapped.(http.Flusher).Flush()
 }
