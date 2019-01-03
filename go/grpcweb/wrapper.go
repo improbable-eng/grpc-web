@@ -24,6 +24,7 @@ var (
 	}
 )
 
+// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
 const grpcContentType = "application/grpc"
 const grpcWebContentType = "application/grpc-web"
 const grpcWebTextContentType = "application/grpc-web-text"
@@ -164,7 +165,6 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 	req.Method = http.MethodPost
 	req.Header = headers
 
-	// TODO: pass isTextFormat into newWebSocketResponseWriter and figure out how that works
 	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
 	if isTextFormat {
 		grpclog.Errorf("web socket text format requests not yet supported")
