@@ -132,6 +132,37 @@ func (s *GrpcWebWrapperTestSuite) makeRequest(
 	return resp, err
 }
 
+func decodeMultipleBase64Chunks(b []byte) ([]byte, error) {
+	// grpc-web allows multiple base64 chunks: the implementation may send base64-encoded
+	// "chunks" with potential padding whenever the runtime needs to flush a byte buffer"
+	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md
+	output := make([]byte, base64.StdEncoding.DecodedLen(len(b)))
+	outputEnd := 0
+
+	for inputEnd := 0; inputEnd < len(b); {
+		chunk := b[inputEnd:]
+		paddingIndex := bytes.IndexByte(chunk, '=')
+		if paddingIndex != -1 {
+			// find the consecutive =
+			for {
+				paddingIndex += 1
+				if paddingIndex >= len(chunk) || chunk[paddingIndex] != '=' {
+					break
+				}
+			}
+			chunk = chunk[:paddingIndex]
+		}
+		inputEnd += len(chunk)
+
+		n, err := base64.StdEncoding.Decode(output[outputEnd:], chunk)
+		if err != nil {
+			return nil, err
+		}
+		outputEnd += n
+	}
+	return output[:outputEnd], nil
+}
+
 func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(
 	method string, reqHeaders http.Header, requestMessages [][]byte, isText bool,
 ) (headers http.Header, trailers grpcweb.Trailer, responseMessages [][]byte, err error) {
@@ -153,12 +184,10 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(
 	}
 
 	if isText {
-		out := make([]byte, base64.StdEncoding.DecodedLen(len(contents)))
-		n, err := base64.StdEncoding.Decode(out, contents)
+		contents, err = decodeMultipleBase64Chunks(contents)
 		if err != nil {
 			return nil, grpcweb.Trailer{}, nil, err
 		}
-		contents = out[:n]
 	}
 
 	reader := bytes.NewReader(contents)

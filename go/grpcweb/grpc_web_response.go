@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"golang.org/x/net/http2"
-	"google.golang.org/grpc/grpclog"
 )
 
 // grpcWebResponse implements http.ResponseWriter.
@@ -20,12 +19,9 @@ type grpcWebResponse struct {
 	wroteHeaders bool
 	wroteBody    bool
 	headers      http.Header
-	wrapped      http.ResponseWriter
+	// Flush must be called on this writer before returning to ensure encoded buffer is flushed
+	wrapped http.ResponseWriter
 
-	// Data in the body of the response must be written to writer.
-	writer io.Writer
-	// If not nil, must be closed at the end of the response.
-	closer io.Closer
 	// The standard "application/grpc" content-type will be replaced with this.
 	contentType string
 }
@@ -34,13 +30,10 @@ func newGrpcWebResponse(resp http.ResponseWriter, isTextFormat bool) *grpcWebRes
 	g := &grpcWebResponse{
 		headers:     make(http.Header),
 		wrapped:     resp,
-		writer:      resp,
 		contentType: grpcWebContentType,
 	}
 	if isTextFormat {
-		encoder := base64.NewEncoder(base64.StdEncoding, resp)
-		g.writer = encoder
-		g.closer = encoder
+		g.wrapped = newBase64ResponseWriter(g.wrapped)
 		g.contentType = grpcWebTextContentType
 	}
 	return g
@@ -52,7 +45,7 @@ func (w *grpcWebResponse) Header() http.Header {
 
 func (w *grpcWebResponse) Write(b []byte) (int, error) {
 	w.wroteBody = true
-	return w.writer.Write(b)
+	return w.wrapped.Write(b)
 }
 
 func (w *grpcWebResponse) WriteHeader(code int) {
@@ -97,12 +90,6 @@ func (w *grpcWebResponse) finishRequest(req *http.Request) {
 	} else {
 		w.copyTrailersAndHeadersToWrapped()
 	}
-	if w.closer != nil {
-		err := w.closer.Close()
-		if err != nil {
-			grpclog.Errorf("grpcWebResponse: Unexpected error finishing request: %v", err)
-		}
-	}
 }
 
 func (w *grpcWebResponse) copyTrailersAndHeadersToWrapped() {
@@ -141,8 +128,8 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 	trailers.Write(trailerBuffer)
 	trailerGrpcDataHeader := []byte{1 << 7, 0, 0, 0, 0} // MSB=1 indicates this is a trailer data frame.
 	binary.BigEndian.PutUint32(trailerGrpcDataHeader[1:5], uint32(trailerBuffer.Len()))
-	w.writer.Write(trailerGrpcDataHeader)
-	w.writer.Write(trailerBuffer.Bytes())
+	w.wrapped.Write(trailerGrpcDataHeader)
+	w.wrapped.Write(trailerBuffer.Bytes())
 	w.wrapped.(http.Flusher).Flush()
 }
 
@@ -167,4 +154,46 @@ func (w *grpcWebResponse) extractTrailerHeaders() trailer {
 		}
 	}
 	return trailerHeaders
+}
+
+// An http.ResponseWriter wrapper that writes base64-encoded payloads. You must call Flush()
+// on this writer to ensure the base64-encoder flushes its last state.
+type base64ResponseWriter struct {
+	wrapped http.ResponseWriter
+	encoder io.WriteCloser
+}
+
+func newBase64ResponseWriter(wrapped http.ResponseWriter) http.ResponseWriter {
+	w := &base64ResponseWriter{wrapped: wrapped}
+	w.newEncoder()
+	return w
+}
+
+func (w *base64ResponseWriter) newEncoder() {
+	w.encoder = base64.NewEncoder(base64.StdEncoding, w.wrapped)
+}
+
+func (w *base64ResponseWriter) Header() http.Header {
+	return w.wrapped.Header()
+}
+
+func (w *base64ResponseWriter) Write(b []byte) (int, error) {
+	return w.encoder.Write(b)
+}
+
+func (w *base64ResponseWriter) WriteHeader(code int) {
+	w.wrapped.WriteHeader(code)
+}
+
+func (w *base64ResponseWriter) Flush() {
+	// Flush the base64 encoder by closing it; unfortunately we must ignore the error
+	// grpc-web allows the body to contain multiple padded base64-parts:
+	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md
+	w.encoder.Close()
+	w.newEncoder()
+	w.wrapped.(http.Flusher).Flush()
+}
+
+func (w *base64ResponseWriter) CloseNotify() <-chan bool {
+	return w.wrapped.(http.CloseNotifier).CloseNotify()
 }
