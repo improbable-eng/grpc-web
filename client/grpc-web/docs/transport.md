@@ -1,17 +1,17 @@
 # Transports
 
-`grpc-web-client` is a library for JavaScript-based clients to communicate with servers which can talk the `grpc-web` protocol.
+`@improbable-eng/grpc-web` is a library for JavaScript-based clients to communicate with servers which can talk the `grpc-web` protocol.
 
-To enable this communication, `grpc-web-client` uses Transports provides built-in transports which abstract the underlying browser primitives.
+To enable this communication, `@improbable-eng/grpc-web` uses Transports provides built-in transports which abstract the underlying browser primitives.
 
 ## Specifying Transports
-You can tell `grpc-web-client` which Transport to use either on a per-request basis, or by configuring the Default Transport in your application.
+You can tell `@improbable-eng/grpc-web` which Transport to use either on a per-request basis, or by configuring the Default Transport in your application.
 
 ### Specifying the Default Transport
-The Default Transport is used for every call unless a specific transport has been provided when the call is made. `gprc-web-client` will default to using the `CrossBrowserHttpTransport`, however you can re-configure this:
+The Default Transport is used for every call unless a specific transport has been provided when the call is made. `@improbable-eng/grpc-web` will default to using the `CrossBrowserHttpTransport`, however you can re-configure this:
 
 ```typescript
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 
 // 'myTransport' is configured to send Browser cookies along with cross-origin requests. 
 const myTransport = grpc.CrossBrowserHttpTransport({ withCredentials: true });
@@ -21,10 +21,10 @@ grpc.setDefaultTransport(myTransport);
 ``` 
 
 ### Specifying the Transport on a per-request basis
-As mentioned above, `grpc-web-client` will use the Default Transport if none is specified with the call; you can override this behavior by setting the optional `transport` property when calling `unary()`, `invoke()` or `client()`:
+As mentioned above, `@improbable-eng/grpc-web` will use the Default Transport if none is specified with the call; you can override this behavior by setting the optional `transport` property when calling `unary()`, `invoke()` or `client()`:
 
 ```typescript
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 
 // 'myTransport' is configured to send Browser cookies along with cross-origin requests.
 const myTransport = grpc.CrossBrowserHttpTransport({ withCredentials: true });
@@ -36,13 +36,12 @@ const client = grpc.client(BookService.QueryBooks, {
  
 
 ## Built-in Transports
-`grpc-web-client` ships with two categories of Transports: [HTTP/2-based](#http/2-based-transports) and [socket-based](#socket-based-transports):
+`@improbable-eng/grpc-web` ships with two categories of Transports: [HTTP/2-based](#http/2-based-transports) and [socket-based](#socket-based-transports):
 
 ### HTTP/2-based Transports
-It's great that we have more than one choice when it comes to Web Browsers, however the inconsistencies and limited feature-sets can be frustrating. Whilst `grpc-web-client` looks to abstract as much of this as possible with the `CrossBrowserHttpTransport` there are some caveats all application developers who make use of `grpc-web-client`'s HTTP/2 based transports should be aware of:
+It's great that we have more than one choice when it comes to Web Browsers, however the inconsistencies and limited feature-sets can be frustrating. Whilst `@improbable-eng/grpc-web` looks to abstract as much of this as possible with the `CrossBrowserHttpTransport` there are some caveats all application developers who make use of `@improbable-eng/grpc-web`'s HTTP/2 based transports should be aware of:
 
-* gRPC offers four categories of request: unary, server-streaming, client-streaming and bi-directional. Due to limitations of the Browser HTTP primitives (`fetch` and `XMLHttpRequest`), the HTTP/2-based transports provided by `grpc-web-client
-   can only support unary and server-streaming requests. Attempts to invoke either client-streaming or bi-directional endpoints will result in failure.
+* gRPC offers four categories of request: unary, server-streaming, client-streaming and bi-directional. Due to limitations of the Browser HTTP primitives (`fetch` and `XMLHttpRequest`), the HTTP/2-based transports provided by `@improbable-eng/grpc-web` can only support unary and server-streaming requests. Attempts to invoke either client-streaming or bi-directional endpoints will result in failure.
 * Older versions of Safari (<7) and all versions of Internet Explorer do not provide an efficient way to stream data from a server; this will result in the entire response of a gRPC client-stream being buffered into memory which can cause performance and stability issues for end-users. 
 * Microsoft Edge does not propagate the cancellation of requests to the server; which can result in memory/process leaks on your server. Track this issue for status.
 

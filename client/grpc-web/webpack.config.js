@@ -1,5 +1,4 @@
 const path = require('path');
-const packageJson = require("./package.json");
 
 const LIB_BASE_CONFIG = {
   entry: "./src/index.ts",
@@ -20,7 +19,7 @@ module.exports = [{
     name: 'lib-commonjs',
     ...LIB_BASE_CONFIG,
     output: {
-      filename: `${packageJson.name}.js`,
+      filename: `grpc-web-client.js`,
       path: DIST_DIR,
       libraryTarget: 'commonjs',
     }
@@ -29,7 +28,7 @@ module.exports = [{
     name: 'lib-umd',
     ...LIB_BASE_CONFIG,
     output: {
-      filename: `${packageJson.name}.umd.js`,
+      filename: `grpc-web-client.umd.js`,
       path: DIST_DIR,
       libraryTarget: 'umd',
     }

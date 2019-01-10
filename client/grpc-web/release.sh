@@ -26,7 +26,7 @@ then
     npm run lib:build
 
     echo "Staring npm publish"
-    npm publish --tag $TAG
+    npm publish --access public --tag $TAG
 
     echo "Creating Github release branch release/v${VERSION}"
     git checkout -b release/v${VERSION}
