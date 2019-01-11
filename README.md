@@ -20,7 +20,7 @@ Components of the stack are based on Golang and TypeScript:
  * [`grpcweb`](./go/grpcweb) - a Go package that wraps an existing `grpc.Server` as a gRPC-Web `http.Handler` for both HTTP2 and HTTP/1.1.
  * [`grpcwebproxy`](./go/grpcwebproxy) - a Go-based stand-alone reverse proxy for classic gRPC servers (e.g. in Java or C++) that exposes their services over gRPC-Web to modern browsers.
  * [`ts-protoc-gen`](https://github.com/improbable-eng/ts-protoc-gen) - a TypeScript plugin for the protocol buffers compiler that provides strongly typed message classes and method definitions.
- * [`grpc-web-client`](./client/grpc-web-client) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
+ * [`@improbable-eng/grpc-web`](./client/grpc-web) - a TypeScript gRPC-Web client library for browsers ([and Node.js](#nodejs-support)).
  
 ## Why?
 
