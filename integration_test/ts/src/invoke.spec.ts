@@ -1,7 +1,7 @@
 // gRPC-Web library
 import {
   grpc,
-} from "grpc-web-client";
+} from "@improbable-eng/grpc-web";
 
 import {debug} from "../../../client/grpc-web/src/debug";
 import {assert} from "chai";

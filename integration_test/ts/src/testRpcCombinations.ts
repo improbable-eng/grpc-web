@@ -2,7 +2,7 @@ import {
   testHost,
   corsHost
 } from "../../hosts-config";
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 import {NodeHttpTransport} from "grpc-web-node-http-transport";
 
 type TestConfig = {

@@ -1,4 +1,4 @@
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
 import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
