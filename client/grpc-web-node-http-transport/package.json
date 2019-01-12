@@ -1,7 +1,7 @@
 {
   "name": "grpc-web-node-http-transport",
   "version": "0.0.1",
-  "description": "Node HTTP Transport for use with grpc-web-client",
+  "description": "Node HTTP Transport for use with @improbable-eng/grpc-web",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
