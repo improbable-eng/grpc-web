@@ -27,7 +27,6 @@
     "dist"
   ],
   "peerDependencies": {
-    "@types/google-protobuf": "^3.2.5",
     "google-protobuf": "^3.2.0"
   },
   "dependencies": {
