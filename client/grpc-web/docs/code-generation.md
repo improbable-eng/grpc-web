@@ -4,7 +4,7 @@ To make gRPC requests the client requires generated code for the [method definit
 
 [`protoc`](https://github.com/google/protobuf) is the google protobuf code generation tool. It can generate the JavaScript message classes and also supports using plugins for additional code generation.
 
-[`ts-protoc-gen`](https://www.github.com/improbable-eng/ts-protoc-gen) is a package that can generate the `.d.ts` files that declare the contents of the protoc-generated JavaScript files. `ts-protoc-gen` can also generate `grpc-web-client` service/method definitions with the `protoc-gen-ts` plugin and `service=true` argument.
+[`ts-protoc-gen`](https://www.github.com/improbable-eng/ts-protoc-gen) is a package that can generate the `.d.ts` files that declare the contents of the protoc-generated JavaScript files. `ts-protoc-gen` can also generate `@improbable-eng/grpc-web` client service/method definitions with the `protoc-gen-ts` plugin and `service=true` argument.
 
 This is an example of a complete invokation of `protoc` with `ts-protoc-gen` assuming your `.proto` files are in a directory named `my-protos` within the current working directory:
 

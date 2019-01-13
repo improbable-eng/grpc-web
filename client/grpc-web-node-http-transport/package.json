@@ -1,7 +1,7 @@
 {
   "name": "grpc-web-node-http-transport",
   "version": "0.0.1",
-  "description": "Node HTTP Transport for use with grpc-web-client",
+  "description": "Node HTTP Transport for use with @improbable-eng/grpc-web",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "grpc-web-client": "^0.7.0"
+    "@improbable-eng/grpc-web": "^0.8.0"
   },
   "author": "",
   "license": "Apache-2.0",

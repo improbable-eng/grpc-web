@@ -36,11 +36,11 @@ With gRPC-Web, it is extremely easy to build well-defined, easy to reason about 
 
 In short, gRPC-Web moves the interaction between frontend code and microservices from the sphere of hand-crafted HTTP requests to well-defined user-logic methods.
 
-## Client-side (grpc-web-client) Docs
+## Client-side (grpc-web) Docs
 
 **Note: You'll need to add gRPC-Web compatibility to your server through either [`grpcweb`](go/grpcweb) or [`grpcwebproxy`](go/grpcwebproxy).**
 
-[API Docs for `grpc-web-client` can be found here](./client/grpc-web-client)
+[API Docs for `grpc-web` client can be found here](./client/grpc-web)
 
 ## Example 
 
@@ -102,7 +102,7 @@ func (s *bookService) QueryBooks(bookQuery *pb_library.QueryBooksRequest, stream
 You will be able to access it in a browser using TypeScript (and equally JavaScript after transpiling):
 
 ```javascript
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 
 // Import code-generated data structures.
 import {BookService} from "../_proto/examplecom/library/book_service_pb_service";
@@ -131,7 +131,7 @@ grpc.invoke(BookService.QueryBooks, {
 
 ## Browser Support
 
-The `grpc-web-client` uses multiple techniques to efficiently invoke gRPC services. Most modern browsers support the [Fetch API](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), which allows for efficient reading of partial, binary responses. For older browsers, it automatically falls back to [`XMLHttpRequest`](https://developer.mozilla.org/nl/docs/Web/API/XMLHttpRequest).
+The `@improbable-eng/grpc-web` client uses multiple techniques to efficiently invoke gRPC services. Most modern browsers support the [Fetch API](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), which allows for efficient reading of partial, binary responses. For older browsers, it automatically falls back to [`XMLHttpRequest`](https://developer.mozilla.org/nl/docs/Web/API/XMLHttpRequest).
 
 The gRPC semantics encourage you to make multiple requests at once. With most modern browsers [supporting HTTP2](http://caniuse.com/#feat=http2), these can be executed over a single TLS connection. For older browsers, gRPC-Web falls back to HTTP/1.1 chunk responses.
 
@@ -144,9 +144,9 @@ This library is tested against:
   
 ## Node.js Support
 
-`grpc-web-client` also [supports Node.js through a transport](./client/grpc-web/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
+The `@improbable-eng/grpc-web` client also [supports Node.js through a transport](./client/grpc-web/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
-If you want to use `grpc-web-client` in a node.js environment with Typescript, you must include `dom` in the `"lib"` Array in your `tsconfig.json` otherwise `tsc` will be unable to find some type declarations to compile. Note that `dom` will be included automatically if you do not declare `lib` in your configration and your target is one of `es5` or `es6`. (See [Typescript compiler options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)).
+If you want to use the `@improbable-eng/grpc-web` client in a node.js environment with Typescript, you must include `dom` in the `"lib"` Array in your `tsconfig.json` otherwise `tsc` will be unable to find some type declarations to compile. Note that `dom` will be included automatically if you do not declare `lib` in your configration and your target is one of `es5` or `es6`. (See [Typescript compiler options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)).
 
 ```
 {
@@ -171,7 +171,7 @@ This, however, is useful for a lot of frontend functionality.
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
 
 ## Known Limitations
-See the grpc-web-client's Transport Documentation for [a list of Web Browser caveats](./client/grpc-web/docs/transport.md#http/2-based-transports).
+See the `@improbable-eng/grpc-web` client Transport Documentation for [a list of Web Browser caveats](./client/grpc-web/docs/transport.md#http/2-based-transports).
 
 ### Contributing
 See [CONTRIBUTING](./CONTRIBUTING.md)

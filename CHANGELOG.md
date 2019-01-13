@@ -1,3 +1,7 @@
+## 0.8.0
+### Breaking Changes
+* Scoped npm package under the @improbable-eng org; consumers should now `npm install @improbable-eng/grpc-web`.
+
 ## 0.7.0
 ### Breaking Changes
 * Removed built-in support for NodeJS Environments; if you want to use `grpc-web-client` in a NodeJS environment you will need to import `grpc-web-node-http-transport` and specify it as your Default Transport.

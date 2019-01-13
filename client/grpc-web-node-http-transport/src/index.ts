@@ -1,7 +1,7 @@
 import * as http from "http";
 import * as https from "https";
 import * as url from "url";
-import { grpc } from "grpc-web-client";
+import { grpc } from "@improbable-eng/grpc-web";
 
 export function NodeHttpTransport(): grpc.TransportFactory {
   return (opts: grpc.TransportOptions) => {
