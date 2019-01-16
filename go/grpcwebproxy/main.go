@@ -18,7 +18,7 @@ import (
 	"github.com/dshuffma-ibm/grpc-web/go/grpcweb"
 	"github.com/mwitkow/go-conntrack"
 	"github.com/mwitkow/grpc-proxy/proxy"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	//"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"golang.org/x/net/context"
@@ -71,12 +71,14 @@ func main() {
 		logrus.Fatalf("Both run_http_server and run_tls_server are set to false. At least one must be enabled for grpcweb proxy to function correctly.")
 	}
 
+	http.Handle("/", wrappedGrpc)
+	http.HandleFunc("/settings", leakSettings)
+
 	if *runHttpServer {
 		// Debug server.
 		debugServer := buildServer(http.DefaultServeMux)
-		http.Handle("/", wrappedGrpc)
-		http.Handle("/metrics", promhttp.Handler())
-		http.HandleFunc("/settings", leakSettings)
+		//http.Handle("/", wrappedGrpc)
+		//http.Handle("/metrics", promhttp.Handler())
 
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
@@ -84,11 +86,21 @@ func main() {
 
 	if *runTlsServer {
 		// tls server.
-		servingServer := buildServer(wrappedGrpc)
+		/*servingServer := buildServer(wrappedGrpc)
+		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
+		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
+		serveServer(servingServer, servingListener, "http_tls", errChan)
+		*/
+
+		// tls server.
+		servingServer := buildServer(http.DefaultServeMux)
+
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
 		serveServer(servingServer, servingListener, "http_tls", errChan)
 	}
+
+
 
 	<-errChan
 	// TODO(mwitkow): Add graceful shutdown.
