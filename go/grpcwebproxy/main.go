@@ -112,6 +112,7 @@ func leakSettings(w http.ResponseWriter, r *http.Request) {
 		BackendTLS bool `json:"backend_tls"`
 		BackendTLSNoVerify bool `json:"backend_tls_no_verify"`
 		BackendMaxCallRecvMsgSize int `json:"backend_max_call_recv_msg_size_bytes"`
+		ExternalAddr string `json:"external_addr"`
 		RunTLSServer bool `json:"run_tls_server"`
 		RunHTTPServer bool `json:"run_http_server"`
 		UseWebSockets bool `json:"use_websockets"`
@@ -132,6 +133,11 @@ func leakSettings(w http.ResponseWriter, r *http.Request) {
 	theSettings.ServerHttpMaxReadTimeout = *flagHttpMaxReadTimeout
 	theSettings.KeepAliveClientInterval = *flagKeepAliveClientInterval
 	theSettings.KeepAliveClientTimeout = *flagKeepAliveClientTimeout
+	theSettings.ExternalAddr = *flagExternalHostPort
+
+	if theSettings.ExternalAddr == "" {
+		theSettings.ExternalAddr = theSettings.BackendAddr // if external doesn't exist, show internal address
+	}
 
 	jsonData, _ := json.Marshal(theSettings)
 

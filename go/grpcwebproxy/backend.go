@@ -18,7 +18,7 @@ var (
 	flagBackendHostPort = pflag.String(
 		"backend_addr",
 		"",
-		"A host:port (IP or hostname) of the gRPC server to forward it to.")
+		"An internal host:port (IP or hostname) of the gRPC server to forward it to (used).")
 
 	flagBackendIsUsingTls = pflag.Bool(
 		"backend_tls",
@@ -55,6 +55,11 @@ var (
 		20*time.Second,
 		"Keep alive client timeout. Defaults to 20 seconds",
 	)
+
+	flagExternalHostPort = pflag.String(
+		"external_addr",
+		"",
+		"An external host:port (IP or hostname) of the gRPC server to forward it to (cosmetic).")
 )
 
 func dialBackendOrFail() *grpc.ClientConn {
