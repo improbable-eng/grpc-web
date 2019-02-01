@@ -20,7 +20,7 @@
   "license": "none",
   "dependencies": {
     "browser-headers": "^0.4.0",
-    "event-stream": "^3.3.4",
+    "event-stream": "^4.0.1",
     "google-protobuf": "^3.2.0",
     "@improbable-eng/grpc-web": "^0.8.0",
     "@improbable-eng/grpc-web-node-http-transport": "^0.0.2",
