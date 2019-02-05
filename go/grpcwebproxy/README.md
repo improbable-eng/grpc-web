@@ -11,26 +11,72 @@ Features:
  * TLS 1.2 serving (default on port `8443`):
    * with option to enable client side certificate validation
  * both secure (plaintext) and TLS gRPC backend connectivity:
-   * with customizeable CA certificates for connections
+   * with customizable CA certificates for connections
 
-The indented use is as a companion process for gRPC server contianers.
+The indented use is as a companion process for gRPC server containers.
 
 ## Installing
 
-You need Go >= 1.8. To install install you should:
+### Pre-build binaries
 
-```
-go get -u github.com/improbable-eng/grpc-web/go/grpcwebproxy
+There are pre-build binaries available for Windows, Mac and Linux (x86_64):
+https://github.com/improbable-eng/grpc-web/releases/tag/0.6.3
+
+### Building from source
+
+To build, you need to have Go >= 1.8, and call `go get` with `dep ensure`:
+
+```sh
+git clone github.com/improbable-eng/grpc-web $GOPATH/src/
+cd $GOPATH/src/github.com/improbable-eng/grpc-web
+dep ensure # after installing dep
+go install ./go/grpcwebproxy # installs into $GOPATH/bin/grpcwebproxy
 ```
 
 ## Running
 
 Here's a simple example that fronts a local, TLS gRPC server:
 
-```
-$GOPATH/bin/grpcwebproxy
+```sh
+grpcwebproxy
     --server_tls_cert_file=../../misc/localhost.crt \
     --server_tls_key_file=../../misc/localhost.key \
     --backend_addr=localhost:9090 \
     --backend_tls_noverify
 ```
+
+### Running specific servers
+
+By default, grpcwebproxy will run both TLS and HTTP debug servers. To disable either one, set the `--run_http_server` or `--run_tls_server` flags to false.
+
+For example, to only run the HTTP server, run the following:
+
+```sh
+grpcwebproxy
+    --backend_addr=localhost:9090 \
+    --run_tls_server=false
+```
+
+### Enabling Websocket Transport
+
+By default, grpcwebproxy will not use websockets as a transport layer. To enable websockets, set the `--use_websockets` flag to true.
+
+```
+$GOPATH/bin/grpcwebproxy \
+    --backend_addr=localhost:9090 \
+    --use_websockets
+```
+
+### Changing the Maximum Receive Message Size
+
+By default, grpcwebproxy will limit the message size that the backend sends to the client. This is currently 4MB.
+To override this, set the `--backend_max_call_recv_msg_size` flag to an integer with the desired byte size.
+
+For example, to increase the size to 5MB, set the value to 5242880 (5 * 1024 * 1024).
+
+```bash
+grpcwebproxy \
+    --backend_max_call_recv_msg_size=5242880
+```
+
+Note that if you set a lower value than 4MB, the lower value will be used. Also, it is preferrable to send data in a stream than to set a very large value.

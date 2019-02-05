@@ -3,6 +3,8 @@
 
 package grpcweb
 
+import "net/http"
+
 var (
 	defaultOptions = &options{
 		allowedRequestHeaders:          []string{"*"},
@@ -15,6 +17,8 @@ type options struct {
 	allowedRequestHeaders          []string
 	corsForRegisteredEndpointsOnly bool
 	originFunc                     func(origin string) bool
+	enableWebsockets               bool
+	websocketOriginFunc            func(req *http.Request) bool
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -56,7 +60,7 @@ func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option {
 	}
 }
 
-// WithAllowedResponseHeaders allows for customizing what gRPC request headers a browser can add.
+// WithAllowedRequestHeaders allows for customizing what gRPC request headers a browser can add.
 //
 // This is controlling the CORS pre-flight `Access-Control-Allow-Headers` method and applies to *all* gRPC handlers.
 // However, a special `*` value can be passed in that allows
@@ -74,5 +78,24 @@ func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option {
 func WithAllowedRequestHeaders(headers []string) Option {
 	return func(o *options) {
 		o.allowedRequestHeaders = headers
+	}
+}
+
+// WithWebsockets allows for handling grpc-web requests of websockets - enabling bidirectional requests.
+//
+// The default behaviour is false, i.e. to disallow websockets
+func WithWebsockets(enableWebsockets bool) Option {
+	return func(o *options) {
+		o.enableWebsockets = enableWebsockets
+	}
+}
+
+// WithWebsocketOriginFunc allows for customizing the acceptance of Websocket requests - usually to check that the origin
+// is valid.
+//
+// The default behaviour is to check that the origin of the request matches the host of the request.
+func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) Option {
+	return func(o *options) {
+		o.websocketOriginFunc = websocketOriginFunc
 	}
 }

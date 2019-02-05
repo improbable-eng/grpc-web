@@ -3,8 +3,8 @@ package main
 import (
 	"crypto/tls"
 
-	logrus "github.com/sirupsen/logrus"
 	"github.com/mwitkow/go-conntrack/connhelpers"
+	logrus "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 
 	"crypto/x509"
