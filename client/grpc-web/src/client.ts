@@ -262,7 +262,6 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
 
     const requestHeaders = new Metadata(metadata ? metadata : {});
     requestHeaders.set("content-type", "application/grpc-web+proto");
-    requestHeaders.set("x-grpc-web", "1"); // Required for CORS handling
 
     this.transport.start(requestHeaders);
   }
