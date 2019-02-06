@@ -30,6 +30,22 @@ var (
 		"Whether to ignore TLS verification checks (cert validity, hostname). *DO NOT USE IN PRODUCTION*.",
 	)
 
+	flagBackendTlsClientCertRequired = pflag.Bool(
+		"backend_client_tls",
+		false,
+		"Whether the gRPC server of the backend requires client certificates.",
+	)
+
+	flagBackendTlsClientCert = pflag.String(
+		"backend_client_tls_cert_file",
+		"",
+		"Path to the PEM certificate used when the backend requires client certificates for TLS.")
+
+	flagBackendTlsClientKey = pflag.String(
+		"backend_client_tls_key_file",
+		"",
+		"Path to the PEM key used when the backend requires client certificates for TLS.")
+
 	flagMaxCallRecvMsgSize = pflag.Int(
 		"backend_max_call_recv_msg_size",
 		1024*1024*4, // The current maximum receive msg size per https://github.com/grpc/grpc-go/blob/v1.8.2/server.go#L54
@@ -102,6 +118,20 @@ func buildBackendTlsOrFail() *tls.Config {
 				}
 			}
 		}
+	}
+	if *flagBackendTlsClientCertRequired {
+		if *flagBackendTlsClientCert == "" {
+			logrus.Fatal("flag 'backend_client_tls_cert_file' must be set when 'backend_client_tls' is set to true")
+		}
+		if *flagBackendTlsClientKey == "" {
+			logrus.Fatal("flag 'backend_client_tls_key_file' must be set when 'backend_client_tls' is set to true")
+		}
+		cert, err := tls.LoadX509KeyPair(*flagBackendTlsClientCert, *flagBackendTlsClientKey)
+		if err != nil {
+			logrus.Fatalf("failed reading TLS client keys: %v", err)
+		}
+		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
+
 	}
 	return tlsConfig
 }
