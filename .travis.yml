@@ -23,7 +23,6 @@ env:
     - BROWSER=chrome_57
     - BROWSER=chrome_52
     - BROWSER=chrome_43
-    - BROWSER=chrome_42
     - BROWSER=chrome_41
     # Edge does not support aborting fetch requests (documented known limitation in project README)
     - BROWSER=edge15_win DISABLE_ABORT_TESTS=true
@@ -38,6 +37,9 @@ env:
 cache:
   directories:
     - node_modules
+branches:
+  only:
+  - master
 before_install:
   - sudo apt-get install unzip
   - . ./install-protobuf.sh
@@ -53,7 +55,19 @@ install:
   - nvm install
   - npm install
 before_script:
-  - ./test/start-testserver.sh &
+  - ./integration_test/start-testserver.sh &
 script:
-  - ./lint-all.sh
-  - travis_retry npm run test
+  - npm run test
+
+stages:
+  - lint
+  - test
+  - deploy
+
+jobs:
+  include:
+    - stage: lint
+      script: ./lint-all.sh
+    - stage: deploy
+      if: tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
+      script: echo Releasing $TRAVIS_TAG

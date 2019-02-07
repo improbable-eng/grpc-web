@@ -1,0 +1,27 @@
+{
+  "name": "@improbable-eng/grpc-web-node-http-transport",
+  "version": "0.0.2",
+  "description": "Node HTTP Transport for use with @improbable-eng/grpc-web",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "github.com/improbable-eng/grpc-web"
+  },
+  "scripts": {
+    "clean": "rm -rf lib",
+    "postbootstrap": "npm run build",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Improbable",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "@improbable-eng/grpc-web": ">=0.7.0"
+  },
+  "devDependencies": {
+    "@improbable-eng/grpc-web": "^0.8.0",
+    "@types/node": "^10.12.0",
+    "google-protobuf": "^3.2.0",
+    "typescript": "^3.1.3"
+  }
+}

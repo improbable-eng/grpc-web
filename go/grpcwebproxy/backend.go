@@ -76,6 +76,11 @@ var (
 		"backend_client_tls_key_file",
 		"",
 		"Path to the PEM key used when the backend requires client certificates for TLS.")
+	flagBackendBackoffMaxDelay = pflag.Duration(
+		"backend_backoff_max_delay",
+		grpc.DefaultBackoffConfig.MaxDelay,
+		"Maximum delay when backing off after failed connection attempts to the backend.",
+	)
 )
 
 func dialBackendOrFail() *grpc.ClientConn {
@@ -103,6 +108,11 @@ func dialBackendOrFail() *grpc.ClientConn {
 		Timeout: *flagKeepAliveClientTimeout}
 	kap.PermitWithoutStream = true // this seems important
 	opt = append(opt, grpc.WithKeepaliveParams(kap))
+
+	opt = append(opt,
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(*flagMaxCallRecvMsgSize)),
+		grpc.WithBackoffMaxDelay(*flagBackendBackoffMaxDelay),
+	)
 
 	cc, err := grpc.Dial(*flagBackendHostPort, opt...)
 	if err != nil {
