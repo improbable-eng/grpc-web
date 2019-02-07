@@ -60,6 +60,16 @@ var (
 		"external_addr",
 		"",
 		"An external host:port (IP or hostname) of the gRPC server to forward it to (cosmetic).")
+
+	flagBackendTlsClientCert = pflag.String(
+		"backend_client_tls_cert_file",
+		"",
+		"Path to the PEM certificate used when the backend requires client certificates for TLS.")
+
+	flagBackendTlsClientKey = pflag.String(
+		"backend_client_tls_key_file",
+		"",
+		"Path to the PEM key used when the backend requires client certificates for TLS.")
 )
 
 func dialBackendOrFail() *grpc.ClientConn {
@@ -108,6 +118,14 @@ func buildBackendTlsOrFail() *tls.Config {
 				}
 			}
 		}
+	}
+
+	if *flagBackendTlsClientCert != "" && *flagBackendTlsClientKey != "" {
+		cert, err := tls.LoadX509KeyPair(*flagBackendTlsClientCert, *flagBackendTlsClientKey)
+		if err != nil {
+			logrus.Fatalf("failed reading TLS client keys: %v", err)
+		}
+		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
 	}
 	return tlsConfig
 }
