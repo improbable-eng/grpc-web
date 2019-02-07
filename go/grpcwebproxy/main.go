@@ -77,7 +77,6 @@ func main() {
 	if *runHttpServer {
 		// Debug server.
 		debugServer := buildServer(http.DefaultServeMux)
-		//http.Handle("/", wrappedGrpc)
 		//http.Handle("/metrics", promhttp.Handler())
 
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
@@ -112,6 +111,7 @@ func leakSettings(w http.ResponseWriter, r *http.Request) {
 		BackendTLS bool `json:"backend_tls"`
 		BackendTLSNoVerify bool `json:"backend_tls_no_verify"`
 		BackendMaxCallRecvMsgSize int `json:"backend_max_call_recv_msg_size_bytes"`
+		flagBackendTlsClientCert string `json:"backend_client_tls_cert_file"`
 		ExternalAddr string `json:"external_addr"`
 		RunTLSServer bool `json:"run_tls_server"`
 		RunHTTPServer bool `json:"run_http_server"`
@@ -134,6 +134,7 @@ func leakSettings(w http.ResponseWriter, r *http.Request) {
 	theSettings.KeepAliveClientInterval = *flagKeepAliveClientInterval
 	theSettings.KeepAliveClientTimeout = *flagKeepAliveClientTimeout
 	theSettings.ExternalAddr = *flagExternalHostPort
+	theSettings.flagBackendTlsClientCert = *flagBackendTlsClientCert
 
 	if theSettings.ExternalAddr == "" {
 		theSettings.ExternalAddr = theSettings.BackendAddr // if external doesn't exist, show internal address
@@ -156,17 +157,6 @@ func buildServer(handler http.Handler) *http.Server {
 		Handler:      handler,
 	}
 }
-/*
-func buildServer2() *http.Server {
-	return &http.Server{
-		WriteTimeout: *flagHttpMaxWriteTimeout,
-		ReadTimeout:  *flagHttpMaxReadTimeout,
-		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			//wrappedGrpc.ServeHTTP(resp, req)
-			http.DefaultServeMux.ServeHTTP(resp, req)
-		}),
-	}
-}*/
 
 func serveServer(server *http.Server, listener net.Listener, name string, errChan chan error) {
 	go func() {
