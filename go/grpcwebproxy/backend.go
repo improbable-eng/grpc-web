@@ -44,6 +44,12 @@ var (
 		"Paths (comma separated) to PEM certificate chains used for verification of backend certificates. If empty, host CA chain will be used.",
 	)
 
+	flagBackendDefaultAuthority = pflag.String(
+		"backend_default_authority",
+		"",
+		"Default value to use for the HTTP/2 :authority header commonly used for routing gRPC calls through a backend gateway.",
+	)
+
 	flagKeepAliveClientInterval = pflag.Duration(
 		"keep_alive_client_interval",
 		2*time.Minute,
@@ -78,6 +84,11 @@ func dialBackendOrFail() *grpc.ClientConn {
 	}
 	opt := []grpc.DialOption{}
 	opt = append(opt, grpc.WithCodec(proxy.Codec()))
+
+	if *flagBackendDefaultAuthority != "" {
+		opt = append(opt, grpc.WithAuthority(*flagBackendDefaultAuthority))
+	}
+
 	if *flagBackendIsUsingTls {
 		opt = append(opt, grpc.WithTransportCredentials(credentials.NewTLS(buildBackendTlsOrFail())))
 	} else {
