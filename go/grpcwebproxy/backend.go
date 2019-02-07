@@ -30,12 +30,6 @@ var (
 		"Whether to ignore TLS verification checks (cert validity, hostname). *DO NOT USE IN PRODUCTION*.",
 	)
 
-	flagBackendTlsClientCertRequired = pflag.Bool(
-		"backend_client_tls",
-		false,
-		"Whether the gRPC server of the backend requires client certificates.",
-	)
-
 	flagBackendTlsClientCert = pflag.String(
 		"backend_client_tls_cert_file",
 		"",
@@ -119,19 +113,18 @@ func buildBackendTlsOrFail() *tls.Config {
 			}
 		}
 	}
-	if *flagBackendTlsClientCertRequired {
+	if *flagBackendTlsClientCert != "" || *flagBackendTlsClientKey != "" {
 		if *flagBackendTlsClientCert == "" {
-			logrus.Fatal("flag 'backend_client_tls_cert_file' must be set when 'backend_client_tls' is set to true")
+			logrus.Fatal("flag 'backend_client_tls_cert_file' must be set when 'backend_client_tls_key_file' is set")
 		}
 		if *flagBackendTlsClientKey == "" {
-			logrus.Fatal("flag 'backend_client_tls_key_file' must be set when 'backend_client_tls' is set to true")
+			logrus.Fatal("flag 'backend_client_tls_key_file' must be set when 'backend_client_tls_cert_file' is set")
 		}
 		cert, err := tls.LoadX509KeyPair(*flagBackendTlsClientCert, *flagBackendTlsClientKey)
 		if err != nil {
 			logrus.Fatalf("failed reading TLS client keys: %v", err)
 		}
 		tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
-
 	}
 	return tlsConfig
 }
