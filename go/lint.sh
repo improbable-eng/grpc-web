@@ -8,7 +8,7 @@ function print_real_go_files {
 }
 
 function check_no_documentation_changes {
-  echo "Checking generated documentation is up to date"
+  echo "- Running generate-docs.sh"
   ./generate-docs.sh &>/dev/null
   if [[ $? -ne 0 ]]; then
     echo "ERROR: Failed to generate documentation."
@@ -23,7 +23,7 @@ function check_no_documentation_changes {
 }
 
 function check_gofmt {
-    echo "Running gofmt"
+    echo "- Running gofmt"
     out=$(gofmt -l -w $(print_real_go_files))
     if [[ ! -z $out ]]; then
         echo "ERROR: gofmt changes detected, please commit them."
@@ -32,7 +32,7 @@ function check_gofmt {
 }
 
 function goimports_all {
-    echo "Running goimports"
+    echo "- Running goimports"
     ${GOPATH}/bin/goimports -l -w $(print_real_go_files)
     if [[ $? -ne 0 ]]; then
         echo "ERROR: goimports changes detected, please commit them."
@@ -41,7 +41,7 @@ function goimports_all {
 }
 
 function govet_all {
-    echo "Running govet"
+    echo "- Running govet"
     ret=0
     for i in $(print_real_go_files); do
         output=$(go tool vet -all=true -tests=false ${i})
@@ -54,6 +54,7 @@ function govet_all {
     fi
 }
 
+echo "Linting go sources"
 check_no_documentation_changes
 check_gofmt
 goimports_all
