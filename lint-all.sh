@@ -3,7 +3,7 @@
 set -e
 
 echo "Linting go sources"
-./go/lint.sh
+cd go && ./lint.sh && cd ..
 
 echo "Linting TypeScript sources"
 npm run lint

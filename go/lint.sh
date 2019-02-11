@@ -55,8 +55,8 @@ function govet_all {
     fi
 }
 
-echo "Linting go sources"
 check_no_documentation_changes
 check_gofmt
 goimports_all
 govet_all
+echo
