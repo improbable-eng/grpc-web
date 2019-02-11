@@ -9,8 +9,9 @@ function print_real_go_files {
 
 function check_no_documentation_changes {
   echo "- Running generate-docs.sh"
-  ./generate-docs.sh &>/dev/null
+  output=$(./generate-docs.sh)
   if [[ $? -ne 0 ]]; then
+    echo $output
     echo "ERROR: Failed to generate documentation."
     exit 1
   fi
