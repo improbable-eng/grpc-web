@@ -45,14 +45,28 @@ func main() {
 	websocketOriginFunc := grpcweb.WithWebsocketOriginFunc(func(req *http.Request) bool {
 		return true
 	})
+	httpOriginFunc := grpcweb.WithOriginFunc(func(origin string) bool {
+		return true
+	})
 
-	wrappedServer := grpcweb.WrapServer(grpcServer, grpcweb.WithWebsockets(true), websocketOriginFunc)
+	wrappedServer := grpcweb.WrapServer(
+		grpcServer,
+		grpcweb.WithWebsockets(true),
+		httpOriginFunc,
+		websocketOriginFunc,
+	)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 
 	emptyGrpcServer := grpc.NewServer()
-	emptyWrappedServer := grpcweb.WrapServer(emptyGrpcServer, grpcweb.WithWebsockets(true), websocketOriginFunc, grpcweb.WithCorsForRegisteredEndpointsOnly(false))
+	emptyWrappedServer := grpcweb.WrapServer(
+		emptyGrpcServer,
+		grpcweb.WithWebsockets(true),
+		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
+		httpOriginFunc,
+		websocketOriginFunc,
+	)
 	emptyHandler := func(resp http.ResponseWriter, req *http.Request) {
 		emptyWrappedServer.ServeHTTP(resp, req)
 	}

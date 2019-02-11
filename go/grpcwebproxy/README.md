@@ -80,3 +80,21 @@ grpcwebproxy \
 ```
 
 Note that if you set a lower value than 4MB, the lower value will be used. Also, it is preferrable to send data in a stream than to set a very large value.
+
+### Configuring CORS for Http and WebSocket connections
+
+By default, grpcwebproxy will reject any request originating from a client running on any domain other than that of where the server is hosted, this can be configured via one of the `--allow_all_origins` or `--allowed_origins` flags.
+
+For example, to allow requests from any origin:
+
+```bash
+grpcwebproxy \
+    --allow_all_origins
+```
+
+Or to only allow requests from a specific list of origins:
+
+```bash
+grpcwebproxy \
+    --allowed_origins=https://example.org,https://awesome.com
+```
