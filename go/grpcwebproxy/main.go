@@ -190,12 +190,12 @@ func makeWebsocketOriginFunc(allowedOrigins *allowedOrigins) func(req *http.Requ
 }
 
 func makeAllowedOrigins(origins []string) *allowedOrigins {
-	allowedOrigins := map[string]struct{}{}
+	o := map[string]struct{}{}
 	for _, allowedOrigin := range origins {
-		allowedOrigins[allowedOrigin] = struct{}{}
+		o[allowedOrigin] = struct{}{}
 	}
 	return &allowedOrigins{
-		origins: allowedOrigins,
+		origins: o,
 	}
 }
 
