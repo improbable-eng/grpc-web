@@ -57,7 +57,7 @@ install:
 before_script:
   - ./integration_test/start-testserver.sh &
 script:
-  - npm run test
+  - travis_retry npm run test
 
 stages:
   - lint
