@@ -5,7 +5,6 @@ package grpcweb
 
 import (
 	"fmt"
-
 	"net/http"
 	"net/url"
 
@@ -30,9 +29,9 @@ func ListGRPCResources(server *grpc.Server) []string {
 // originated.
 func WebsocketRequestOrigin(req *http.Request) (string, error) {
 	origin := req.Header.Get("Origin")
-	url, err := url.ParseRequestURI(origin)
+	parsed, err := url.ParseRequestURI(origin)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse url for grpc-websocket origin check: %s. error: %v", origin, err)
+		return "", fmt.Errorf("failed to parse url for grpc-websocket origin check: %q. error: %v", origin, err)
 	}
-	return url.Host, nil
+	return parsed.Host, nil
 }

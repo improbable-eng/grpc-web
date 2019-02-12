@@ -33,7 +33,7 @@ var (
 	flagHttpTlsPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web).")
 
 	flagAllowAllOrigins = pflag.Bool("allow_all_origins", false, "allow requests from any origin.")
-	flagAllowedOrigins  = pflag.StringSlice("allowed_origins", nil, "list of origin URLs which are allowed to make cross-origin requests.")
+	flagAllowedOrigins  = pflag.StringSlice("allowed_origins", nil, "comma-separated list of origin URLs which are allowed to make cross-origin requests.")
 
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
@@ -165,11 +165,8 @@ func makeHttpOriginFunc(allowedOrigins *allowedOrigins) func(origin string) bool
 		return func(origin string) bool {
 			return true
 		}
-	} else {
-		return func(origin string) bool {
-			return allowedOrigins.IsAllowed(origin)
-		}
 	}
+	return allowedOrigins.IsAllowed
 }
 
 func makeWebsocketOriginFunc(allowedOrigins *allowedOrigins) func(req *http.Request) bool {
