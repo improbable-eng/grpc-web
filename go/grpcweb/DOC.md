@@ -40,6 +40,14 @@ on gRPC server.
 This makes it easy to register all the relevant routes in your HTTP router of
 choice.
 
+#### func  WebsocketRequestOrigin
+
+```go
+func WebsocketRequestOrigin(req *http.Request) (string, error)
+```
+WebsocketRequestOrigin returns the host from which a websocket request made by a
+web browser originated.
+
 #### type Option
 
 ```go
@@ -98,7 +106,7 @@ mechanism allows you to limit the availability of the APIs based on the domain
 name of the calling website (Origin). You can provide a function that filters
 the allowed Origin values.
 
-The default behaviour is `*`, i.e. to allow all calling websites.
+The default behaviour is to deny all requests from remote origins.
 
 The relevant CORS pre-flight docs:
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
@@ -112,7 +120,7 @@ WithWebsocketOriginFunc allows for customizing the acceptance of Websocket
 requests - usually to check that the origin is valid.
 
 The default behaviour is to check that the origin of the request matches the
-host of the request.
+host of the request and deny all requests from remote origins.
 
 #### func  WithWebsockets
 
