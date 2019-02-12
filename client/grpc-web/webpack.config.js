@@ -2,6 +2,7 @@ const path = require('path');
 
 const LIB_BASE_CONFIG = {
   entry: "./src/index.ts",
+  mode: "production",
   module: {
     rules: [{
       test: /\.ts?$/,
