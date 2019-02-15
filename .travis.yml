@@ -33,7 +33,6 @@ env:
     - BROWSER=safari11 DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
-    - BROWSER=safari6 DISABLE_WEBSOCKET_TESTS=true
 cache:
   directories:
     - node_modules
