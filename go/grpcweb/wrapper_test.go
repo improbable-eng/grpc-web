@@ -46,6 +46,11 @@ var (
 	useFlushForHeaders    = "test-internal-use-flush-for-headers"
 )
 
+const (
+	grpcWebContentType     = "application/grpc-web"
+	grpcWebTextContentType = "application/grpc-web-text"
+)
+
 type GrpcWebWrapperTestSuite struct {
 	suite.Suite
 	httpMajorVersion int
@@ -232,16 +237,17 @@ func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
 	s.assertTrailersContainMetadata(trailers, expectedTrailers)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPing() {
 	// test both the text and binary formats
-	for _, isText := range []bool{false, true} {
+	for _, contentType := range []string{grpcWebContentType, grpcWebTextContentType} {
 		headers, trailers, responses, err := s.makeGrpcRequest(
 			"/improbable.grpcweb.test.TestService/Ping",
 			headerWithFlag(),
 			serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "foo"}}),
-			isText)
+			contentType == grpcWebTextContentType)
 		require.NoError(s.T(), err, "No error on making request")
 
 		assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
@@ -249,6 +255,7 @@ func (s *GrpcWebWrapperTestSuite) TestPing() {
 		s.assertHeadersContainMetadata(headers, expectedHeaders)
 		s.assertTrailersContainMetadata(trailers, expectedTrailers)
 		s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+		s.assertContentTypeSet(headers, contentType)
 	}
 }
 
@@ -267,6 +274,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
 	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
@@ -284,6 +292,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
 	// s.assertHeadersContainMetadata(headers, expectedHeaders) // TODO(mwitkow): There is a bug in gRPC where headers don't get added if no payload exists.
 	s.assertHeadersContainMetadata(headers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedTrailers)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingList() {
@@ -298,6 +307,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingList() {
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
 	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) getStandardGrpcClient() *grpc.ClientConn {
@@ -411,6 +421,10 @@ func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Head
 			assert.Equal(s.T(), headers.Get(lowerKey), vv, "Expected there to be %v=%v", lowerKey, vv)
 		}
 	}
+}
+
+func (s *GrpcWebWrapperTestSuite) assertContentTypeSet(headers http.Header, contentType string) {
+	assert.Equal(s.T(), contentType, headers.Get("content-type"), `Expected there to be content-type=%v`, contentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) assertTrailersContainMetadata(trailers grpcweb.Trailer, meta metadata.MD) {
