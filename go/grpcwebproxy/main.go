@@ -11,6 +11,8 @@ import (
 
 	"crypto/tls"
 
+	"net/url"
+
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -18,12 +20,12 @@ import (
 	"github.com/mwitkow/go-conntrack"
 	"github.com/mwitkow/grpc-proxy/proxy"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"golang.org/x/net/context"
 	_ "golang.org/x/net/trace" // register in DefaultServerMux
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -32,8 +34,8 @@ var (
 	flagHttpPort    = pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls.")
 	flagHttpTlsPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web).")
 
-	flagAllowAllOrigins = pflag.Bool("allow_all_origins", false, "allow requests from any origin.")
-	flagAllowedOrigins  = pflag.StringSlice("allowed_origins", nil, "comma-separated list of origin URLs which are allowed to make cross-origin requests.")
+	flagAllowedOrigins = pflag.StringSlice("allowed_origins", nil, "comma-separated list of origin URLs which are allowed to make cross-origin requests, defaults to denying all cross origin requests, whitelist all origins with '*'")
+	flagAllowedHeaders = pflag.StringSlice("allowed_headers", nil, "comma-separated list of simple HTTP headers which are allowed on cross-origin requests, will always allow headers required by the grpcweb specification.")
 
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
@@ -44,35 +46,61 @@ var (
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 )
 
+var (
+	grpcwebSpecHeaders = []string{
+		"X-User-Agent",
+	}
+)
+
 func main() {
 	pflag.Parse()
 
 	logrus.SetOutput(os.Stdout)
 	logEntry := logrus.NewEntry(logrus.StandardLogger())
 
-	if *flagAllowAllOrigins && len(*flagAllowedOrigins) != 0 {
-		logrus.Fatal("Ambiguous --allow_all_origins and --allow_origins configuration. Either set --allow_all_origins=true OR specify one or more origins to whitelist with --allow_origins, not both.")
-	}
-
 	grpcServer := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
 
-	allowedOrigins := makeAllowedOrigins(*flagAllowedOrigins)
-
-	options := []grpcweb.Option{
-		grpcweb.WithCorsForRegisteredEndpointsOnly(false),
-		grpcweb.WithOriginFunc(makeHttpOriginFunc(allowedOrigins)),
-	}
-
+	var options []grpcweb.Option
 	if *useWebsockets {
-		logrus.Println("using websockets")
+		logrus.Info("enabling websocket transport")
 		options = append(
 			options,
 			grpcweb.WithWebsockets(true),
-			grpcweb.WithWebsocketOriginFunc(makeWebsocketOriginFunc(allowedOrigins)),
 		)
 	}
+
 	wrappedGrpc := grpcweb.WrapServer(grpcServer, options...)
+
+	allowedOrigins := *flagAllowedOrigins
+	if len(allowedOrigins) == 0 {
+		allowedOrigins = append(allowedOrigins, "_") // override the default behavior of allowing all origins if the list is empty.
+	}
+	logrus.Infof("allowing CORS from origins: %q", allowedOrigins)
+
+	corsWrapper := cors.New(cors.Options{
+		AllowedOrigins:   allowedOrigins,
+		AllowedHeaders:   append(*flagAllowedHeaders, grpcwebSpecHeaders...),
+		ExposedHeaders:   nil,                                 // make sure that this is *nil*, otherwise the WebResponse overwrite will not work.
+		AllowCredentials: true,                                // always allow credentials, otherwise :authorization headers won't work
+		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
+	})
+
+	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		if wrappedGrpc.IsGrpcWebSocketRequest(req) {
+			origin, ok := isPermittedOriginViaWebSocket(req, allowedOrigins)
+			if ok {
+				wrappedGrpc.ServeHTTP(resp, req)
+			} else {
+				logrus.Println(fmt.Sprintf("denying cross-origin resource request via websocket from: %q", origin))
+				resp.WriteHeader(http.StatusForbidden)
+				resp.Write(make([]byte, 0))
+			}
+			wrappedGrpc.ServeHTTP(resp, req)
+		} else {
+			corsWrapper.Handler(http.HandlerFunc(wrappedGrpc.ServeHTTP)).ServeHTTP(resp, req)
+		}
+	})
 
 	if !*runHttpServer && !*runTlsServer {
 		logrus.Fatalf("Both run_http_server and run_tls_server are set to false. At least one must be enabled for grpcweb proxy to function correctly.")
@@ -80,7 +108,7 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		debugServer := buildServer(wrappedGrpc)
+		debugServer := buildServer(handler)
 		http.Handle("/metrics", promhttp.Handler())
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
@@ -88,7 +116,7 @@ func main() {
 
 	if *runTlsServer {
 		// Debug server.
-		servingServer := buildServer(wrappedGrpc)
+		servingServer := buildServer(handler)
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
 		serveServer(servingServer, servingListener, "http_tls", errChan)
@@ -97,14 +125,30 @@ func main() {
 	<-errChan
 	// TODO(mwitkow): Add graceful shutdown.
 }
+func isPermittedOriginViaWebSocket(req *http.Request, allowedOrigins []string) (string, bool) {
+	origin := req.Header.Get("Origin")
+	parsed, err := url.ParseRequestURI(origin)
+	if err != nil {
+		logrus.Println(fmt.Sprintf("failed to parse url for grpc-websocket origin check: %q. error: %v", origin, err))
+		return "", false
+	}
+	if parsed.Host == req.Host {
+		// Same origin.
+		return origin, true
+	}
+	for _, v := range allowedOrigins {
+		if v == "*" || v == parsed.Host {
+			return origin, true
+		}
+	}
+	return origin, false
+}
 
-func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
+func buildServer(handler http.Handler) *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
-		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			wrappedGrpc.ServeHTTP(resp, req)
-		}),
+		Handler:      handler,
 	}
 }
 
@@ -158,49 +202,4 @@ func buildListenerOrFail(name string, port int) net.Listener {
 		conntrack.TrackWithTcpKeepAlive(20*time.Second),
 		conntrack.TrackWithTracing(),
 	)
-}
-
-func makeHttpOriginFunc(allowedOrigins *allowedOrigins) func(origin string) bool {
-	if *flagAllowAllOrigins {
-		return func(origin string) bool {
-			return true
-		}
-	}
-	return allowedOrigins.IsAllowed
-}
-
-func makeWebsocketOriginFunc(allowedOrigins *allowedOrigins) func(req *http.Request) bool {
-	if *flagAllowAllOrigins {
-		return func(req *http.Request) bool {
-			return true
-		}
-	} else {
-		return func(req *http.Request) bool {
-			origin, err := grpcweb.WebsocketRequestOrigin(req)
-			if err != nil {
-				grpclog.Warning(err)
-				return false
-			}
-			return allowedOrigins.IsAllowed(origin)
-		}
-	}
-}
-
-func makeAllowedOrigins(origins []string) *allowedOrigins {
-	o := map[string]struct{}{}
-	for _, allowedOrigin := range origins {
-		o[allowedOrigin] = struct{}{}
-	}
-	return &allowedOrigins{
-		origins: o,
-	}
-}
-
-type allowedOrigins struct {
-	origins map[string]struct{}
-}
-
-func (a *allowedOrigins) IsAllowed(origin string) bool {
-	_, ok := a.origins[origin]
-	return ok
 }

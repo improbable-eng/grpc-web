@@ -248,7 +248,7 @@ func (s *GrpcWebWrapperTestSuite) TestPing() {
 			headerWithFlag(),
 			serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "foo"}}),
 			contentType == grpcWebTextContentType)
-		require.NoError(s.T(), err, "No error on making request")
+		require.NoError(s.T(), err, "No error on making request: "+contentType)
 
 		assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
 		s.assertTrailerGrpcCode(trailers, codes.OK, "")
@@ -361,57 +361,6 @@ func (s *GrpcWebWrapperTestSuite) TestPingStream_NormalGrpcWorks() {
 	recvTrailers := bidiClient.Trailer()
 	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
-}
-
-func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_DeniedByDefault() {
-	/**
-	OPTIONS /improbable.grpcweb.test.TestService/Ping
-	Access-Control-Request-Method: POST
-	Access-Control-Request-Headers: origin, x-requested-with, accept
-	Origin: http://foo.client.com
-	*/
-	headers := http.Header{}
-	headers.Add("Access-Control-Request-Method", "POST")
-	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
-	headers.Add("Origin", "https://foo.client.com")
-
-	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil, false)
-	assert.NoError(s.T(), err, "cors preflight should not return errors")
-
-	preflight := corsResp.Header
-	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Origin"), "origin must not be in the response headers")
-	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must not be in the response headers")
-	assert.Equal(s.T(), "", preflight.Get("Access-Control-Max-Age"), "allowed max age must not be in the response headers")
-	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must not be in the response headers")
-}
-
-func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_AllowedByOriginFunc() {
-	/**
-	OPTIONS /improbable.grpcweb.test.TestService/Ping
-	Access-Control-Request-Method: POST
-	Access-Control-Request-Headers: origin, x-requested-with, accept
-	Origin: http://foo.client.com
-	*/
-	headers := http.Header{}
-	headers.Add("Access-Control-Request-Method", "POST")
-	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
-	headers.Add("Origin", "https://foo.client.com")
-
-	// Create a new server which permits Cross-Origin Resource requests from `foo.client.com`.
-	s.wrappedServer = grpcweb.WrapServer(s.grpcServer,
-		grpcweb.WithOriginFunc(func(origin string) bool {
-			return origin == "https://foo.client.com"
-		}),
-	)
-
-	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil, false)
-	assert.NoError(s.T(), err, "cors preflight should not return errors")
-
-	preflight := corsResp.Header
-	assert.Equal(s.T(), "https://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the response headers")
-	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
-	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
-	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must be in the response headers")
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {

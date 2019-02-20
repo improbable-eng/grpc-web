@@ -22,7 +22,7 @@ import {
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.invoke, () => {
-  runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
+  runWithHttp1AndHttp2(({ testHostUrl, unavailableHost, emptyHost }) => {
     runWithSupportedTransports(transport => {
       it(`should reject a client-streaming method`, () => {
         const ping = new PingRequest();
@@ -316,41 +316,6 @@ conditionallyRunTestSuite(SuiteEnum.invoke, () => {
           });
         });
       });
-
-      if (!process.env.DISABLE_CORS_TESTS) {
-        it("should report failure for a CORS failure", (done) => {
-          let didGetOnHeaders = false;
-          let didGetOnMessage = false;
-
-          const ping = new PingRequest();
-
-          grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
-            debug: DEBUG,
-            transport: transport,
-            request: ping,
-            // This test is actually calling the same server as the other tests, but the server should reject the OPTIONS call
-            // because the service isn't registered. This could be the same host as all other tests (that should be CORS
-            // requests because they differ by port from the page the tests are run from), but IE treats different ports on
-            // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
-            host: corsHostUrl,
-            onHeaders: (headers: grpc.Metadata) => {
-              DEBUG && debug("headers", headers);
-              didGetOnHeaders = true;
-            },
-            onMessage: (message: Empty) => {
-              didGetOnMessage = true;
-            },
-            onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
-              DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-              // Some browsers return empty Headers for failed requests
-              assert.strictEqual(statusMessage, "Response closed without headers");
-              assert.strictEqual(status, grpc.Code.Unknown);
-              assert.ok(!didGetOnMessage);
-              done();
-            }
-          });
-        });
-      }
 
       it("should report failure for a dropped response after headers", (done) => {
         let didGetOnHeaders = false;

@@ -7,7 +7,6 @@ import {NodeHttpTransport} from "@improbable-eng/grpc-web-node-http-transport";
 
 type TestConfig = {
   testHostUrl: string,
-  corsHostUrl: string,
   unavailableHost: string,
   emptyHost: string,
   httpVersion: string,
@@ -30,7 +29,6 @@ export function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boo
 
 const http1Config: TestConfig = {
   testHostUrl: `https://${testHost}:9100`,
-  corsHostUrl: `https://${corsHost}:9100`,
   unavailableHost: `https://${testHost}:9999`,
   emptyHost: `https://${corsHost}:9105`,
   httpVersion: "http1",
@@ -38,7 +36,6 @@ const http1Config: TestConfig = {
 
 const http2Config: TestConfig = {
   testHostUrl: `https://${testHost}:9090`,
-  corsHostUrl: `https://${corsHost}:9090`,
   unavailableHost: `https://${testHost}:9999`,
   emptyHost: `https://${corsHost}:9095`,
   httpVersion: "http2",

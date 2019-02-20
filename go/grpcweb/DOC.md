@@ -29,98 +29,12 @@ If you'd like to have a standalone binary, please take a look at `grpcwebproxy`.
 
 ## Usage
 
-#### func  ListGRPCResources
-
-```go
-func ListGRPCResources(server *grpc.Server) []string
-```
-ListGRPCResources is a helper function that lists all URLs that are registered
-on gRPC server.
-
-This makes it easy to register all the relevant routes in your HTTP router of
-choice.
-
-#### func  WebsocketRequestOrigin
-
-```go
-func WebsocketRequestOrigin(req *http.Request) (string, error)
-```
-WebsocketRequestOrigin returns the host from which a websocket request made by a
-web browser originated.
-
 #### type Option
 
 ```go
 type Option func(*options)
 ```
 
-
-#### func  WithAllowedRequestHeaders
-
-```go
-func WithAllowedRequestHeaders(headers []string) Option
-```
-WithAllowedRequestHeaders allows for customizing what gRPC request headers a
-browser can add.
-
-This is controlling the CORS pre-flight `Access-Control-Allow-Headers` method
-and applies to *all* gRPC handlers. However, a special `*` value can be passed
-in that allows the browser client to provide *any* header, by explicitly
-whitelisting all `Access-Control-Request-Headers` of the pre-flight request.
-
-The default behaviour is `[]string{'*'}`, allowing all browser client headers.
-This option overrides that default, while maintaining a whitelist for
-gRPC-internal headers.
-
-Unfortunately, since the CORS pre-flight happens independently from gRPC handler
-execution, it is impossible to automatically discover it from the gRPC handler
-itself.
-
-The relevant CORS pre-flight docs:
-https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers
-
-#### func  WithCorsForRegisteredEndpointsOnly
-
-```go
-func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option
-```
-WithCorsForRegisteredEndpointsOnly allows for customizing whether OPTIONS
-requests with the `X-GRPC-WEB` header will only be accepted if they match a
-registered gRPC endpoint.
-
-This should be set to false to allow handling gRPC requests for unknown
-endpoints (e.g. for proxying).
-
-The default behaviour is `true`, i.e. only allows CORS requests for registered
-endpoints.
-
-#### func  WithOriginFunc
-
-```go
-func WithOriginFunc(originFunc func(origin string) bool) Option
-```
-WithOriginFunc allows for customizing what CORS Origin requests are allowed.
-
-This is controlling the CORS pre-flight `Access-Control-Allow-Origin`. This
-mechanism allows you to limit the availability of the APIs based on the domain
-name of the calling website (Origin). You can provide a function that filters
-the allowed Origin values.
-
-The default behaviour is to deny all requests from remote origins.
-
-The relevant CORS pre-flight docs:
-https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
-
-#### func  WithWebsocketOriginFunc
-
-```go
-func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) Option
-```
-WithWebsocketOriginFunc allows for customizing the acceptance of Websocket
-requests - usually to check that the origin is valid.
-
-The default behaviour is to check that the origin of the request matches the
-host of the request and deny all requests from remote origins.
 
 #### func  WithWebsockets
 
@@ -152,9 +66,6 @@ The internal implementation fakes out a http.Request that carries standard gRPC,
 and performs the remapping inside http.ResponseWriter, i.e. mostly the
 re-encoding of Trailers (that carry gRPC status).
 
-You can control the behaviour of the wrapper (e.g. modifying CORS behaviour)
-using `With*` options.
-
 #### func (*WrappedGrpcServer) HandleGrpcWebRequest
 
 ```go
@@ -174,17 +85,6 @@ HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a
 gRPC-Websocket request and wraps it with a compatibility layer to transform it
 to a standard gRPC request for the wrapped gRPC server and transforms the
 response to comply with the gRPC-Web protocol.
-
-#### func (*WrappedGrpcServer) IsAcceptableGrpcCorsRequest
-
-```go
-func (w *WrappedGrpcServer) IsAcceptableGrpcCorsRequest(req *http.Request) bool
-```
-IsAcceptableGrpcCorsRequest determines if a request is a CORS pre-flight request
-for a gRPC-Web request and that this request is acceptable for CORS.
-
-You can control the CORS behaviour using `With*` options in the WrapServer
-function.
 
 #### func (*WrappedGrpcServer) IsGrpcWebRequest
 
@@ -210,10 +110,3 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 ServeHTTP takes a HTTP request and if it is a gRPC-Web request wraps it with a
 compatibility layer to transform it to a standard gRPC request for the wrapped
 gRPC server and transforms the response to comply with the gRPC-Web protocol.
-
-The gRPC-Web compatibility is only invoked if the request is a gRPC-Web request
-as determined by IsGrpcWebRequest or the request is a pre-flight (CORS) request
-as determined by IsAcceptableGrpcCorsRequest.
-
-You can control the CORS behaviour using `With*` options in the WrapServer
-function.
