@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [[ -z "$GITHUB_TOKEN" ]]; then
+  echo "GITHUB_TOKEN not found in environment"
+  exit 1
+fi
+
 TAG=$1
 if [[ -z "$TAG" ]]; then
   echo "Expected release tag to be passed as the first argument"
@@ -27,7 +32,7 @@ echo "Publishing $TAG"
   --tag "$TAG" \
   --name "$TAG" \
   --body "See [CHANGELOG](https://github.com/improbable-eng/grpc-web/blob/master/CHANGELOG.md) for details" \
-  "go/build/*"
+  go/build/*
 
 # Publish client modules to NPM.
 npx lerna publish $TAG --yes
