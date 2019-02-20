@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 echo "Linting go sources"

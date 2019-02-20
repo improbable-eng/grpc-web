@@ -70,4 +70,4 @@ jobs:
       script: ./lint-all.sh
     - stage: deploy
       if: tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
-      script: echo Releasing $TRAVIS_TAG
+      script: ./publish-all.sh "$TRAVIS_TAG"
