@@ -67,7 +67,6 @@ const browsers = {
   // safari10: browser("safari", "10", "OS X", "Sierra"),
   safari9_1: browser("safari", "9.1", "OS X", "El Capitan"),
   safari8: browser("safari", "8", "OS X", "Yosemite"),
-  safari6: browser("safari", "6.2", "OS X", "Mountain Lion")
 };
 
 export default () => {
