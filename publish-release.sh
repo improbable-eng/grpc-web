@@ -23,8 +23,9 @@ rm -rf dist
 mkdir -p dist
 
 GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-x86_64" ./grpcwebproxy
-GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-windows-x86_64.exe" ./grpcwebproxy
-GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-darwin-x86_64" ./grpcwebproxy
+GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-win64.exe" ./grpcwebproxy
+GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-osx-x86_64" ./grpcwebproxy
+for f in dist/*; do zip -9r "$f.zip" "$f"; done
 ls -l ./dist
 cd ..
 
@@ -37,7 +38,7 @@ echo "Publishing $TAG"
   --tag "$TAG" \
   --name "$TAG" \
   --body "See [CHANGELOG](https://github.com/improbable-eng/grpc-web/blob/master/CHANGELOG.md) for details" \
-  go/dist/*
+  go/dist/*.zip
 
 # Publish client modules to NPM.
 npx lerna publish $TAG --yes
