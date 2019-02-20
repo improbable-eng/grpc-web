@@ -22,9 +22,9 @@ cd go
 rm -rf dist
 mkdir -p dist
 
-GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-amd64" ./grpcwebproxy
-GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-windows-amd64.exe" ./grpcwebproxy
-GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-darwin-amd64" ./grpcwebproxy
+GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-x86_64" ./grpcwebproxy
+GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-windows-x86_64.exe" ./grpcwebproxy
+GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-darwin-x86_64" ./grpcwebproxy
 ls -l ./dist
 cd ..
 
