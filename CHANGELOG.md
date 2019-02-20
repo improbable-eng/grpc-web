@@ -1,3 +1,11 @@
+## 0.9.0
+### Breaking Changes
+* Server: Deny CORS Requests by Default. [@jonny-improbable](https://github.com/jonny-improbable) in [#158](https://github.com/improbable-eng/grpc-web/pull/158)
+  * By default both the grpcweb in-process proxy and the standalone grpcwebproxy binary will deny any requests that come from (sub)domains that differ from that which the server is hosted on. See related docs for the in-process proxy [here](https://github.com/improbable-eng/grpc-web/tree/0ce3b686ebd74ae0e4b494d0f983328eb7a900e6/go/grpcweb#func--withwebsocketoriginfunc) and for the standalone grpcwebproxy [here](https://github.com/improbable-eng/grpc-web/tree/0ce3b686ebd74ae0e4b494d0f983328eb7a900e6/go/grpcwebproxy#configuring-cors-for-http-and-websocket-connections). 
+
+### Other Changes
+* Server: Support client certs for backend connections. [@[mastersingh24](/https://github.com/mastersingh24)] in [#333](https://github.com/improbable-eng/grpc-web/pull/333)  
+
 ## 0.8.0
 ### Breaking Changes
 * Scoped npm package under the @improbable-eng org; consumers should now `npm install @improbable-eng/grpc-web`.
