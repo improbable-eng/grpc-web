@@ -19,8 +19,13 @@ fi
 
 echo "Generating grpcwebproxy binaries"
 cd go
-./generate-grpcwebproxy-binaries.sh
-ls -l ./build
+rm -rf dist
+mkdir -p dist
+
+GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-amd64" ./grpcwebproxy
+GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-windows-amd64.exe" ./grpcwebproxy
+GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-darwin-amd64" ./grpcwebproxy
+ls -l ./dist
 cd ..
 
 echo "Publishing $TAG"
@@ -32,7 +37,7 @@ echo "Publishing $TAG"
   --tag "$TAG" \
   --name "$TAG" \
   --body "See [CHANGELOG](https://github.com/improbable-eng/grpc-web/blob/master/CHANGELOG.md) for details" \
-  go/build/*
+  go/dist/*
 
 # Publish client modules to NPM.
 npx lerna publish $TAG --yes
