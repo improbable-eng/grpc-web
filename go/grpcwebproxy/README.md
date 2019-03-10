@@ -20,7 +20,7 @@ The indented use is as a companion process for gRPC server containers.
 ### Pre-build binaries
 
 There are pre-build binaries available for Windows, Mac and Linux (x86_64):
-https://github.com/improbable-eng/grpc-web/releases/tag/0.6.3
+https://github.com/improbable-eng/grpc-web/releases
 
 ### Building from source
 
