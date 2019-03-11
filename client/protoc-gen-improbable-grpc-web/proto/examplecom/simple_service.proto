@@ -19,7 +19,9 @@ message StreamRequest {
   string some_string = 1;
 }
 
+// SimpleService is a simple grpc service.
 service SimpleService {
+  // DoUnary is a unary gRPC service
   rpc DoUnary(UnaryRequest) returns (othercom.ExternalChildMessage) {}
   rpc DoServerStream(StreamRequest) returns (stream othercom.ExternalChildMessage) {}
   rpc DoClientStream(stream StreamRequest) returns (google.protobuf.Empty) {}

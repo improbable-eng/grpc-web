@@ -3,6 +3,7 @@ import {FileDescriptorProto} from "google-protobuf/google/protobuf/descriptor_pb
 import Project, {CodeBlockWriter} from "ts-morph";
 import * as path from "path";
 import {trimSuffix, makeImportTargetNamespace, getRelativePathToRoot, trimPrefix} from "./util";
+import {findCommentByPath} from "protoc-plugin";
 
 type GeneratedOutput = {
   name: string
@@ -38,7 +39,9 @@ export class GrpcWebCodeGenerator {
     return this.project.emitToMemory().getFiles().map(f => {
       return {
         name: trimPrefix(f.filePath, process.cwd()),
-        content: f.text
+        // Note the Generated Code is prefixed here to ensure if is the very first line in the
+        // output file; tsc will place code above it otherwise.
+        content: "// GENERATED CODE -- DO NOT EDIT!\n\n" + f.text
       }
     })
   }
@@ -128,12 +131,24 @@ class ServiceDefinitionBuilder {
   }
 
   private writeServiceClasses() {
+    let serviceIdx = 0;
+    const locations = this.fd.getSourceCodeInfo().getLocationList().map(l => l.toObject());
+
     for (const service of this.fd.getServiceList()) {
+      const serviceDescription = findCommentByPath([ 6, serviceIdx], locations);
+      if (serviceDescription) {
+        this.writeDocBlock(serviceDescription);
+      }
       this.w.writeLine(`export class ${service.getName()} {`);
       this.w.indentBlock(() => {
         this.w.writeLine(`static readonly serviceName: string = "${service.getName()}"`);
 
+        let methodIdx = 0;
         for (const method of service.getMethodList()) {
+          const methodDescription = findCommentByPath([ 6, serviceIdx, 2, methodIdx], locations);
+          if (methodDescription) {
+            this.writeDocBlock(methodDescription);
+          }
           this.w.writeLine(`static readonly ${method.getName()}: ${service.getName()}${method.getName()} = {`);
           this.w.indentBlock(() => {
             this.w.indentBlock(() => {
@@ -146,11 +161,21 @@ class ServiceDefinitionBuilder {
             });
           });
           this.w.writeLine(`}`);
+          methodIdx++;
         }
 
       });
       this.w.writeLine(`}`);
       this.w.blankLine();
+      serviceIdx++;
     }
+  }
+
+  private writeDocBlock(comment: string) {
+    this.w.writeLine('/**');
+    for (const line of comment.split("\n")) {
+      this.w.writeLine(` * ${line}`);
+    }
+    this.w.writeLine(' */');
   }
 }

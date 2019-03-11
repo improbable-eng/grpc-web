@@ -1,17 +1,13 @@
 import {ExportMap} from "./exportmap";
 import {GrpcWebCodeGenerator} from "./codegen";
 import {
-  CodeGeneratorRequest as pb_CodeGeneratorRequest,
-  CodeGeneratorResponse as pb_CodeGeneratorResponse
-} from "google-protobuf/google/protobuf/compiler/plugin_pb";
-
-// TODO: Publish @types for protoc-plugin
-declare function require(path: string): any;
-const {CodeGeneratorRequest, CodeGeneratorResponse, CodeGeneratorResponseError} = require('protoc-plugin')
+  CodeGeneratorRequest, CodeGeneratorResponse, CodeGeneratorResponseError,
+  OutputFile
+} from "protoc-plugin";
 
 CodeGeneratorRequest()
-  .then((req: pb_CodeGeneratorRequest)  => {
-    const output: pb_CodeGeneratorResponse.File.AsObject[] = [];
+  .then((req)  => {
+    const output: OutputFile[] = [];
     const exportMap = new ExportMap(req.getProtoFileList());
     const codeGen = new GrpcWebCodeGenerator(exportMap);
 

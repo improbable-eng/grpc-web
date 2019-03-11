@@ -1,3 +1,5 @@
+// GENERATED CODE -- DO NOT EDIT!
+
 import * as proto_othercom_external_child_message_pb from "../../proto/othercom/external_child_message_pb";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 import * as proto_examplecom_simple_service_pb from "../../proto/examplecom/simple_service_pb";
@@ -41,12 +43,21 @@ declare type SimpleServiceDelete = {
     requestType: proto_examplecom_simple_service_pb.UnaryRequest;
     responseType: proto_examplecom_simple_service_pb.UnaryResponse;
 };
+/**
+ * SimpleService is a simple grpc service.
+ */
 export declare class SimpleService {
     static readonly serviceName: string;
+    /**
+     * DoUnary is a unary gRPC service
+     */
     static readonly DoUnary: SimpleServiceDoUnary;
     static readonly DoServerStream: SimpleServiceDoServerStream;
     static readonly DoClientStream: SimpleServiceDoClientStream;
     static readonly DoBidiStream: SimpleServiceDoBidiStream;
+    /**
+     * checks that rpc methods that use reserved JS words don't generate invalid code
+     */
     static readonly Delete: SimpleServiceDelete;
 }
 export {};
