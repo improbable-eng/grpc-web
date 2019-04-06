@@ -32,6 +32,12 @@ function frameTrailers(trailers: grpc.Metadata): Uint8Array {
   return new Uint8Array(frame);
 }
 
+/**
+ * FakeTransportBuilder is a builder pattern implementation which allows you to configure a new
+ * FakeTransport instance.
+ *
+ * @class
+ */
 export class FakeTransportBuilder {
   private requestListener: (options: grpc.TransportOptions) => void;
   private headersListener: (headers: grpc.Metadata) => void;
@@ -46,66 +52,156 @@ export class FakeTransportBuilder {
   private trailers: grpc.Metadata | null = null;
   private autoTrigger: boolean = true;
 
+  /**
+   * withRequestListener is a hook which allows you to listen for when a request is made to the server
+   * via the FakeTransport being constructed.
+   *
+   * @param {(options: TransportOptions) => void} requestListener
+   * @returns {this}
+   */
   withRequestListener(requestListener: (options: grpc.TransportOptions) => void) {
     this.requestListener = requestListener;
     return this;
   }
 
+  /**
+   * withHeadersListener is a hook which allows you to listen for any headers which were sent to the
+   * server via the FakeTransport being constructed.
+   *
+   * @param {(headers: BrowserHeaders) => void} headersListener
+   * @returns {this}
+   */
   withHeadersListener(headersListener: (headers: grpc.Metadata) => void) {
     this.headersListener = headersListener;
     return this;
   }
 
+  /**
+   * withMessageListener is a hook which allows you to listen for any messages sent by the client to
+   * the server via the FakeTransport being constructed.
+   *
+   * @param {(messageBytes: ArrayBufferView) => void} messageListener
+   * @returns {this}
+   */
   withMessageListener(messageListener: (messageBytes: ArrayBufferView) => void) {
     this.messageListener = messageListener;
     return this;
   }
 
+  /**
+   * withFinishSendListener is a hook which allows you to listen for when the client finishes
+   * sending messages to the server.
+   *
+   * @param {() => void} finishSendListener
+   * @returns {this}
+   */
   withFinishSendListener(finishSendListener: () => void) {
     this.finishSendListener = finishSendListener;
     return this;
   }
 
+  /**
+   * withCancelListener is a hook which allows you to listen for a request to close/cancel the
+   * FakeTransport being constructed.
+   *
+   * @param {() => void} cancelListener
+   * @returns {this}
+   */
   withCancelListener(cancelListener: () => void) {
     this.cancelListener = cancelListener;
     return this;
   }
 
-  withPreHeadersError(httpCode: number) {
-    this.preHeadersErrorCode = httpCode;
+  /**
+   * withPreHeadersError allows you to simulate a fault with the server where the request was
+   * terminated before any grpc Headers could be sent.
+   *
+   * @param {number} httpStatusCode
+   * @returns {this}
+   */
+  withPreHeadersError(httpStatusCode: number) {
+    this.preHeadersErrorCode = httpStatusCode;
     return this;
   }
 
-  withHeaders(headers: grpc.Metadata) {
-    this.headers = headers;
-    return this;
-  }
-
+  /**
+   * withPreMessagesError allows you to simulate a fault with the server were the request was terminated
+   * after the grpc Headers were sent, but before any messages could be sent.
+   *
+   * @param {Code} grpcStatus
+   * @param {string} grpcMessage
+   * @returns {this}
+   */
   withPreMessagesError(grpcStatus: grpc.Code, grpcMessage: string) {
     this.preMessagesError = [grpcStatus, grpcMessage];
     return this;
   }
 
-  withMessages(messages: Array<Message>) {
-    this.messages = messages;
-    return this;
-  }
-
+  /**
+   * withPreTrailersError allows you to simulate a fault with the server where the request was
+   * terminated after the grpc Headers, and messages were sent, but before the grpc Trailers could be
+   * sent.
+   *
+   * @param {Code} grpcStatus
+   * @param {string} grpcMessage
+   * @returns {this}
+   */
   withPreTrailersError(grpcStatus: grpc.Code, grpcMessage: string) {
     this.preTrailersError = [grpcStatus, grpcMessage];
     return this;
   }
 
+  /**
+   * withHeaders allows you to stub the grpc Headers which will be returned by the server in response
+   * to any request made via the FakeTransport being constructed.
+   *
+   * @param {Metadata} headers
+   * @returns {this}
+   */
+  withHeaders(headers: grpc.Metadata) {
+    this.headers = headers;
+    return this;
+  }
+
+  /**
+   * withMessages allows you to stub the messages which will be returned by the server in response
+   * to any request made via the FakeTransport being constructed.
+   *
+   * @param {Array<Message>} messages
+   * @returns {this}
+   */
+  withMessages(messages: Array<Message>) {
+    this.messages = messages;
+    return this;
+  }
+
+  /**
+   * withTrailers allows you to sub the grpc Trailers which will be returned by the server in resposne
+   * to any request made via the FakeTransport being constructed.
+   *
+   * @param {Metadata} trailers
+   * @returns {this}
+   */
   withTrailers(trailers: grpc.Metadata) {
     this.trailers = trailers;
     return this;
   }
 
+  /**
+   * withManualTrigger allows you to have control over when the headers, messages and trailers are
+   * returned from the server to the client.
+   *
+   * @returns {this}
+   */
   withManualTrigger() {
     this.autoTrigger = false;
     return this;
   }
 
+  /**
+   * build constructs and returns the FakeTransport instance.
+   * @returns {TriggerableTransport}
+   */
   build(): TriggerableTransport {
     const mock = this;
 
@@ -203,7 +299,7 @@ export class FakeTransportBuilder {
       };
     };
 
-    return assignIn(transportConstructor, triggers) as any; // tslint:disable-line
+    return assignIn(transportConstructor, triggers);
   }
 }
 
