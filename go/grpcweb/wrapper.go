@@ -225,6 +225,11 @@ func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	}
 	req.Header.Set("content-type", strings.Replace(contentType, incomingContentType, grpcContentType, 1))
 
+	// Remove content-length header since it represents http1.1 payload size, not the sum of the h2
+	// DATA frame payload lengths. https://http2.github.io/http2-spec/#malformed This effectively
+	// switches to chunked encoding which is the default for h2
+	req.Header.Del("content-length")
+
 	return req, isTextFormat
 }
 
