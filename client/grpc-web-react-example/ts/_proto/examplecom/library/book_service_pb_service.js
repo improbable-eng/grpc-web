@@ -2,7 +2,7 @@
 // file: examplecom/library/book_service.proto
 
 var examplecom_library_book_service_pb = require("../../examplecom/library/book_service_pb");
-var grpc = require("grpc-web-client").grpc;
+var grpc = require("@improbable-eng/grpc-web").grpc;
 
 var BookService = (function () {
   function BookService() {}
@@ -39,7 +39,7 @@ BookServiceClient.prototype.getBook = function getBook(requestMessage, metadata,
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(BookService.GetBook, {
+  var client = grpc.unary(BookService.GetBook, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -48,13 +48,22 @@ BookServiceClient.prototype.getBook = function getBook(requestMessage, metadata,
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 BookServiceClient.prototype.queryBooks = function queryBooks(requestMessage, metadata) {

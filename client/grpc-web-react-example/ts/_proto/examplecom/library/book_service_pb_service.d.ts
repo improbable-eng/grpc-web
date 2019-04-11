@@ -2,7 +2,7 @@
 // file: examplecom/library/book_service.proto
 
 import * as examplecom_library_book_service_pb from "../../examplecom/library/book_service_pb";
-import {grpc} from "grpc-web-client";
+import {grpc} from "@improbable-eng/grpc-web";
 
 type BookServiceGetBook = {
   readonly methodName: string;
@@ -30,28 +30,45 @@ export class BookService {
 
 export type ServiceError = { message: string, code: number; metadata: grpc.Metadata }
 export type Status = { details: string, code: number; metadata: grpc.Metadata }
-export type ServiceClientOptions = { transport: grpc.TransportConstructor; debug?: boolean }
 
+interface UnaryResponse {
+  cancel(): void;
+}
 interface ResponseStream<T> {
   cancel(): void;
   on(type: 'data', handler: (message: T) => void): ResponseStream<T>;
   on(type: 'end', handler: () => void): ResponseStream<T>;
   on(type: 'status', handler: (status: Status) => void): ResponseStream<T>;
 }
+interface RequestStream<T> {
+  write(message: T): RequestStream<T>;
+  end(): void;
+  cancel(): void;
+  on(type: 'end', handler: () => void): RequestStream<T>;
+  on(type: 'status', handler: (status: Status) => void): RequestStream<T>;
+}
+interface BidirectionalStream<ReqT, ResT> {
+  write(message: ReqT): BidirectionalStream<ReqT, ResT>;
+  end(): void;
+  cancel(): void;
+  on(type: 'data', handler: (message: ResT) => void): BidirectionalStream<ReqT, ResT>;
+  on(type: 'end', handler: () => void): BidirectionalStream<ReqT, ResT>;
+  on(type: 'status', handler: (status: Status) => void): BidirectionalStream<ReqT, ResT>;
+}
 
 export class BookServiceClient {
   readonly serviceHost: string;
 
-  constructor(serviceHost: string, options?: ServiceClientOptions);
+  constructor(serviceHost: string, options?: grpc.RpcOptions);
   getBook(
     requestMessage: examplecom_library_book_service_pb.GetBookRequest,
     metadata: grpc.Metadata,
-    callback: (error: ServiceError, responseMessage: examplecom_library_book_service_pb.Book|null) => void
-  ): void;
+    callback: (error: ServiceError|null, responseMessage: examplecom_library_book_service_pb.Book|null) => void
+  ): UnaryResponse;
   getBook(
     requestMessage: examplecom_library_book_service_pb.GetBookRequest,
-    callback: (error: ServiceError, responseMessage: examplecom_library_book_service_pb.Book|null) => void
-  ): void;
+    callback: (error: ServiceError|null, responseMessage: examplecom_library_book_service_pb.Book|null) => void
+  ): UnaryResponse;
   queryBooks(requestMessage: examplecom_library_book_service_pb.QueryBooksRequest, metadata?: grpc.Metadata): ResponseStream<examplecom_library_book_service_pb.Book>;
 }
 
