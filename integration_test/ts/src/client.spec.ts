@@ -1,20 +1,20 @@
 // gRPC-Web library
-import {grpc} from "@improbable-eng/grpc-web";
+import { grpc } from "@improbable-eng/grpc-web";
 
-import {debug} from "../../../client/grpc-web/src/debug";
-import {assert} from "chai";
+import { debug } from "../../../client/grpc-web/src/debug";
+import { assert } from "chai";
 // Generated Test Classes
-import {Empty, } from "google-protobuf/google/protobuf/empty_pb";
-import {PingRequest, PingResponse, } from "../_proto/improbable/grpcweb/test/test_pb";
-import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
-import {continueStream, DEBUG, UncaughtExceptionListener} from "./util";
+import { Empty, } from "google-protobuf/google/protobuf/empty_pb";
+import { PingRequest, PingResponse, } from "../_proto/improbable/grpcweb/test/test_pb";
+import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
+import { continueStream, DEBUG, UncaughtExceptionListener } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.client, () => {
-  runWithHttp1AndHttp2(({testHostUrl, corsHostUrl, unavailableHost, emptyHost}) => {
+  runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
     runWithSupportedTransports(transport => {
       it(`should throw an error if close is called before start`, () => {
         assert.throw(() => {
@@ -430,38 +430,6 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
           client.send(ping);
         });
       }
-
-      it(`should report failure for a dropped response after headers`, (done) => {
-        let didGetOnHeaders = false;
-        let didGetOnMessage = false;
-
-        const ping = new PingRequest();
-        ping.setFailureType(PingRequest.FailureType.DROP);
-
-        const client = grpc.client(TestService.PingError, {
-          debug: DEBUG,
-          transport: transport,
-          host: testHostUrl,
-        });
-        client.onHeaders((headers: grpc.Metadata) => {
-          DEBUG && debug("headers", headers);
-          didGetOnHeaders = true;
-          assert.deepEqual(headers.get("grpc-status"), []);
-          assert.deepEqual(headers.get("grpc-message"), []);
-        });
-        client.onMessage((message: Empty) => {
-          didGetOnMessage = true;
-        });
-        client.onEnd((status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
-          DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-          assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-          assert.strictEqual(status, grpc.Code.Unknown);
-          assert.ok(!didGetOnMessage);
-          done();
-        });
-        client.start();
-        client.send(ping);
-      });
 
       it(`should report failure for a request to an invalid host`, (done) => {
         let didGetOnHeaders = false;

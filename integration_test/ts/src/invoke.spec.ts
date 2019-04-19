@@ -3,8 +3,8 @@ import {
   grpc,
 } from "@improbable-eng/grpc-web";
 
-import {debug} from "../../../client/grpc-web/src/debug";
-import {assert} from "chai";
+import { debug } from "../../../client/grpc-web/src/debug";
+import { assert } from "chai";
 
 // Generated Test Classes
 import {
@@ -14,8 +14,8 @@ import {
   PingRequest,
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
-import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
-import {DEBUG, continueStream, UncaughtExceptionListener} from "./util";
+import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
+import { DEBUG, continueStream, UncaughtExceptionListener } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
@@ -351,37 +351,6 @@ conditionallyRunTestSuite(SuiteEnum.invoke, () => {
           });
         });
       }
-
-      it("should report failure for a dropped response after headers", (done) => {
-        let didGetOnHeaders = false;
-        let didGetOnMessage = false;
-
-        const ping = new PingRequest();
-        ping.setFailureType(PingRequest.FailureType.DROP);
-
-        grpc.invoke(TestService.PingError, {
-          debug: DEBUG,
-          transport: transport,
-          request: ping,
-          host: testHostUrl,
-          onHeaders: (headers: grpc.Metadata) => {
-            DEBUG && debug("headers", headers);
-            didGetOnHeaders = true;
-            assert.deepEqual(headers.get("grpc-status"), []);
-            assert.deepEqual(headers.get("grpc-message"), []);
-          },
-          onMessage: (message: Empty) => {
-            didGetOnMessage = true;
-          },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
-            DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-            assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-            assert.strictEqual(status, grpc.Code.Unknown);
-            assert.ok(!didGetOnMessage);
-            done();
-          }
-        });
-      });
 
       it("should report failure for a request to an invalid host", (done) => {
         let didGetOnHeaders = false;

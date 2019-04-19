@@ -3,23 +3,23 @@ import {
   grpc,
 } from "@improbable-eng/grpc-web";
 
-import {debug} from "../../../client/grpc-web/src/debug";
-import {assert} from "chai";
+import { debug } from "../../../client/grpc-web/src/debug";
+import { assert } from "chai";
 
 // Generated Test Classes
 import {
   PingRequest,
   PingResponse, TextMessage,
 } from "../_proto/improbable/grpcweb/test/test_pb";
-import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
-import {DEBUG, UncaughtExceptionListener} from "./util";
+import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
+import { DEBUG, UncaughtExceptionListener } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
 conditionallyRunTestSuite(SuiteEnum.unary, () => {
-  runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost}) => {
+  runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
     runWithSupportedTransports(transport => {
       it(`should reject a server-streaming method`, () => {
         const ping = new PingRequest();
@@ -31,7 +31,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             transport: transport,
             request: ping,
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             }
           })
@@ -48,7 +48,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             transport: transport,
             request: ping,
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             }
           })
@@ -67,7 +67,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             transport: transport,
             request: ping,
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.isNotOk(statusMessage, "expected no message");
@@ -108,7 +108,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             transport: transport,
             request: textMessage,
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.isNotOk(statusMessage, "expected no message");
@@ -146,7 +146,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
               "HeaderTestKey2": "ClientValue2",
             }),
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.OK, "expected OK (0)");
               assert.isNotOk(statusMessage, "expected no message");
@@ -181,7 +181,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             transport: transport,
             request: ping,
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               assert.strictEqual(status, grpc.Code.Unimplemented);
               assert.strictEqual(statusMessage, "Intentionally returning error for PingError");
@@ -215,7 +215,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             // requests because they differ by port from the page the tests are run from), but IE treats different ports on
             // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
             host: corsHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               // Some browsers return empty Headers for failed requests
               assert.strictEqual(statusMessage, "Response closed without headers");
@@ -226,36 +226,15 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
         });
       }
 
-      it(`should report failure for a dropped response after headers`, (done) => {
-        const ping = new PingRequest();
-        ping.setFailureType(PingRequest.FailureType.DROP);
-
-        grpc.unary(TestService.PingError, {
-          debug: DEBUG,
-          transport: transport,
-          request: ping,
-          host: testHostUrl,
-          onEnd: ({status, statusMessage, headers, message, trailers}) => {
-            DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
-            assert.strictEqual(statusMessage, "Response closed without grpc-status (Headers only)");
-            assert.strictEqual(status, grpc.Code.Unknown);
-            assert.deepEqual(headers.get("grpc-status"), []);
-            assert.deepEqual(headers.get("grpc-message"), []);
-            done();
-          }
-        });
-      });
-
       it(`should report failure for a request to an invalid host`, (done) => {
         const ping = new PingRequest();
-        ping.setFailureType(PingRequest.FailureType.DROP);
 
         grpc.unary(TestService.Ping, {
           debug: DEBUG,
           transport: transport,
           request: ping,
           host: unavailableHost, // Should not be available
-          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+          onEnd: ({ status, statusMessage, headers, message, trailers }) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(statusMessage, "Response closed without headers");
             assert.strictEqual(status, grpc.Code.Unknown);
@@ -273,7 +252,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
           transport: transport,
           request: ping,
           host: emptyHost,
-          onEnd: ({status, statusMessage, headers, message, trailers}) => {
+          onEnd: ({ status, statusMessage, headers, message, trailers }) => {
             DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
             assert.strictEqual(statusMessage, "unknown service improbable.grpcweb.test.FailService");
             assert.strictEqual(status, 12);
@@ -307,7 +286,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
             transport: transport,
             request: ping,
             host: testHostUrl,
-            onEnd: ({status, statusMessage, headers, message, trailers}) => {
+            onEnd: ({ status, statusMessage, headers, message, trailers }) => {
               DEBUG && debug("status", status, "statusMessage", statusMessage, "headers", headers, "res", message, "trailers", trailers);
               setTimeout(() => {
                 uncaughtHandler.detach();

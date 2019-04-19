@@ -348,7 +348,6 @@ proto.improbable.grpcweb.test.PingRequest.serializeBinaryToWriter = function(mes
 proto.improbable.grpcweb.test.PingRequest.FailureType = {
   NONE: 0,
   CODE: 1,
-  DROP: 2,
   CODE_UNICODE: 3
 };
 
