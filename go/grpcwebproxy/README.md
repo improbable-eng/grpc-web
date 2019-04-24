@@ -19,7 +19,7 @@ The indented use is as a companion process for gRPC server containers.
 
 ### Pre-build binaries
 
-There are pre-build binaries available for Windows, Mac and Linux (x86_64):
+There are pre-build binaries available for Windows, Mac and Linux (ARM and x86_64):
 https://github.com/improbable-eng/grpc-web/releases
 
 ### Building from source
@@ -27,7 +27,8 @@ https://github.com/improbable-eng/grpc-web/releases
 To build, you need to have Go >= 1.8, and call `go get` with `dep ensure`:
 
 ```sh
-git clone github.com/improbable-eng/grpc-web $GOPATH/src/
+GOPATH=~/go ; export GOPATH
+git clone https://github.com/improbable-eng/grpc-web.git $GOPATH/src/github.com/improbable-eng/grpc-web
 cd $GOPATH/src/github.com/improbable-eng/grpc-web
 dep ensure # after installing dep
 go install ./go/grpcwebproxy # installs into $GOPATH/bin/grpcwebproxy
