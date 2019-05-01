@@ -3,6 +3,7 @@ package grpcweb
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -53,15 +54,11 @@ func (w *webSocketResponseWriter) writeHeaderFrame(headers http.Header) {
 }
 
 func (w *webSocketResponseWriter) copyFlushedHeaders() {
-	for k, vv := range w.headers {
-		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
-		if strings.ToLower(k) == "trailer" {
-			continue
-		}
-		for _, v := range vv {
-			w.flushedHeaders.Add(k, v)
-		}
-	}
+	copyHeader(
+		w.flushedHeaders, w.headers,
+		skipKeys("trailer"),
+		keyCase(http.CanonicalHeaderKey),
+	)
 }
 
 func (w *webSocketResponseWriter) WriteHeader(code int) {
@@ -72,25 +69,17 @@ func (w *webSocketResponseWriter) WriteHeader(code int) {
 }
 
 func (w *webSocketResponseWriter) extractTrailerHeaders() http.Header {
-	trailerHeaders := make(http.Header)
-	for k, vv := range w.headers {
-		// Skip the pre-annoucement of Trailer headers. Don't add them to the response headers.
-		if strings.ToLower(k) == "trailer" {
-			continue
-		}
-		// Skip existing headers that were already sent.
-		if _, exists := w.flushedHeaders[k]; exists {
-			continue
-		}
-		// Skip the Trailer prefix
-		if strings.HasPrefix(k, http2.TrailerPrefix) {
-			k = k[len(http2.TrailerPrefix):]
-		}
-		for _, v := range vv {
-			trailerHeaders.Add(k, v)
-		}
-	}
-	return trailerHeaders
+	th := make(http.Header)
+	copyHeader(
+		th, w.headers,
+		skipKeys(append([]string{"trailer"}, headerKeys(w.flushedHeaders)...)...),
+		replaceInKeys(http2.TrailerPrefix, ""),
+		// gRPC-Web spec says that must use lower-case header/trailer names.
+		// See "HTTP wire protocols" section in
+		// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2
+		keyCase(strings.ToLower),
+	)
+	return th
 }
 
 func (w *webSocketResponseWriter) FlushTrailers() {
@@ -110,6 +99,7 @@ type webSocketWrappedReader struct {
 	respWriter      *webSocketResponseWriter
 	remainingBuffer []byte
 	remainingError  error
+	cancel          context.CancelFunc
 }
 
 func (w *webSocketWrappedReader) Close() error {
@@ -152,7 +142,7 @@ func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 	messageType, framePayload, err := w.wsConn.ReadMessage()
 	if err == io.EOF || messageType == -1 {
 		// The client has closed the connection. Indicate to the response writer that it should close
-		w.respWriter.closeNotifyChan <- true
+		w.cancel()
 		return 0, io.EOF
 	}
 
@@ -193,12 +183,13 @@ func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func newWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *webSocketResponseWriter) *webSocketWrappedReader {
+func newWebsocketWrappedReader(wsConn *websocket.Conn, respWriter *webSocketResponseWriter, cancel context.CancelFunc) *webSocketWrappedReader {
 	return &webSocketWrappedReader{
 		wsConn:          wsConn,
 		respWriter:      respWriter,
 		remainingBuffer: nil,
 		remainingError:  nil,
+		cancel:          cancel,
 	}
 }
 

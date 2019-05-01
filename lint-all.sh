@@ -3,16 +3,7 @@
 set -e
 
 echo "Linting go sources"
-pushd ./go
-./checkup.sh
-./fixup.sh
-popd
+cd go && ./lint.sh && cd ..
 
-echo "Linting Typescript sources"
-pushd ./ts
+echo "Linting TypeScript sources"
 npm run lint
-popd
-
-pushd ./test
-npm run lint
-popd

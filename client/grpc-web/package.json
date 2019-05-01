@@ -1,0 +1,44 @@
+{
+  "name": "@improbable-eng/grpc-web",
+  "version": "0.9.1",
+  "description": "gRPC-Web client for browsers (JS/TS)",
+  "main": "dist/grpc-web-client.js",
+  "browser": "dist/grpc-web-client.umd.js",
+  "types": "dist/typings/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "postbootstrap": "npm run lib:build",
+    "lib:build": "npm run clean && webpack"
+  },
+  "author": "Improbable",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "github.com/improbable-eng/grpc-web"
+  },
+  "keywords": [
+    "grpc",
+    "grpc-web",
+    "protobuf",
+    "typescript",
+    "ts"
+  ],
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "google-protobuf": "^3.2.0"
+  },
+  "dependencies": {
+    "browser-headers": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "^3.2.5",
+    "@types/node": "^7.0.5",
+    "google-protobuf": "^3.2.0",
+    "ts-loader": "^4.5.0",
+    "typescript": "3.3.3",
+    "webpack": "^4.29.3",
+    "webpack-cli": "^3.2.3"
+  }
+}

@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -22,6 +23,10 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	google_protobuf "github.com/golang/protobuf/ptypes/empty"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	testproto "github.com/improbable-eng/grpc-web/integration_test/go/_proto/improbable/grpcweb/test"
+	"github.com/mwitkow/go-conntrack/connhelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -32,11 +37,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
-
-	google_protobuf "github.com/golang/protobuf/ptypes/empty"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	testproto "github.com/improbable-eng/grpc-web/test/go/_proto/improbable/grpcweb/test"
-	"github.com/mwitkow/go-conntrack/connhelpers"
 )
 
 var (
@@ -46,10 +46,17 @@ var (
 	useFlushForHeaders    = "test-internal-use-flush-for-headers"
 )
 
+const (
+	grpcWebContentType     = "application/grpc-web"
+	grpcWebTextContentType = "application/grpc-web-text"
+)
+
 type GrpcWebWrapperTestSuite struct {
 	suite.Suite
 	httpMajorVersion int
 	listener         net.Listener
+	grpcServer       *grpc.Server
+	wrappedServer    *grpcweb.WrappedGrpcServer
 }
 
 func TestHttp2GrpcWebWrapperTestSuite(t *testing.T) {
@@ -60,18 +67,18 @@ func TestHttp1GrpcWebWrapperTestSuite(t *testing.T) {
 	suite.Run(t, &GrpcWebWrapperTestSuite{httpMajorVersion: 1})
 }
 
-func (s *GrpcWebWrapperTestSuite) SetupSuite() {
+func (s *GrpcWebWrapperTestSuite) SetupTest() {
 	var err error
-	grpcServer := grpc.NewServer()
-	testproto.RegisterTestServiceServer(grpcServer, &testServiceImpl{})
+	s.grpcServer = grpc.NewServer()
+	testproto.RegisterTestServiceServer(s.grpcServer, &testServiceImpl{})
 	grpclog.SetLogger(log.New(os.Stderr, "grpc: ", log.LstdFlags))
-	wrappedServer := grpcweb.WrapServer(grpcServer)
+	s.wrappedServer = grpcweb.WrapServer(s.grpcServer)
 
 	httpServer := http.Server{
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 			require.EqualValues(s.T(), s.httpMajorVersion, req.ProtoMajor, "Requests in this test are served over the wrong protocol")
 			s.T().Logf("Serving over: %d", req.ProtoMajor)
-			wrappedServer.ServeHTTP(resp, req)
+			s.wrappedServer.ServeHTTP(resp, req)
 		}),
 	}
 
@@ -87,6 +94,8 @@ func (s *GrpcWebWrapperTestSuite) SetupSuite() {
 	go func() {
 		httpServer.Serve(s.listener)
 	}()
+
+	// Wait for the grpcServer to start serving requests.
 	time.Sleep(10 * time.Millisecond)
 }
 
@@ -95,13 +104,33 @@ func (s *GrpcWebWrapperTestSuite) ctxForTest() context.Context {
 	return ctx
 }
 
-func (s *GrpcWebWrapperTestSuite) makeRequest(verb string, method string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (s *GrpcWebWrapperTestSuite) makeRequest(
+	verb string, method string, headers http.Header, body io.Reader, isText bool,
+) (*http.Response, error) {
+	contentType := "application/grpc-web"
+	if isText {
+		// base64 encode the body
+		encodedBody := &bytes.Buffer{}
+		encoder := base64.NewEncoder(base64.StdEncoding, encodedBody)
+		_, err := io.Copy(encoder, body)
+		if err != nil {
+			return nil, err
+		}
+		err = encoder.Close()
+		if err != nil {
+			return nil, err
+		}
+		body = encodedBody
+		contentType = "application/grpc-web-text"
+	}
+
 	url := fmt.Sprintf("https://%s%s", s.listener.Addr().String(), method)
 	req, err := http.NewRequest(verb, url, body)
 	req = req.WithContext(s.ctxForTest())
 	require.NoError(s.T(), err, "failed creating a request")
 	req.Header = headers
-	req.Header.Set("Content-Type", "application/grpc-web")
+
+	req.Header.Set("Content-Type", contentType)
 	client := &http.Client{
 		Transport: &http2.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
 	}
@@ -112,7 +141,40 @@ func (s *GrpcWebWrapperTestSuite) makeRequest(verb string, method string, header
 	return resp, err
 }
 
-func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http.Header, requestMessages [][]byte) (headers http.Header, trailers http.Header, responseMessages [][]byte, err error) {
+func decodeMultipleBase64Chunks(b []byte) ([]byte, error) {
+	// grpc-web allows multiple base64 chunks: the implementation may send base64-encoded
+	// "chunks" with potential padding whenever the runtime needs to flush a byte buffer.
+	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md
+	output := make([]byte, base64.StdEncoding.DecodedLen(len(b)))
+	outputEnd := 0
+
+	for inputEnd := 0; inputEnd < len(b); {
+		chunk := b[inputEnd:]
+		paddingIndex := bytes.IndexByte(chunk, '=')
+		if paddingIndex != -1 {
+			// find the consecutive =
+			for {
+				paddingIndex += 1
+				if paddingIndex >= len(chunk) || chunk[paddingIndex] != '=' {
+					break
+				}
+			}
+			chunk = chunk[:paddingIndex]
+		}
+		inputEnd += len(chunk)
+
+		n, err := base64.StdEncoding.Decode(output[outputEnd:], chunk)
+		if err != nil {
+			return nil, err
+		}
+		outputEnd += n
+	}
+	return output[:outputEnd], nil
+}
+
+func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(
+	method string, reqHeaders http.Header, requestMessages [][]byte, isText bool,
+) (headers http.Header, trailers grpcweb.Trailer, responseMessages [][]byte, err error) {
 	writer := new(bytes.Buffer)
 	for _, msgBytes := range requestMessages {
 		grpcPreamble := []byte{0, 0, 0, 0, 0}
@@ -120,17 +182,24 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 		writer.Write(grpcPreamble)
 		writer.Write(msgBytes)
 	}
-	resp, err := s.makeRequest("POST", method, reqHeaders, writer)
+	resp, err := s.makeRequest("POST", method, reqHeaders, writer, isText)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, grpcweb.Trailer{}, nil, err
 	}
 	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, grpcweb.Trailer{}, nil, err
 	}
+
+	if isText {
+		contents, err = decodeMultipleBase64Chunks(contents)
+		if err != nil {
+			return nil, grpcweb.Trailer{}, nil, err
+		}
+	}
+
 	reader := bytes.NewReader(contents)
-	trailers = make(http.Header)
 	for {
 		grpcPreamble := []byte{0, 0, 0, 0, 0}
 		readCount, err := reader.Read(grpcPreamble)
@@ -138,17 +207,17 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(method string, reqHeaders http
 			break
 		}
 		if readCount != 5 || err != nil {
-			return nil, nil, nil, fmt.Errorf("Unexpected end of body in preamble: %v", err)
+			return nil, grpcweb.Trailer{}, nil, fmt.Errorf("Unexpected end of body in preamble: %v", err)
 		}
 		payloadLength := binary.BigEndian.Uint32(grpcPreamble[1:])
 		payloadBytes := make([]byte, payloadLength)
 
 		readCount, err = reader.Read(payloadBytes)
 		if uint32(readCount) != payloadLength || err != nil {
-			return nil, nil, nil, fmt.Errorf("Unexpected end of msg: %v", err)
+			return nil, grpcweb.Trailer{}, nil, fmt.Errorf("Unexpected end of msg: %v", err)
 		}
 		if grpcPreamble[0]&(1<<7) == (1 << 7) { // MSB signifies the trailer parser
-			trailers = readHeadersFromBytes(payloadBytes)
+			trailers = readTrailersFromBytes(s.T(), payloadBytes)
 		} else {
 			responseMessages = append(responseMessages, payloadBytes)
 		}
@@ -160,27 +229,34 @@ func (s *GrpcWebWrapperTestSuite) TestPingEmpty() {
 	headers, trailers, responses, err := s.makeGrpcRequest(
 		"/improbable.grpcweb.test.TestService/PingEmpty",
 		headerWithFlag(),
-		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}))
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}),
+		false)
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPing() {
-	headers, trailers, responses, err := s.makeGrpcRequest(
-		"/improbable.grpcweb.test.TestService/Ping",
-		headerWithFlag(),
-		serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "foo"}}))
-	require.NoError(s.T(), err, "No error on making request")
+	// test both the text and binary formats
+	for _, contentType := range []string{grpcWebContentType, grpcWebTextContentType} {
+		headers, trailers, responses, err := s.makeGrpcRequest(
+			"/improbable.grpcweb.test.TestService/Ping",
+			headerWithFlag(),
+			serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "foo"}}),
+			contentType == grpcWebTextContentType)
+		require.NoError(s.T(), err, "No error on making request")
 
-	assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
-	s.assertTrailerGrpcCode(trailers, codes.OK, "")
-	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
-	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+		assert.Equal(s.T(), 1, len(responses), "PingEmpty is an unary response")
+		s.assertTrailerGrpcCode(trailers, codes.OK, "")
+		s.assertHeadersContainMetadata(headers, expectedHeaders)
+		s.assertTrailersContainMetadata(trailers, expectedTrailers)
+		s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+		s.assertContentTypeSet(headers, contentType)
+	}
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
@@ -189,14 +265,16 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInData() {
 	headers, trailers, responses, err := s.makeGrpcRequest(
 		"/improbable.grpcweb.test.TestService/PingError",
 		headerWithFlag(useFlushForHeaders),
-		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}))
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}),
+		false)
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 0, len(responses), "PingError is an unary response that has no payload")
 	s.assertTrailerGrpcCode(trailers, codes.Unimplemented, "Not implemented PingError")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
@@ -205,27 +283,31 @@ func (s *GrpcWebWrapperTestSuite) TestPingError_WithTrailersInHeaders() {
 	headers, _, responses, err := s.makeGrpcRequest(
 		"/improbable.grpcweb.test.TestService/PingError",
 		http.Header{},
-		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}))
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}),
+		false)
 	require.NoError(s.T(), err, "No error on making request")
 
 	assert.Equal(s.T(), 0, len(responses), "PingError is an unary response that has no payload")
-	s.assertTrailerGrpcCode(headers, codes.Unimplemented, "Not implemented PingError")
+	s.assertHeadersGrpcCode(headers, codes.Unimplemented, "Not implemented PingError")
 	// s.assertHeadersContainMetadata(headers, expectedHeaders) // TODO(mwitkow): There is a bug in gRPC where headers don't get added if no payload exists.
 	s.assertHeadersContainMetadata(headers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedTrailers)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) TestPingList() {
 	headers, trailers, responses, err := s.makeGrpcRequest(
 		"/improbable.grpcweb.test.TestService/PingList",
 		headerWithFlag(),
-		serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "something"}}))
+		serializeProtoMessages([]proto.Message{&testproto.PingRequest{Value: "something"}}),
+		false)
 	require.NoError(s.T(), err, "No error on making request")
 	assert.Equal(s.T(), expectedListResponses, len(responses), "the number of expected proto fields shouold match")
 	s.assertTrailerGrpcCode(trailers, codes.OK, "")
 	s.assertHeadersContainMetadata(headers, expectedHeaders)
-	s.assertHeadersContainMetadata(trailers, expectedTrailers)
+	s.assertTrailersContainMetadata(trailers, expectedTrailers)
 	s.assertHeadersContainCorsExpectedHeaders(headers, expectedHeaders)
+	s.assertContentTypeSet(headers, grpcWebContentType)
 }
 
 func (s *GrpcWebWrapperTestSuite) getStandardGrpcClient() *grpc.ClientConn {
@@ -281,7 +363,7 @@ func (s *GrpcWebWrapperTestSuite) TestPingStream_NormalGrpcWorks() {
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 
-func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_DeniedByDefault() {
 	/**
 	OPTIONS /improbable.grpcweb.test.TestService/Ping
 	Access-Control-Request-Method: POST
@@ -291,16 +373,45 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight() {
 	headers := http.Header{}
 	headers.Add("Access-Control-Request-Method", "POST")
 	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
-	headers.Add("Origin", "http://foo.client.com")
+	headers.Add("Origin", "https://foo.client.com")
 
-	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil)
+	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil, false)
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
 
 	preflight := corsResp.Header
-	assert.Equal(s.T(), "http://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the preflight")
-	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the preflight")
-	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response")
-	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed max age must be in the response")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Origin"), "origin must not be in the response headers")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must not be in the response headers")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Max-Age"), "allowed max age must not be in the response headers")
+	assert.Equal(s.T(), "", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must not be in the response headers")
+}
+
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_AllowedByOriginFunc() {
+	/**
+	OPTIONS /improbable.grpcweb.test.TestService/Ping
+	Access-Control-Request-Method: POST
+	Access-Control-Request-Headers: origin, x-requested-with, accept
+	Origin: http://foo.client.com
+	*/
+	headers := http.Header{}
+	headers.Add("Access-Control-Request-Method", "POST")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
+	headers.Add("Origin", "https://foo.client.com")
+
+	// Create a new server which permits Cross-Origin Resource requests from `foo.client.com`.
+	s.wrappedServer = grpcweb.WrapServer(s.grpcServer,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return origin == "https://foo.client.com"
+		}),
+	)
+
+	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil, false)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+
+	preflight := corsResp.Header
+	assert.Equal(s.T(), "https://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the response headers")
+	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
+	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
+	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must be in the response headers")
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {
@@ -308,6 +419,18 @@ func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Head
 		lowerKey := strings.ToLower(k)
 		for _, vv := range v {
 			assert.Equal(s.T(), headers.Get(lowerKey), vv, "Expected there to be %v=%v", lowerKey, vv)
+		}
+	}
+}
+
+func (s *GrpcWebWrapperTestSuite) assertContentTypeSet(headers http.Header, contentType string) {
+	assert.Equal(s.T(), contentType, headers.Get("content-type"), `Expected there to be content-type=%v`, contentType)
+}
+
+func (s *GrpcWebWrapperTestSuite) assertTrailersContainMetadata(trailers grpcweb.Trailer, meta metadata.MD) {
+	for k, v := range meta {
+		for _, vv := range v {
+			assert.Equal(s.T(), trailers.Get(k), vv, "Expected there to be %v=%v", k, vv)
 		}
 	}
 }
@@ -323,7 +446,15 @@ func (s *GrpcWebWrapperTestSuite) assertHeadersContainCorsExpectedHeaders(header
 	}
 }
 
-func (s *GrpcWebWrapperTestSuite) assertTrailerGrpcCode(trailers http.Header, code codes.Code, desc string) {
+func (s *GrpcWebWrapperTestSuite) assertHeadersGrpcCode(headers http.Header, code codes.Code, desc string) {
+	require.NotEmpty(s.T(), headers.Get("grpc-status"), "grpc-status must not be empty in trailers")
+	statusCode, err := strconv.Atoi(headers.Get("grpc-status"))
+	require.NoError(s.T(), err, "no error parsing grpc-status")
+	assert.EqualValues(s.T(), code, statusCode, "grpc-status must match expected code")
+	assert.EqualValues(s.T(), desc, headers.Get("grpc-message"), "grpc-message is expected to match")
+}
+
+func (s *GrpcWebWrapperTestSuite) assertTrailerGrpcCode(trailers grpcweb.Trailer, code codes.Code, desc string) {
 	require.NotEmpty(s.T(), trailers.Get("grpc-status"), "grpc-status must not be empty in trailers")
 	statusCode, err := strconv.Atoi(trailers.Get("grpc-status"))
 	require.NoError(s.T(), err, "no error parsing grpc-status")
@@ -340,14 +471,40 @@ func serializeProtoMessages(messages []proto.Message) [][]byte {
 	return out
 }
 
-func readHeadersFromBytes(dataBytes []byte) http.Header {
+func readTrailersFromBytes(t *testing.T, dataBytes []byte) grpcweb.Trailer {
 	bufferReader := bytes.NewBuffer(dataBytes)
 	tp := textproto.NewReader(bufio.NewReader(bufferReader))
+
+	// First, read bytes as MIME headers.
+	// However, it normalizes header names by textproto.CanonicalMIMEHeaderKey.
+	// In the next step, replace header names by raw one.
 	mimeHeader, err := tp.ReadMIMEHeader()
 	if err == nil {
-		return make(http.Header)
+		return grpcweb.Trailer{}
 	}
-	return http.Header(mimeHeader)
+
+	trailers := make(http.Header)
+	bufferReader = bytes.NewBuffer(dataBytes)
+	tp = textproto.NewReader(bufio.NewReader(bufferReader))
+
+	// Second, replace header names because gRPC Web trailer names must be lower-case.
+	for {
+		line, err := tp.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err, "failed to read header line")
+
+		i := strings.IndexByte(line, ':')
+		if i == -1 {
+			require.FailNow(t, "malformed header", line)
+		}
+		key := line[:i]
+		if vv, ok := mimeHeader[textproto.CanonicalMIMEHeaderKey(key)]; ok {
+			trailers[key] = vv
+		}
+	}
+	return grpcweb.HTTPTrailerToGrpcWebTrailer(trailers)
 }
 
 func headerWithFlag(flags ...string) http.Header {
