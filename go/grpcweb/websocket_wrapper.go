@@ -29,7 +29,7 @@ func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter
 		headers:         make(http.Header),
 		flushedHeaders:  make(http.Header),
 		wsConn:          wsConn,
-		closeNotifyChan: make(chan bool),
+		closeNotifyChan: make(chan bool, 1),
 	}
 }
 
