@@ -1,7 +1,7 @@
 {
   "name": "@improbable-eng/grpc-web-fake-transport",
   "version": "0.9.1",
-  "description": "",
+  "description": "Fake Transport for use with @improbable-eng/grpc-web",
   "main": "lib/index.js",
   "scripts": {
     "clean": "rm -rf lib",
