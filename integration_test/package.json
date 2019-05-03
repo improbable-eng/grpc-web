@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-integration-test",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "scripts": {
     "clean": "rm -rf ts/build && rm -rf ts/build-node",
@@ -19,8 +19,8 @@
   },
   "license": "none",
   "dependencies": {
-    "@improbable-eng/grpc-web": "^0.9.1",
-    "@improbable-eng/grpc-web-node-http-transport": "^0.9.1",
+    "@improbable-eng/grpc-web": "^0.9.2",
+    "@improbable-eng/grpc-web-node-http-transport": "^0.9.2",
     "browser-headers": "^0.4.0",
     "event-stream": "^4.0.1",
     "google-protobuf": "^3.2.0",
