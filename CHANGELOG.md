@@ -1,3 +1,15 @@
+## 0.9.2
+### Other Changes
+* Server: Remove `content-length` response header. [@LeonSha](https://github.com/LeonSha) in [#385](https://github.com/improbable-eng/grpc-web/pull/385)
+* Server: Don't block on writing to the close notify channel. [@devnev](https://github.com/devnev) in [#403](https://github.com/improbable-eng/grpc-web/pull/403)
+* Documentation: Remove reference to specific release version in grpcwebproxy README. [@l4u](https://github.com/l4u) in [#370](https://github.com/improbable-eng/grpc-web/pull/370)
+* Documentation: Fix up problems present in the `grpc-web-react-example` project. [@atecce](https://github.com/atecce) in [#360](https://github.com/improbable-eng/grpc-web/pull/360)
+* Documentation: Updated the installation instructions of grpcwebproxy. [@enmasse](https://github.com/enmasse) in [#399](https://github.com/improbable-eng/grpc-web/pull/399)
+
+## 0.9.1
+### Other Changes
+* Server: Ensure headers from wrapped server are forwarded appropriately. [@danilvpetrov](https://github.com/danilvpetrov) in [#359](https://github.com/improbable-eng/grpc-web/pull/359)
+
 ## 0.9.0
 ### Breaking Changes
 * Server: Deny CORS Requests by Default. [@jonny-improbable](https://github.com/jonny-improbable) in [#158](https://github.com/improbable-eng/grpc-web/pull/158)
