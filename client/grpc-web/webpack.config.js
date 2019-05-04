@@ -23,6 +23,7 @@ module.exports = [{
       filename: `grpc-web-client.js`,
       path: DIST_DIR,
       libraryTarget: 'commonjs',
+      globalObject: 'this',
     }
   },
   {
@@ -32,6 +33,7 @@ module.exports = [{
       filename: `grpc-web-client.umd.js`,
       path: DIST_DIR,
       libraryTarget: 'umd',
+      globalObject: 'this',
     }
   },
 ];
