@@ -55,7 +55,7 @@ describe("FakeTransportBuilder", () => {
         .withTrailers(trailers)
         .build();
 
-      doPingRequest(transport, new PingRequest(),data => {
+      doPingRequest(transport, new PingRequest(), data => {
         expect(data.code).toBe(grpc.Code.FailedPrecondition);
         expect(data.message).toBe("failed precondition :)");
 
@@ -103,7 +103,7 @@ describe("FakeTransportBuilder", () => {
           .withMessageListener(messageSpy)
           .build();
 
-        doPingStreamRequest(transport, [],() => {
+        doPingStreamRequest(transport, [], () => {
           expect(messageSpy).toHaveBeenCalledTimes(0);
           done();
         });
@@ -118,7 +118,7 @@ describe("FakeTransportBuilder", () => {
           .withMessageListener(messageSpy)
           .build();
 
-        doPingStreamRequest(transport, [ req ],() => {
+        doPingStreamRequest(transport, [ req ], () => {
           expect(messageSpy).toHaveBeenCalledTimes(1);
           expect(messageSpy).toHaveBeenCalledWith(expectedBytes);
           done();
@@ -135,7 +135,7 @@ describe("FakeTransportBuilder", () => {
           .withMessageListener(messageSpy)
           .build();
 
-        doPingStreamRequest(transport, [ reqA, reqB ],() => {
+        doPingStreamRequest(transport, [ reqA, reqB ], () => {
           expect(messageSpy).toHaveBeenCalledTimes(2);
           for (let i = 0; i < messageSpy.mock.calls.length; i++) {
             expect(messageSpy.mock.calls[i][0]).toEqual(expectedBytes[i]);
