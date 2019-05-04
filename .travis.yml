@@ -14,7 +14,6 @@ env:
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
   matrix:
-    - GOTEST=1
     - BROWSER=nodejs
     - BROWSER=firefox53_osx
     - BROWSER=firefox39_osx
@@ -56,7 +55,7 @@ install:
 before_script:
   - ./integration_test/start-testserver.sh &
 script:
-  - travis_retry npm run test:integration
+  - cd ./integration_test && travis_retry ./test.sh
 
 stages:
   - lint
@@ -69,4 +68,4 @@ jobs:
       script: ./lint-all.sh
 
     - stage: unit-test
-      script: npm run test
+      script: ./test-all.sh
