@@ -3,7 +3,7 @@
 
 var improbable_grpcweb_test_test_pb = require("../../../improbable/grpcweb/test/test_pb");
 var google_protobuf_empty_pb = require("google-protobuf/google/protobuf/empty_pb");
-var grpc = require("grpc-web-client").grpc;
+var grpc = require("@improbable-eng/grpc-web").grpc;
 
 var TestService = (function () {
   function TestService() {}
@@ -85,7 +85,7 @@ TestServiceClient.prototype.pingEmpty = function pingEmpty(requestMessage, metad
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(TestService.PingEmpty, {
+  var client = grpc.unary(TestService.PingEmpty, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -94,20 +94,29 @@ TestServiceClient.prototype.pingEmpty = function pingEmpty(requestMessage, metad
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 TestServiceClient.prototype.ping = function ping(requestMessage, metadata, callback) {
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(TestService.Ping, {
+  var client = grpc.unary(TestService.Ping, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -116,20 +125,29 @@ TestServiceClient.prototype.ping = function ping(requestMessage, metadata, callb
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 TestServiceClient.prototype.pingError = function pingError(requestMessage, metadata, callback) {
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(TestService.PingError, {
+  var client = grpc.unary(TestService.PingError, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -138,13 +156,22 @@ TestServiceClient.prototype.pingError = function pingError(requestMessage, metad
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 TestServiceClient.prototype.pingList = function pingList(requestMessage, metadata) {
@@ -186,19 +213,97 @@ TestServiceClient.prototype.pingList = function pingList(requestMessage, metadat
   };
 };
 
-TestService.prototype.pingPongBidi = function pingPongBidi() {
-  throw new Error("Client streaming is not currently supported");
-}
+TestServiceClient.prototype.pingPongBidi = function pingPongBidi(metadata) {
+  var listeners = {
+    data: [],
+    end: [],
+    status: []
+  };
+  var client = grpc.client(TestService.PingPongBidi, {
+    host: this.serviceHost,
+    metadata: metadata,
+    transport: this.options.transport
+  });
+  client.onEnd(function (status, statusMessage, trailers) {
+    listeners.end.forEach(function (handler) {
+      handler();
+    });
+    listeners.status.forEach(function (handler) {
+      handler({ code: status, details: statusMessage, metadata: trailers });
+    });
+    listeners = null;
+  });
+  client.onMessage(function (message) {
+    listeners.data.forEach(function (handler) {
+      handler(message);
+    })
+  });
+  client.start(metadata);
+  return {
+    on: function (type, handler) {
+      listeners[type].push(handler);
+      return this;
+    },
+    write: function (requestMessage) {
+      client.send(requestMessage);
+      return this;
+    },
+    end: function () {
+      client.finishSend();
+    },
+    cancel: function () {
+      listeners = null;
+      client.close();
+    }
+  };
+};
 
-TestService.prototype.pingStream = function pingStream() {
-  throw new Error("Bi-directional streaming is not currently supported");
-}
+TestServiceClient.prototype.pingStream = function pingStream(metadata) {
+  var listeners = {
+    end: [],
+    status: []
+  };
+  var client = grpc.client(TestService.PingStream, {
+    host: this.serviceHost,
+    metadata: metadata,
+    transport: this.options.transport
+  });
+  client.onEnd(function (status, statusMessage, trailers) {
+    listeners.end.forEach(function (handler) {
+      handler();
+    });
+    listeners.status.forEach(function (handler) {
+      handler({ code: status, details: statusMessage, metadata: trailers });
+    });
+    listeners = null;
+  });
+  return {
+    on: function (type, handler) {
+      listeners[type].push(handler);
+      return this;
+    },
+    write: function (requestMessage) {
+      if (!client.started) {
+        client.start(metadata);
+      }
+      client.send(requestMessage);
+      return this;
+    },
+    end: function () {
+      client.finishSend();
+    },
+    cancel: function () {
+      listeners = null;
+      client.close();
+    }
+  };
+};
 
 TestServiceClient.prototype.echo = function echo(requestMessage, metadata, callback) {
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(TestService.Echo, {
+  var client = grpc.unary(TestService.Echo, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -207,13 +312,22 @@ TestServiceClient.prototype.echo = function echo(requestMessage, metadata, callb
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 exports.TestServiceClient = TestServiceClient;
@@ -253,7 +367,7 @@ TestUtilServiceClient.prototype.continueStream = function continueStream(request
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(TestUtilService.ContinueStream, {
+  var client = grpc.unary(TestUtilService.ContinueStream, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -262,20 +376,29 @@ TestUtilServiceClient.prototype.continueStream = function continueStream(request
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 TestUtilServiceClient.prototype.checkStreamClosed = function checkStreamClosed(requestMessage, metadata, callback) {
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(TestUtilService.CheckStreamClosed, {
+  var client = grpc.unary(TestUtilService.CheckStreamClosed, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -284,13 +407,22 @@ TestUtilServiceClient.prototype.checkStreamClosed = function checkStreamClosed(r
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 exports.TestUtilServiceClient = TestUtilServiceClient;
@@ -321,7 +453,7 @@ FailServiceClient.prototype.nonExistant = function nonExistant(requestMessage, m
   if (arguments.length === 2) {
     callback = arguments[1];
   }
-  grpc.unary(FailService.NonExistant, {
+  var client = grpc.unary(FailService.NonExistant, {
     request: requestMessage,
     host: this.serviceHost,
     metadata: metadata,
@@ -330,13 +462,22 @@ FailServiceClient.prototype.nonExistant = function nonExistant(requestMessage, m
     onEnd: function (response) {
       if (callback) {
         if (response.status !== grpc.Code.OK) {
-          callback(Object.assign(new Error(response.statusMessage), { code: response.status, metadata: response.trailers }), null);
+          var err = new Error(response.statusMessage);
+          err.code = response.status;
+          err.metadata = response.trailers;
+          callback(err, null);
         } else {
           callback(null, response.message);
         }
       }
     }
   });
+  return {
+    cancel: function () {
+      callback = null;
+      client.close();
+    }
+  };
 };
 
 exports.FailServiceClient = FailServiceClient;
