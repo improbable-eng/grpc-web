@@ -55,7 +55,6 @@ install:
   - npm install
 before_script:
   - ./integration_test/start-testserver.sh &
-name: "Integration Tests" 
 script:
   - travis_retry npm run test:integration_test
 
