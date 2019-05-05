@@ -36,7 +36,7 @@
     "@types/google-protobuf": "^3.2.5",
     "@types/node": "^7.0.5",
     "google-protobuf": "^3.2.0",
-    "ts-loader": "^4.5.0",
+    "ts-loader": "^5.4.5",
     "typescript": "3.4.5",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.2.3"
