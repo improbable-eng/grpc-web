@@ -17,17 +17,20 @@ if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
-echo "Generating grpcwebproxy binaries"
+echo "Generating proxy binaries"
 cd go
 rm -rf dist
 mkdir -p dist
-
 GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-x86_64" ./grpcwebproxy
 GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-win64.exe" ./grpcwebproxy
 GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-osx-x86_64" ./grpcwebproxy
 for f in dist/*; do zip -9r "$f.zip" "$f"; done
 ls -l ./dist
 cd ..
+
+echo "Generating client binaries"
+npm run clean
+npm install
 
 echo "Publishing $TAG"
 
