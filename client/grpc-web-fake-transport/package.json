@@ -1,6 +1,6 @@
 {
   "name": "@improbable-eng/grpc-web-fake-transport",
-  "version": "0.9.1",
+  "version": "0.9.3",
   "description": "Fake Transport for use with @improbable-eng/grpc-web",
   "main": "lib/index.js",
   "scripts": {
@@ -16,12 +16,12 @@
     "google-protobuf": ">=3.7.1"
   },
   "devDependencies": {
-    "@improbable-eng/grpc-web": "^0.9.1",
-    "@types/lodash.assignin": "^4.2.6",
+    "@improbable-eng/grpc-web": "^0.9.3",
     "@types/google-protobuf": "^3.2.7",
-    "google-protobuf": "^3.7.1",
     "@types/jest": "^24.0.11",
+    "@types/lodash.assignin": "^4.2.6",
     "@types/node": "^11.11.3",
+    "google-protobuf": "^3.7.1",
     "jest": "^24.5.0",
     "ts-jest": "^24.0.0",
     "typescript": "^3.1.3"
