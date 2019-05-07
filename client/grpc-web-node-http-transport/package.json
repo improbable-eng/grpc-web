@@ -12,6 +12,9 @@
     "postbootstrap": "npm run build",
     "build": "tsc"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Improbable",
   "license": "Apache-2.0",
   "peerDependencies": {

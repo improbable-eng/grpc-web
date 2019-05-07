@@ -9,6 +9,9 @@
     "build": "tsc",
     "test": "jest"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "",
   "license": "Apache-2.0",
   "peerDependencies": {
