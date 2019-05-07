@@ -1,4 +1,8 @@
-## 0.9.3
+## 0.9.4
+### Other Changes
+* Client: Fix broken v0.9.3 release (client binaries were not rebuilt prior to npm publish)
+
+## 0.9.3 (broken)
 ### Other Changes
 * Client: Added grpc-web-fake-transport package.
 * Client: Fix global definition in grpc-web UMD build which prevented it from working from within a WebWorker context. [@midan888](https://github.com/midan888) in [#411](https://github.com/improbable-eng/grpc-web/pull/411)
