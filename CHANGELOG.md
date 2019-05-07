@@ -1,3 +1,8 @@
+## 0.9.3
+### Other Changes
+* Client: Added grpc-web-fake-transport package.
+* Client: Fix global definition in grpc-web UMD build which prevented it from working from within a WebWorker context. [@midan888](https://github.com/midan888) in [#411](https://github.com/improbable-eng/grpc-web/pull/411)
+
 ## 0.9.2
 ### Other Changes
 * Server: Remove `content-length` response header. [@LeonSha](https://github.com/LeonSha) in [#385](https://github.com/improbable-eng/grpc-web/pull/385)
