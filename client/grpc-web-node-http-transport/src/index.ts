@@ -18,6 +18,7 @@ class NodeHttp implements grpc.Transport {
   }
 
   sendMessage(msgBytes: Uint8Array) {
+    this.request.setHeader("Content-Length", msgBytes.byteLength);
     this.request.write(toBuffer(msgBytes));
     this.request.end();
   }
