@@ -9,7 +9,7 @@ export const DEBUG: boolean = (global as any).DEBUG;
 export class UncaughtExceptionListener {
   private attached: boolean = false;
   private exceptionsCaught: string[] = [];
-  private originalWindowHandler?: ErrorEventHandler;
+  private originalWindowHandler?: OnErrorEventHandler;
   private originalProcessHandlers: Function[] = [];
   private processListener: (err: Error) => void;
 
