@@ -1,8 +1,6 @@
 export enum SuiteEnum {
   client,
   clientWebsockets,
-  invoke,
-  unary,
   ChunkParser,
   cancellation,
   detach,
