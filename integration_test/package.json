@@ -27,7 +27,6 @@
     "typedarray": "0.0.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.4",
     "@types/chai": "^4.1.3",
     "@babel/core": "^7.4.4",
     "@types/google-protobuf": "^3.2.5",

@@ -7,6 +7,7 @@
     "postbootstrap": "lerna run postbootstrap",
     "clean": "lerna clean --yes --private && lerna run clean",
     "test": "lerna run test",
+    "test:integration": "cd integration_test && npm run test",
     "lint": "tslint -c ./tslint.json ./client/**/*.ts ./integration_test/ts/*.ts ./integration_test/ts/**/*.ts"
   },
   "author": "Improbable",
