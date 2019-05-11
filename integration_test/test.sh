@@ -1,15 +1,5 @@
 #!/bin/bash
-# Runs the tests in the environment
-
-set -ex
-
-if [ "$GOTEST" == "1" ]; then
-  # This is a test of just the go backend
-  npm run build:proto
-  cd ../go/
-  go test ./...
-  exit 0
-fi
+set -e
 
 npm run build
 
