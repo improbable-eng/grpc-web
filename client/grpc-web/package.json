@@ -8,7 +8,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "postbootstrap": "npm run lib:build",
-    "lib:build": "npm run clean && webpack"
+    "lib:build": "npm run clean && webpack",
+    "test": "jest"
   },
   "publishConfig": {
     "access": "public"
@@ -36,9 +37,14 @@
     "browser-headers": "^0.4.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/google-protobuf": "^3.2.5",
+    "@types/jest": "^24.0.11",
     "@types/node": "^7.0.5",
+    "chai": "^4.2.0",
     "google-protobuf": "^3.2.0",
+    "jest": "^24.5.0",
+    "ts-jest": "^24.0.0",
     "ts-loader": "^4.5.0",
     "typescript": "3.4.5",
     "webpack": "^4.29.3",
