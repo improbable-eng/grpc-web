@@ -29,7 +29,7 @@ retry () {
 
         n=$[$n+1]
         echo ''
-        echo retry $n of $MAX_AUTO_RETRY failed, trying again ...
+        echo "Attempt ${n} of ${MAX_AUTO_RETRY} failed, trying again ..."
         echo ''
     done
 
