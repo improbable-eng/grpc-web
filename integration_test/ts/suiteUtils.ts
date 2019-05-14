@@ -1,9 +1,7 @@
 export enum SuiteEnum {
   client,
   clientWebsockets,
-  ChunkParser,
-  cancellation,
-  detach,
+  cancellation
 }
 
 type enumMap = {[key: string]: number} & {[key: number]: string};
