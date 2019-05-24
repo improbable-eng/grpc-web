@@ -22,7 +22,7 @@ func TestGetGRPCEndpoint(t *testing.T) {
 
 	for _, c := range cases {
 		req := httptest.NewRequest("GET", c.input, nil)
-		result := GetGRPCEndpoint(req)
+		result := getGRPCEndpoint(req)
 
 		assert.Equal(t, c.output, result)
 	}

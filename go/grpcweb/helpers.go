@@ -40,7 +40,7 @@ func WebsocketRequestOrigin(req *http.Request) (string, error) {
 	return parsed.Host, nil
 }
 
-func GetGRPCEndpoint(req *http.Request) string {
+func getGRPCEndpoint(req *http.Request) string {
 	endpoint := pathMatcher.FindString(strings.TrimRight(req.URL.Path, "/"))
 	if len(endpoint) == 0 {
 		return req.URL.Path

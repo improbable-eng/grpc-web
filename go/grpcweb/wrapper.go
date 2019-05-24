@@ -63,7 +63,7 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 	}
 
 	if opts.allowNonRootResources {
-		endpointFunc = GetGRPCEndpoint
+		endpointFunc = getGRPCEndpoint
 	}
 
 	return &WrappedGrpcServer{
