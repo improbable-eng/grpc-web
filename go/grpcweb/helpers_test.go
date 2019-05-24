@@ -4,7 +4,6 @@
 package grpcweb_test
 
 import (
-	"net/http/httptest"
 	"sort"
 	"testing"
 
@@ -34,25 +33,4 @@ func TestListGRPCResources(t *testing.T) {
 		expected,
 		actual,
 		"list grpc resources must provide an exhaustive list of all registered handlers")
-}
-
-func TestGetGRPCEndpoint(t *testing.T) {
-	cases := []struct {
-		input  string
-		output string
-	}{
-		{input: "/", output: "/"},
-		{input: "/resource", output: "/resource"},
-		{input: "/improbable.grpcweb.test.TestService/PingEmpty", output: "/improbable.grpcweb.test.TestService/PingEmpty"},
-		{input: "/improbable.grpcweb.test.TestService/PingEmpty/", output: "/improbable.grpcweb.test.TestService/PingEmpty"},
-		{input: "/a/b/c/improbable.grpcweb.test.TestService/PingEmpty", output: "/improbable.grpcweb.test.TestService/PingEmpty"},
-		{input: "/a/b/c/improbable.grpcweb.test.TestService/PingEmpty/", output: "/improbable.grpcweb.test.TestService/PingEmpty"},
-	}
-
-	for _, c := range cases {
-		req := httptest.NewRequest("GET", c.input, nil)
-		result := grpcweb.GetGRPCEndpoint(req)
-
-		assert.Equal(t, c.output, result)
-	}
 }
