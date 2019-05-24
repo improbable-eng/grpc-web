@@ -58,7 +58,10 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 		websocketOriginFunc = defaultWebsocketOriginFunc
 	}
 
-	endpointFunc := func(req *http.Request) string { return req.URL.Path }
+	endpointFunc := func(req *http.Request) string {
+		return req.URL.Path
+	}
+
 	if opts.allowNonRootResources {
 		endpointFunc = GetGRPCEndpoint
 	}
