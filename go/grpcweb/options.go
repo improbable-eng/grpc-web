@@ -10,6 +10,7 @@ var (
 		allowedRequestHeaders:          []string{"*"},
 		corsForRegisteredEndpointsOnly: true,
 		originFunc:                     func(origin string) bool { return false },
+		allowNonRootResources:          false,
 	}
 )
 
@@ -19,6 +20,7 @@ type options struct {
 	originFunc                     func(origin string) bool
 	enableWebsockets               bool
 	websocketOriginFunc            func(req *http.Request) bool
+	allowNonRootResources          bool
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -97,5 +99,11 @@ func WithWebsockets(enableWebsockets bool) Option {
 func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) Option {
 	return func(o *options) {
 		o.websocketOriginFunc = websocketOriginFunc
+	}
+}
+
+func WithAllowNonRootResource(allowNonRootResources bool) Option {
+	return func(o *options) {
+		o.allowNonRootResources = allowNonRootResources
 	}
 }
