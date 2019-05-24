@@ -55,5 +55,4 @@ func TestGetGRPCEndpoint(t *testing.T) {
 
 		assert.Equal(t, c.output, result)
 	}
-
 }
