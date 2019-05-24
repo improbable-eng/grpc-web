@@ -3,7 +3,7 @@
     "alwaysStrict": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "typings",
+    "declarationDir": "./dist/typings",
     "target": "es5",
     "removeComments": true,
     "noImplicitReturns": true,
@@ -13,7 +13,7 @@
     "strictNullChecks": true,
     "stripInternal": true,
     "noFallthroughCasesInSwitch": true,
-    "outDir": "build",
+    "outDir": "dist",
     "noEmitOnError": true
   },
   "types": [
