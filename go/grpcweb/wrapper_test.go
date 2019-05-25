@@ -85,7 +85,6 @@ func TestNonRootResource(t *testing.T) {
 	resp := httptest.NewRecorder()
 	wrappedServer.ServeHTTP(resp, req)
 
-	log.Println(resp.Body)
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
