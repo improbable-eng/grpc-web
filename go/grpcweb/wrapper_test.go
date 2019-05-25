@@ -54,11 +54,10 @@ const (
 
 type GrpcWebWrapperTestSuite struct {
 	suite.Suite
-	httpMajorVersion     int
-	listener             net.Listener
-	grpcServer           *grpc.Server
-	wrappedServer        *grpcweb.WrappedGrpcServer
-	allowNonRootResource bool
+	httpMajorVersion int
+	listener         net.Listener
+	grpcServer       *grpc.Server
+	wrappedServer    *grpcweb.WrappedGrpcServer
 }
 
 func TestHttp2GrpcWebWrapperTestSuite(t *testing.T) {
