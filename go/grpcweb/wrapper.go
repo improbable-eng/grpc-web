@@ -35,6 +35,7 @@ type WrappedGrpcServer struct {
 	originFunc          func(origin string) bool
 	enableWebsockets    bool
 	websocketOriginFunc func(req *http.Request) bool
+	endpointFunc        func(req *http.Request) string
 }
 
 // WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that provides gRPC-Web Compatibility.
@@ -56,6 +57,15 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 	if websocketOriginFunc == nil {
 		websocketOriginFunc = defaultWebsocketOriginFunc
 	}
+
+	endpointFunc := func(req *http.Request) string {
+		return req.URL.Path
+	}
+
+	if opts.allowNonRootResources {
+		endpointFunc = getGRPCEndpoint
+	}
+
 	return &WrappedGrpcServer{
 		server:              server,
 		opts:                opts,
@@ -63,6 +73,7 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 		originFunc:          opts.originFunc,
 		enableWebsockets:    opts.enableWebsockets,
 		websocketOriginFunc: websocketOriginFunc,
+		endpointFunc:        endpointFunc,
 	}
 }
 
@@ -105,6 +116,7 @@ func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *http.Request) {
 	intReq, isTextFormat := hackIntoNormalGrpcRequest(req)
 	intResp := newGrpcWebResponse(resp, isTextFormat)
+	req.URL.Path = w.endpointFunc(req)
 	w.server.ServeHTTP(intResp, intReq)
 	intResp.finishRequest(req)
 }
@@ -161,6 +173,7 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 		grpclog.Errorf("web socket text format requests not yet supported")
 		return
 	}
+	req.URL.Path = w.endpointFunc(req)
 	w.server.ServeHTTP(respWriter, interceptedRequest)
 }
 
@@ -187,7 +200,7 @@ func (w *WrappedGrpcServer) IsAcceptableGrpcCorsRequest(req *http.Request) bool 
 
 func (w *WrappedGrpcServer) isRequestForRegisteredEndpoint(req *http.Request) bool {
 	registeredEndpoints := ListGRPCResources(w.server)
-	requestedEndpoint := req.URL.Path
+	requestedEndpoint := w.endpointFunc(req)
 	for _, v := range registeredEndpoints {
 		if v == requestedEndpoint {
 			return true

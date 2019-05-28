@@ -15,6 +15,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"net/textproto"
 	"os"
 	"strconv"
@@ -65,6 +66,26 @@ func TestHttp2GrpcWebWrapperTestSuite(t *testing.T) {
 
 func TestHttp1GrpcWebWrapperTestSuite(t *testing.T) {
 	suite.Run(t, &GrpcWebWrapperTestSuite{httpMajorVersion: 1})
+}
+
+func TestNonRootResource(t *testing.T) {
+	grpcServer := grpc.NewServer()
+	testproto.RegisterTestServiceServer(grpcServer, &testServiceImpl{})
+	wrappedServer := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithAllowNonRootResource(true),
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}))
+
+	headers := http.Header{}
+	headers.Add("Access-Control-Request-Method", "POST")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
+	req := httptest.NewRequest("OPTIONS", "http://host/grpc/improbable.grpcweb.test.TestService/Echo", nil)
+	req.Header = headers
+	resp := httptest.NewRecorder()
+	wrappedServer.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
 func (s *GrpcWebWrapperTestSuite) SetupTest() {
