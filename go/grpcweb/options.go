@@ -105,7 +105,8 @@ func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) O
 // WithAllowNonRootResource enables the gRPC wrapper to serve requests that have a path prefix
 // added to the URL, before the service name and method placeholders.
 //
-// This should be set to false when exposing the endpoint as the root resource, to avoid path processing.
+// This should be set to false when exposing the endpoint as the root resource, to avoid
+// the performance cost of path processing for every request.
 //
 // The default behaviour is `false`, i.e. always serves requests assuming there is no prefix to the gRPC endpoint.
 func WithAllowNonRootResource(allowNonRootResources bool) Option {
