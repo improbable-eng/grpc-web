@@ -9,9 +9,9 @@ export interface XhrTransportInit {
 }
 
 export function ArrayBufferXhrTransport(init: XhrTransportInit): TransportFactory {
-    return (opts: TransportOptions) => {
-        return new ArrayBufferXHR(opts, init);
-    }
+  return (opts: TransportOptions) => {
+      return new ArrayBufferXHR(opts, init);
+  }
 }
 
 export function XhrTransport(init: XhrTransportInit): TransportFactory {
