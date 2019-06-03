@@ -1,4 +1,4 @@
-## 0.9.5
+## 0.9.6
 ### Other Changes
 * Server: Allow non root resources. [@mangas](https://github.com/mangas) in [#454](https://github.com/improbable-eng/grpc-web/pull/454)
 * Client: Fix aborting requests from within a web-worker context. [@midan888](https://github.com/midan888) in [#443](https://github.com/improbable-eng/grpc-web/pull/443)
