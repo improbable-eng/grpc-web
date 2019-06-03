@@ -1,6 +1,6 @@
 {
   "name": "@improbable-eng/grpc-web-node-http-transport",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Node HTTP Transport for use with @improbable-eng/grpc-web",
   "main": "lib/index.js",
   "repository": {
@@ -21,7 +21,7 @@
     "@improbable-eng/grpc-web": ">=0.7.0"
   },
   "devDependencies": {
-    "@improbable-eng/grpc-web": "^0.9.5",
+    "@improbable-eng/grpc-web": "^0.9.6",
     "@types/node": "^10.12.0",
     "google-protobuf": "^3.2.0",
     "typescript": "^3.1.3"
