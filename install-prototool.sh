@@ -14,4 +14,4 @@ curl -sSL \
   -o ./prototool && \
   chmod +x ./prototool
 
-export PATH=$PATH:./protool
+export PATH=$PATH:$PWD
