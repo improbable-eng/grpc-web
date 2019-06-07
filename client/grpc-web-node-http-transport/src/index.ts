@@ -18,7 +18,10 @@ class NodeHttp implements grpc.Transport {
   }
 
   sendMessage(msgBytes: Uint8Array) {
-    this.request.setHeader("Content-Length", msgBytes.byteLength);
+    if (!this.options.methodDefinition.requestStream  && !this.options.methodDefinition.responseStream) {
+        // Disable chunked encoding if we are not using streams
+        this.request.setHeader("Content-Length", msgBytes.byteLength);
+    }
     this.request.write(toBuffer(msgBytes));
     this.request.end();
   }
