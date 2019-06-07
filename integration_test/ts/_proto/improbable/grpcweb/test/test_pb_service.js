@@ -192,10 +192,10 @@ TestServiceClient.prototype.pingList = function pingList(requestMessage, metadat
       });
     },
     onEnd: function (status, statusMessage, trailers) {
-      listeners.end.forEach(function (handler) {
-        handler();
-      });
       listeners.status.forEach(function (handler) {
+        handler({ code: status, details: statusMessage, metadata: trailers });
+      });
+      listeners.end.forEach(function (handler) {
         handler({ code: status, details: statusMessage, metadata: trailers });
       });
       listeners = null;
@@ -225,10 +225,10 @@ TestServiceClient.prototype.pingPongBidi = function pingPongBidi(metadata) {
     transport: this.options.transport
   });
   client.onEnd(function (status, statusMessage, trailers) {
-    listeners.end.forEach(function (handler) {
-      handler();
-    });
     listeners.status.forEach(function (handler) {
+      handler({ code: status, details: statusMessage, metadata: trailers });
+    });
+    listeners.end.forEach(function (handler) {
       handler({ code: status, details: statusMessage, metadata: trailers });
     });
     listeners = null;
@@ -269,10 +269,10 @@ TestServiceClient.prototype.pingStream = function pingStream(metadata) {
     transport: this.options.transport
   });
   client.onEnd(function (status, statusMessage, trailers) {
-    listeners.end.forEach(function (handler) {
-      handler();
-    });
     listeners.status.forEach(function (handler) {
+      handler({ code: status, details: statusMessage, metadata: trailers });
+    });
+    listeners.end.forEach(function (handler) {
       handler({ code: status, details: statusMessage, metadata: trailers });
     });
     listeners = null;

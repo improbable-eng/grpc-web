@@ -13,7 +13,7 @@ export GOPATH=$(pwd)
 
 # Checkout project sources into your new go workspace
 go get -u github.com/improbable-eng/grpc-web/go
-cd $GOPATH/src/github.com/improbable-eng/grpc-web
+cd $GOPATH/src/github.com/improbable-eng/grpc-web 
 
 # Install go dependencies
 dep ensure
@@ -22,6 +22,8 @@ dep ensure
 nvm use
 npm install
 ```
+
+Note you will also need to [install prototool](https://github.com/uber/prototool/blob/dev/docs/install.md) and add it to your `PATH` environment variable if you wish to re-generate the integration test proto files.
 
 ## Testing Prerequisites 
 Before you run the tests for the first time, please follow these steps:

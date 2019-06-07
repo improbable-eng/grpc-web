@@ -5,10 +5,10 @@
   "scripts": {
     "clean": "rm -rf ts/build && rm -rf ts/build-node",
     "build:testserver": "cd go && go build -o ./build/testserver ./testserver/testserver.go",
-    "build:proto": "./protogen_go.sh && ./protogen_ts.sh",
+    "build:proto": "cd proto && prototool generate",
     "build:ts": "cd ts && rm -rf build && webpack-cli",
     "build:dev": "cd ts && rm -rf build && webpack-cli --watch",
-    "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp _proto/improbable/grpcweb/test/test_pb.js build-node/integration_test/ts/_proto/improbable/grpcweb/test/test_pb.js)",
+    "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp -R _proto build-node/integration_test/ts)",
     "build": "npm run build:proto && npm run build:ts && npm run build:node",
     "start": "./test.sh",
     "test:browser": "./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
@@ -23,13 +23,13 @@
     "@improbable-eng/grpc-web-node-http-transport": "^0.9.6",
     "browser-headers": "^0.4.0",
     "event-stream": "^4.0.1",
-    "google-protobuf": "^3.2.0",
+    "google-protobuf": "3.8.0",
     "typedarray": "0.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
     "@types/chai": "^4.1.3",
-    "@types/google-protobuf": "^3.2.5",
+    "@types/google-protobuf": "^3.2.7",
     "@types/jasmine": "^3.3.8",
     "@types/lodash": "^4.14.108",
     "@types/node": "^10.7.1",
