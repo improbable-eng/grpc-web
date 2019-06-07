@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rm -rf ts/build && rm -rf ts/build-node",
     "build:testserver": "cd go && go build -o ./build/testserver ./testserver/testserver.go",
-    "build:proto": "./protogen_go.sh && ./protogen_ts.sh",
+    "build:proto": "cd proto && prototool generate",
     "build:ts": "cd ts && rm -rf build && webpack-cli",
     "build:dev": "cd ts && rm -rf build && webpack-cli --watch",
     "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp _proto/improbable/grpcweb/test/test_pb.js build-node/integration_test/ts/_proto/improbable/grpcweb/test/test_pb.js)",

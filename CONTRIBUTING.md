@@ -15,6 +15,10 @@ export GOPATH=$(pwd)
 go get -u github.com/improbable-eng/grpc-web/go
 cd $GOPATH/src/github.com/improbable-eng/grpc-web
 
+# Install prototool (used for managing protoc)
+# This script will place it in /usr/local/bin, prototool can also be installed via `brew`.
+./install-prototool.sh 
+
 # Install go dependencies
 dep ensure
 
