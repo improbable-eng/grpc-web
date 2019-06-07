@@ -10,7 +10,7 @@ if [[ -z "$PROTOTOOL_VER" ]]; then
 fi
 
 curl -sSL \
-  https://github.com/uber/prototool/releases/download/v${$PROTOTOOL_VER}/prototool-$(uname -s)-$(uname -m) \
+  https://github.com/uber/prototool/releases/download/v${PROTOTOOL_VER}/prototool-$(uname -s)-$(uname -m) \
   -o ./prototool && \
   chmod +x ./prototool
 
