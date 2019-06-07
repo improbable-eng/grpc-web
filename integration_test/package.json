@@ -8,7 +8,7 @@
     "build:proto": "cd proto && prototool generate",
     "build:ts": "cd ts && rm -rf build && webpack-cli",
     "build:dev": "cd ts && rm -rf build && webpack-cli --watch",
-    "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp _proto/improbable/grpcweb/test/test_pb.js build-node/integration_test/ts/_proto/improbable/grpcweb/test/test_pb.js)",
+    "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp -R _proto build-node/integration_test/ts)",
     "build": "npm run build:proto && npm run build:ts && npm run build:node",
     "start": "./test.sh",
     "test:browser": "./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
