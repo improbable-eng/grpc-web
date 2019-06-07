@@ -6,6 +6,7 @@ set -ex
 
 if [[ -z "$PROTOTOOL_VER" ]]; then
   echo "PROTOTOOL_VER environment variable not set"
+  exit 1
 fi
 
 curl -sSL \

@@ -12,6 +12,7 @@ env:
     # GLOBAL_TESTSERVER is used to skip starting the testserver in run-with-testserver.sh
     - GLOBAL_TESTSERVER=true
     - SEPARATE_TEST_SUITES=true
+    - PROTOTOOL_VER=1.7.0
   matrix:
     - BROWSER=nodejs
     - BROWSER=firefox53_osx
