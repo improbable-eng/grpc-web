@@ -11,7 +11,7 @@ generate:
   plugins:
     - name: go
       type: go
-      flags: plugin=grpc
+      flags: plugins=grpc
       output: ../go/_proto
 
     - name: js

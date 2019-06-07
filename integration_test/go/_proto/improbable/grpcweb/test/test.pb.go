@@ -20,7 +20,12 @@ package improbable_grpcweb_test
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "github.com/golang/protobuf/ptypes/empty"
+import google_protobuf "github.com/golang/protobuf/ptypes/empty"
+
+import (
+	context "golang.org/x/net/context"
+	grpc "google.golang.org/grpc"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -244,6 +249,531 @@ func init() {
 	proto.RegisterType((*CheckStreamClosedRequest)(nil), "improbable.grpcweb.test.CheckStreamClosedRequest")
 	proto.RegisterType((*CheckStreamClosedResponse)(nil), "improbable.grpcweb.test.CheckStreamClosedResponse")
 	proto.RegisterEnum("improbable.grpcweb.test.PingRequest_FailureType", PingRequest_FailureType_name, PingRequest_FailureType_value)
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// Client API for TestService service
+
+type TestServiceClient interface {
+	PingEmpty(ctx context.Context, in *google_protobuf.Empty, opts ...grpc.CallOption) (*PingResponse, error)
+	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+	PingError(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
+	PingList(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (TestService_PingListClient, error)
+	PingPongBidi(ctx context.Context, opts ...grpc.CallOption) (TestService_PingPongBidiClient, error)
+	PingStream(ctx context.Context, opts ...grpc.CallOption) (TestService_PingStreamClient, error)
+	Echo(ctx context.Context, in *TextMessage, opts ...grpc.CallOption) (*TextMessage, error)
+}
+
+type testServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewTestServiceClient(cc *grpc.ClientConn) TestServiceClient {
+	return &testServiceClient{cc}
+}
+
+func (c *testServiceClient) PingEmpty(ctx context.Context, in *google_protobuf.Empty, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.TestService/PingEmpty", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *testServiceClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.TestService/Ping", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *testServiceClient) PingError(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*google_protobuf.Empty, error) {
+	out := new(google_protobuf.Empty)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.TestService/PingError", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *testServiceClient) PingList(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (TestService_PingListClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_TestService_serviceDesc.Streams[0], c.cc, "/improbable.grpcweb.test.TestService/PingList", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &testServicePingListClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TestService_PingListClient interface {
+	Recv() (*PingResponse, error)
+	grpc.ClientStream
+}
+
+type testServicePingListClient struct {
+	grpc.ClientStream
+}
+
+func (x *testServicePingListClient) Recv() (*PingResponse, error) {
+	m := new(PingResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *testServiceClient) PingPongBidi(ctx context.Context, opts ...grpc.CallOption) (TestService_PingPongBidiClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_TestService_serviceDesc.Streams[1], c.cc, "/improbable.grpcweb.test.TestService/PingPongBidi", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &testServicePingPongBidiClient{stream}
+	return x, nil
+}
+
+type TestService_PingPongBidiClient interface {
+	Send(*PingRequest) error
+	Recv() (*PingResponse, error)
+	grpc.ClientStream
+}
+
+type testServicePingPongBidiClient struct {
+	grpc.ClientStream
+}
+
+func (x *testServicePingPongBidiClient) Send(m *PingRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *testServicePingPongBidiClient) Recv() (*PingResponse, error) {
+	m := new(PingResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *testServiceClient) PingStream(ctx context.Context, opts ...grpc.CallOption) (TestService_PingStreamClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_TestService_serviceDesc.Streams[2], c.cc, "/improbable.grpcweb.test.TestService/PingStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &testServicePingStreamClient{stream}
+	return x, nil
+}
+
+type TestService_PingStreamClient interface {
+	Send(*PingRequest) error
+	CloseAndRecv() (*PingResponse, error)
+	grpc.ClientStream
+}
+
+type testServicePingStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *testServicePingStreamClient) Send(m *PingRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *testServicePingStreamClient) CloseAndRecv() (*PingResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(PingResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *testServiceClient) Echo(ctx context.Context, in *TextMessage, opts ...grpc.CallOption) (*TextMessage, error) {
+	out := new(TextMessage)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.TestService/Echo", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for TestService service
+
+type TestServiceServer interface {
+	PingEmpty(context.Context, *google_protobuf.Empty) (*PingResponse, error)
+	Ping(context.Context, *PingRequest) (*PingResponse, error)
+	PingError(context.Context, *PingRequest) (*google_protobuf.Empty, error)
+	PingList(*PingRequest, TestService_PingListServer) error
+	PingPongBidi(TestService_PingPongBidiServer) error
+	PingStream(TestService_PingStreamServer) error
+	Echo(context.Context, *TextMessage) (*TextMessage, error)
+}
+
+func RegisterTestServiceServer(s *grpc.Server, srv TestServiceServer) {
+	s.RegisterService(&_TestService_serviceDesc, srv)
+}
+
+func _TestService_PingEmpty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(google_protobuf.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).PingEmpty(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.TestService/PingEmpty",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).PingEmpty(ctx, req.(*google_protobuf.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TestService_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.TestService/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).Ping(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TestService_PingError_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).PingError(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.TestService/PingError",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).PingError(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TestService_PingList_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PingRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TestServiceServer).PingList(m, &testServicePingListServer{stream})
+}
+
+type TestService_PingListServer interface {
+	Send(*PingResponse) error
+	grpc.ServerStream
+}
+
+type testServicePingListServer struct {
+	grpc.ServerStream
+}
+
+func (x *testServicePingListServer) Send(m *PingResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _TestService_PingPongBidi_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TestServiceServer).PingPongBidi(&testServicePingPongBidiServer{stream})
+}
+
+type TestService_PingPongBidiServer interface {
+	Send(*PingResponse) error
+	Recv() (*PingRequest, error)
+	grpc.ServerStream
+}
+
+type testServicePingPongBidiServer struct {
+	grpc.ServerStream
+}
+
+func (x *testServicePingPongBidiServer) Send(m *PingResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *testServicePingPongBidiServer) Recv() (*PingRequest, error) {
+	m := new(PingRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _TestService_PingStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TestServiceServer).PingStream(&testServicePingStreamServer{stream})
+}
+
+type TestService_PingStreamServer interface {
+	SendAndClose(*PingResponse) error
+	Recv() (*PingRequest, error)
+	grpc.ServerStream
+}
+
+type testServicePingStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *testServicePingStreamServer) SendAndClose(m *PingResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *testServicePingStreamServer) Recv() (*PingRequest, error) {
+	m := new(PingRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _TestService_Echo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TextMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).Echo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.TestService/Echo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).Echo(ctx, req.(*TextMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _TestService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "improbable.grpcweb.test.TestService",
+	HandlerType: (*TestServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PingEmpty",
+			Handler:    _TestService_PingEmpty_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _TestService_Ping_Handler,
+		},
+		{
+			MethodName: "PingError",
+			Handler:    _TestService_PingError_Handler,
+		},
+		{
+			MethodName: "Echo",
+			Handler:    _TestService_Echo_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "PingList",
+			Handler:       _TestService_PingList_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "PingPongBidi",
+			Handler:       _TestService_PingPongBidi_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "PingStream",
+			Handler:       _TestService_PingStream_Handler,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "improbable/grpcweb/test/test.proto",
+}
+
+// Client API for TestUtilService service
+
+type TestUtilServiceClient interface {
+	ContinueStream(ctx context.Context, in *ContinueStreamRequest, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
+	CheckStreamClosed(ctx context.Context, in *CheckStreamClosedRequest, opts ...grpc.CallOption) (*CheckStreamClosedResponse, error)
+}
+
+type testUtilServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewTestUtilServiceClient(cc *grpc.ClientConn) TestUtilServiceClient {
+	return &testUtilServiceClient{cc}
+}
+
+func (c *testUtilServiceClient) ContinueStream(ctx context.Context, in *ContinueStreamRequest, opts ...grpc.CallOption) (*google_protobuf.Empty, error) {
+	out := new(google_protobuf.Empty)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.TestUtilService/ContinueStream", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *testUtilServiceClient) CheckStreamClosed(ctx context.Context, in *CheckStreamClosedRequest, opts ...grpc.CallOption) (*CheckStreamClosedResponse, error) {
+	out := new(CheckStreamClosedResponse)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.TestUtilService/CheckStreamClosed", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for TestUtilService service
+
+type TestUtilServiceServer interface {
+	ContinueStream(context.Context, *ContinueStreamRequest) (*google_protobuf.Empty, error)
+	CheckStreamClosed(context.Context, *CheckStreamClosedRequest) (*CheckStreamClosedResponse, error)
+}
+
+func RegisterTestUtilServiceServer(s *grpc.Server, srv TestUtilServiceServer) {
+	s.RegisterService(&_TestUtilService_serviceDesc, srv)
+}
+
+func _TestUtilService_ContinueStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ContinueStreamRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestUtilServiceServer).ContinueStream(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.TestUtilService/ContinueStream",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestUtilServiceServer).ContinueStream(ctx, req.(*ContinueStreamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TestUtilService_CheckStreamClosed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckStreamClosedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestUtilServiceServer).CheckStreamClosed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.TestUtilService/CheckStreamClosed",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestUtilServiceServer).CheckStreamClosed(ctx, req.(*CheckStreamClosedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _TestUtilService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "improbable.grpcweb.test.TestUtilService",
+	HandlerType: (*TestUtilServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ContinueStream",
+			Handler:    _TestUtilService_ContinueStream_Handler,
+		},
+		{
+			MethodName: "CheckStreamClosed",
+			Handler:    _TestUtilService_CheckStreamClosed_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "improbable/grpcweb/test/test.proto",
+}
+
+// Client API for FailService service
+
+type FailServiceClient interface {
+	NonExistant(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
+}
+
+type failServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewFailServiceClient(cc *grpc.ClientConn) FailServiceClient {
+	return &failServiceClient{cc}
+}
+
+func (c *failServiceClient) NonExistant(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := grpc.Invoke(ctx, "/improbable.grpcweb.test.FailService/NonExistant", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for FailService service
+
+type FailServiceServer interface {
+	NonExistant(context.Context, *PingRequest) (*PingResponse, error)
+}
+
+func RegisterFailServiceServer(s *grpc.Server, srv FailServiceServer) {
+	s.RegisterService(&_FailService_serviceDesc, srv)
+}
+
+func _FailService_NonExistant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FailServiceServer).NonExistant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/improbable.grpcweb.test.FailService/NonExistant",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FailServiceServer).NonExistant(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _FailService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "improbable.grpcweb.test.FailService",
+	HandlerType: (*FailServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "NonExistant",
+			Handler:    _FailService_NonExistant_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "improbable/grpcweb/test/test.proto",
 }
 
 func init() { proto.RegisterFile("improbable/grpcweb/test/test.proto", fileDescriptor0) }
