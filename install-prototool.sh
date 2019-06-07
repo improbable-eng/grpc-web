@@ -4,7 +4,13 @@
 
 set -ex
 
+if [[ -z "$PROTOTOOL_VER" ]]; then
+  echo "PROTOTOOL_VER environment variable not set"
+fi
+
 curl -sSL \
-  https://github.com/uber/prototool/releases/download/v1.7.0/prototool-$(uname -s)-$(uname -m) \
-  -o /usr/local/bin/prototool && \
-  chmod +x /usr/local/bin/prototool
+  https://github.com/uber/prototool/releases/download/v${$PROTOTOOL_VER}/prototool-$(uname -s)-$(uname -m) \
+  -o ./prototool && \
+  chmod +x ./prototool
+
+export PATH=$PATH:./protool
