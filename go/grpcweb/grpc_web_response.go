@@ -62,11 +62,10 @@ func (w *grpcWebResponse) Flush() {
 	if w.wroteHeaders || w.wroteBody {
 		// Work around the fact that WriteHeader and a call to Flush would have caused a 200 response.
 		// This is the case when there is no payload.
-		switch w.wrapped.(type) {
-		case http.Flusher:
-			w.wrapped.(http.Flusher).Flush()
-		default:
 
+		f, ok := w.wrapped.(http.Flusher)
+		if ok {
+			f.Flush()
 		}
 	}
 }
@@ -97,7 +96,7 @@ func (w *grpcWebResponse) finishRequest(req *http.Request) {
 		w.copyTrailersToPayload()
 	} else {
 		w.WriteHeader(http.StatusOK)
-		w.wrapped.(http.Flusher).Flush()
+		w.Flush()
 	}
 }
 
@@ -109,7 +108,7 @@ func (w *grpcWebResponse) copyTrailersToPayload() {
 	binary.BigEndian.PutUint32(trailerGrpcDataHeader[1:5], uint32(trailerBuffer.Len()))
 	w.wrapped.Write(trailerGrpcDataHeader)
 	w.wrapped.Write(trailerBuffer.Bytes())
-	w.wrapped.(http.Flusher).Flush()
+	w.Flush()
 }
 
 func extractTrailingHeaders(src http.Header, flushed http.Header) http.Header {
@@ -164,7 +163,7 @@ func (w *base64ResponseWriter) Flush() {
 		grpclog.Errorf("ignoring error Flushing base64 encoder: %v", err)
 	}
 	w.newEncoder()
-	w.wrapped.(http.Flusher).Flush()
+	w.Flush()
 }
 
 func (w *base64ResponseWriter) CloseNotify() <-chan bool {
