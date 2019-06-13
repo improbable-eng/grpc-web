@@ -8,10 +8,10 @@ message PingRequest {
   enum FailureType {
     NONE = 0;
     CODE = 1;
-    DROP = 2;
+    reserved 2; // DROP has been removed
     CODE_UNICODE = 3;
   }
-  
+
   string value = 1;
   int32 response_count = 2;
   uint32 error_code_returned = 3;
