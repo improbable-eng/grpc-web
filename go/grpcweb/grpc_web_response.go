@@ -66,10 +66,6 @@ func (w *grpcWebResponse) Flush() {
 	}
 }
 
-func (w *grpcWebResponse) CloseNotify() <-chan bool {
-	return w.wrapped.(http.CloseNotifier).CloseNotify()
-}
-
 // prepareHeaders runs all required header copying and transformations to
 // prepare the header of the wrapped response writer.
 func (w *grpcWebResponse) prepareHeaders() {
@@ -160,8 +156,4 @@ func (w *base64ResponseWriter) Flush() {
 	}
 	w.newEncoder()
 	w.wrapped.(http.Flusher).Flush()
-}
-
-func (w *base64ResponseWriter) CloseNotify() <-chan bool {
-	return w.wrapped.(http.CloseNotifier).CloseNotify()
 }
