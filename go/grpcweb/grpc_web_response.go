@@ -81,9 +81,11 @@ func (w *grpcWebResponse) prepareHeaders() {
 		replaceInVals("content-type", grpcContentType, w.contentType),
 		keyCase(http.CanonicalHeaderKey),
 	)
+	responseHeaderKeys := headerKeys(wh)
+	responseHeaderKeys = append(responseHeaderKeys, "grpc-status", "grpc-message")
 	wh.Set(
 		http.CanonicalHeaderKey("access-control-expose-headers"),
-		strings.Join(headerKeys(wh), ", "),
+		strings.Join(responseHeaderKeys, ", "),
 	)
 }
 
