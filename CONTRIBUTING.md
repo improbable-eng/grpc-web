@@ -69,3 +69,10 @@ INFO [karma]: Karma v3.0.0 server started at https://0.0.0.0:9876/
 ```
 
 This is your prompt to open a web browser on https://localhost:9876 at which point the tests will continue to run.
+
+## Creating a Release
+1. From a fresh checkout of master, create a release branch, ie: `feature/prepare-x.y.z-release`
+2. Update `CHANGELOG.md` by comparing commits to master since the last Github Release
+3. Raise a pull request for your changes, have it reviewed and landed into master.
+4. Switch your local checkout back to the master branch, pull your merged changes and run `./publish-release.sh`.
+5. Create the ARM binaries and attach them to the Github release.
