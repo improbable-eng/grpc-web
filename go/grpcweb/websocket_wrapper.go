@@ -16,20 +16,18 @@ import (
 )
 
 type webSocketResponseWriter struct {
-	writtenHeaders  bool
-	wsConn          *websocket.Conn
-	headers         http.Header
-	flushedHeaders  http.Header
-	closeNotifyChan chan bool
+	writtenHeaders bool
+	wsConn         *websocket.Conn
+	headers        http.Header
+	flushedHeaders http.Header
 }
 
 func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter {
 	return &webSocketResponseWriter{
-		writtenHeaders:  false,
-		headers:         make(http.Header),
-		flushedHeaders:  make(http.Header),
-		wsConn:          wsConn,
-		closeNotifyChan: make(chan bool, 1),
+		writtenHeaders: false,
+		headers:        make(http.Header),
+		flushedHeaders: make(http.Header),
+		wsConn:         wsConn,
 	}
 }
 
@@ -88,10 +86,6 @@ func (w *webSocketResponseWriter) FlushTrailers() {
 
 func (w *webSocketResponseWriter) Flush() {
 	// no-op
-}
-
-func (w *webSocketResponseWriter) CloseNotify() <-chan bool {
-	return w.closeNotifyChan
 }
 
 type webSocketWrappedReader struct {
