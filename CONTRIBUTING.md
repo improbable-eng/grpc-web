@@ -13,7 +13,7 @@ export GOPATH=$(pwd)
 
 # Checkout project sources into your new go workspace
 go get -u github.com/improbable-eng/grpc-web/go
-cd $GOPATH/src/github.com/improbable-eng/grpc-web 
+cd $GOPATH/src/github.com/improbable-eng/grpc-web
 
 # Install go dependencies
 dep ensure
@@ -25,7 +25,7 @@ npm install
 
 Note you will also need to [install prototool](https://github.com/uber/prototool/blob/dev/docs/install.md) and add it to your `PATH` environment variable if you wish to re-generate the integration test proto files.
 
-## Testing Prerequisites 
+## Testing Prerequisites
 Before you run the tests for the first time, please follow these steps:
 
 ### Installing the Local Certificate
@@ -38,7 +38,7 @@ In order to run the Karma (Integration) tests, you will need to add the certific
 4. Select `misc/localhost.crt`
 5. Double click on the new `GRPC Web example dev server` certificate
 6. Expand the `Trust' section
-7. Change the `When using this certificate` option to `Always Trust` 
+7. Change the `When using this certificate` option to `Always Trust`
 8. Close the certificate details pop-up.
 
 Repeat the above process for `misc/localhostCA.pem`.
@@ -74,5 +74,6 @@ This is your prompt to open a web browser on https://localhost:9876 at which poi
 1. From a fresh checkout of master, create a release branch, ie: `feature/prepare-x.y.z-release`
 2. Update `CHANGELOG.md` by comparing commits to master since the last Github Release
 3. Raise a pull request for your changes, have it reviewed and landed into master.
-4. Switch your local checkout back to the master branch, pull your merged changes and run `./publish-release.sh`.
-5. Create the ARM binaries and attach them to the Github release.
+4. Make the release on github using the new commit in master.
+5. Switch your local checkout to the new tag and run `./publish-release.sh`.
+6. Attach the built binaries the Github release.

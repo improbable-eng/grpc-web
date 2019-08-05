@@ -24,6 +24,9 @@ mkdir -p dist
 GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-x86_64" ./grpcwebproxy
 GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-win64.exe" ./grpcwebproxy
 GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-osx-x86_64" ./grpcwebproxy
+GOOS=linux GOARCH=arm GOARM=5 go build -o "dist/grpcwebproxy-$TAG-arm5" ./grpcwebproxy
+GOOS=linux GOARCH=arm GOARM=6 go build -o "dist/grpcwebproxy-$TAG-arm6" ./grpcwebproxy
+GOOS=linux GOARCH=arm GOARM=7 go build -o "dist/grpcwebproxy-$TAG-arm7" ./grpcwebproxy
 for f in dist/*; do zip -9r "$f.zip" "$f"; done
 ls -l ./dist
 cd ..
