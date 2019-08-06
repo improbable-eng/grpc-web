@@ -1,3 +1,7 @@
+## 0.11.0
+### Breaking changes
+* Server: Revert changes to flusher interface which accidentally introduced a recursive call to `Flush()`. [@johanbrandhorst](https://github.com/johanbrandhorst) in [#527](https://github.com/improbable-eng/grpc-web/pull/527)
+
 ## 0.10.0
 ### Breaking Changes
 * Server: Check flusher interface before calling Flush. [@mangas](https://github.com/mangas) in [#479](https://github.com/improbable-eng/grpc-web/pull/479)
