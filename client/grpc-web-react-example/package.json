@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-react-example",
-  "version": "0.9.5",
+  "version": "0.11.0",
   "private": true,
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
@@ -14,15 +14,15 @@
   },
   "license": "none",
   "dependencies": {
-    "@improbable-eng/grpc-web": "^0.9.5",
+    "@improbable-eng/grpc-web": "^0.11.0",
     "google-protobuf": "^3.6.1"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.2.5",
     "concurrently": "^4.1.0",
     "ts-loader": "^6.0.1",
-    "ts-protoc-gen": "0.9.0",
-    "typescript": "3.4.5",
+    "ts-protoc-gen": "0.10.0",
+    "typescript": "3.5.1",
     "webpack": "^4.17.2",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.7"

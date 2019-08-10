@@ -360,7 +360,12 @@ func (s *GrpcWebWrapperTestSuite) TestPingList_NormalGrpcWorks() {
 	recvHeaders, err := pingListClient.Header()
 	require.NoError(s.T(), err, "no error during execution")
 	recvTrailers := pingListClient.Trailer()
-	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
+	allExpectedHeaders := metadata.Join(
+		metadata.MD{
+			"content-type": []string{"application/grpc"},
+			"trailer":      []string{"Grpc-Status", "Grpc-Message", "Grpc-Status-Details-Bin"},
+		}, expectedHeaders)
+	assert.EqualValues(s.T(), allExpectedHeaders, recvHeaders, "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 
@@ -380,7 +385,12 @@ func (s *GrpcWebWrapperTestSuite) TestPingStream_NormalGrpcWorks() {
 	recvHeaders, err := bidiClient.Header()
 	require.NoError(s.T(), err, "no error during execution")
 	recvTrailers := bidiClient.Trailer()
-	assert.Equal(s.T(), len(expectedHeaders)+1 /*trailers*/, len(recvHeaders), "expected headers must be received")
+	allExpectedHeaders := metadata.Join(
+		metadata.MD{
+			"content-type": []string{"application/grpc"},
+			"trailer":      []string{"Grpc-Status", "Grpc-Message", "Grpc-Status-Details-Bin"},
+		}, expectedHeaders)
+	assert.EqualValues(s.T(), allExpectedHeaders, recvHeaders, "expected headers must be received")
 	assert.EqualValues(s.T(), expectedTrailers, recvTrailers, "expected trailers must be received")
 }
 

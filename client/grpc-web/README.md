@@ -82,7 +82,7 @@ rpc ListenForBooks(stream QueryBooksRequest) returns (stream Book) {}
 ```
 
 ## Usage with NodeJS
-Refer to [grpc-web-node-http-transport](https://npmjs.com/package/grpc-web-node-http-transport).
+Refer to [grpc-web-node-http-transport](https://www.npmjs.com/package/@improbable-eng/grpc-web-node-http-transport).
 
 ## All Docs
 

@@ -14,8 +14,8 @@ export class PingRequest extends jspb.Message {
   getErrorCodeReturned(): number;
   setErrorCodeReturned(value: number): void;
 
-  getFailureType(): PingRequest.FailureType;
-  setFailureType(value: PingRequest.FailureType): void;
+  getFailureType(): PingRequest.FailureTypeMap[keyof PingRequest.FailureTypeMap];
+  setFailureType(value: PingRequest.FailureTypeMap[keyof PingRequest.FailureTypeMap]): void;
 
   getCheckMetadata(): boolean;
   setCheckMetadata(value: boolean): void;
@@ -44,19 +44,20 @@ export namespace PingRequest {
     value: string,
     responseCount: number,
     errorCodeReturned: number,
-    failureType: PingRequest.FailureType,
+    failureType: PingRequest.FailureTypeMap[keyof PingRequest.FailureTypeMap],
     checkMetadata: boolean,
     sendHeaders: boolean,
     sendTrailers: boolean,
     streamIdentifier: string,
   }
 
-  export enum FailureType {
-    NONE = 0,
-    CODE = 1,
-    DROP = 2,
-    CODE_UNICODE = 3,
+  export interface FailureTypeMap {
+    NONE: 0;
+    CODE: 1;
+    CODE_UNICODE: 3;
   }
+
+  export const FailureType: FailureTypeMap;
 }
 
 export class PingResponse extends jspb.Message {

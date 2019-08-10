@@ -1,6 +1,6 @@
 {
   "name": "@improbable-eng/grpc-web",
-  "version": "0.9.5",
+  "version": "0.11.0",
   "description": "gRPC-Web client for browsers (JS/TS)",
   "main": "dist/grpc-web-client.js",
   "browser": "dist/grpc-web-client.umd.js",
@@ -40,7 +40,7 @@
     "@types/node": "^7.0.5",
     "google-protobuf": "^3.2.0",
     "ts-loader": "^6.0.1",
-    "typescript": "3.4.5",
+    "typescript": "3.5.1",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.2.3"
   }

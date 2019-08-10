@@ -1,3 +1,22 @@
+## 0.11.0
+### Breaking changes
+* Server: Revert changes to flusher interface which accidentally introduced a recursive call to `Flush()`. [@johanbrandhorst](https://github.com/johanbrandhorst) in [#527](https://github.com/improbable-eng/grpc-web/pull/527)
+
+## 0.10.0
+### Breaking Changes
+* Server: Check flusher interface before calling Flush. [@mangas](https://github.com/mangas) in [#479](https://github.com/improbable-eng/grpc-web/pull/479)
+* Server: Remove `CloseNotify`. [@mangas](https://github.com/mangas) in [#478](https://github.com/improbable-eng/grpc-web/pull/478)
+* Client: Set Content-Length header in NodeHTTPTransport to disable chunked encoding. [@MichaelAquilina](https://github.com/MichaelAquilina) in [#427](https://github.com/improbable-eng/grpc-web/pull/427)
+* Server: Update grpc-go, golang/protobuf dependencies. [@johanbrandhorst](https://github.com/johanbrandhorst) in [#395](https://github.com/improbable-eng/grpc-web/pull/395)
+
+### Other Changes
+* Server: Add `grpc-status` & `grpc-message` as exposed headers. [@Globegitter](https://github.com/Globegitter) in [#489](https://github.com/improbable-eng/grpc-web/pull/489)
+
+## 0.9.6
+### Other Changes
+* Server: Allow non root resources. [@mangas](https://github.com/mangas) in [#454](https://github.com/improbable-eng/grpc-web/pull/454)
+* Client: Fix aborting requests from within a web-worker context. [@midan888](https://github.com/midan888) in [#443](https://github.com/improbable-eng/grpc-web/pull/443)
+
 ## 0.9.4
 ### Other Changes
 * Client: Fix broken v0.9.3 release (client binaries were not rebuilt prior to npm publish)

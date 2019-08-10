@@ -66,10 +66,6 @@ func (w *grpcWebResponse) Flush() {
 	}
 }
 
-func (w *grpcWebResponse) CloseNotify() <-chan bool {
-	return w.wrapped.(http.CloseNotifier).CloseNotify()
-}
-
 // prepareHeaders runs all required header copying and transformations to
 // prepare the header of the wrapped response writer.
 func (w *grpcWebResponse) prepareHeaders() {
@@ -81,9 +77,11 @@ func (w *grpcWebResponse) prepareHeaders() {
 		replaceInVals("content-type", grpcContentType, w.contentType),
 		keyCase(http.CanonicalHeaderKey),
 	)
+	responseHeaderKeys := headerKeys(wh)
+	responseHeaderKeys = append(responseHeaderKeys, "grpc-status", "grpc-message")
 	wh.Set(
 		http.CanonicalHeaderKey("access-control-expose-headers"),
-		strings.Join(headerKeys(wh), ", "),
+		strings.Join(responseHeaderKeys, ", "),
 	)
 }
 
@@ -160,8 +158,4 @@ func (w *base64ResponseWriter) Flush() {
 	}
 	w.newEncoder()
 	w.wrapped.(http.Flusher).Flush()
-}
-
-func (w *base64ResponseWriter) CloseNotify() <-chan bool {
-	return w.wrapped.(http.CloseNotifier).CloseNotify()
 }
