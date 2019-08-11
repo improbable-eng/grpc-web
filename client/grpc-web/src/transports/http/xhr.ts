@@ -8,12 +8,6 @@ export interface XhrTransportInit {
   withCredentials?: boolean
 }
 
-export function ArrayBufferXhrTransport(init: XhrTransportInit): TransportFactory {
-  return (opts: TransportOptions) => {
-      return new ArrayBufferXHR(opts, init);
-  }
-}
-
 export function XhrTransport(init: XhrTransportInit): TransportFactory {
   return (opts: TransportOptions) => {
     if (detectMozXHRSupport()) {
@@ -122,24 +116,6 @@ export class MozChunkedArrayBufferXHR extends XHR {
     this.options.debug && debug("MozXHR.onProgressEvent: ", new Uint8Array(resp));
     detach(() => {
       this.options.onChunk(new Uint8Array(resp));
-    });
-  }
-}
-
-export class ArrayBufferXHR extends XHR {
-  protected configureXhr(): void {
-    this.options.debug && debug("ArrayBufferXHR.configureXhr: setting responseType to 'arraybuffer'");
-    (this.xhr as any).responseType = "arraybuffer";
-  }
-
-  onLoadEvent(): void {
-    const resp = this.xhr.response;
-    this.options.debug && debug("ArrayBufferXHR.onLoadEvent: ", new Uint8Array(resp));
-    detach(() => {
-        this.options.onChunk(new Uint8Array(resp), /* flush */ true);
-    });
-    detach(() => {
-        this.options.onEnd();
     });
   }
 }
