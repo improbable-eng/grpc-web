@@ -12,3 +12,5 @@ RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | b
 ENV NVM_DIR /root/.nvm
 ENV PATH $NVM_DIR/bin:$PATH
 RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install 10.9.0"
+
+CMD /bin/bash
