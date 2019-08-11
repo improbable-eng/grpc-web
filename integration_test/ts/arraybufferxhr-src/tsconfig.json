@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "sourceMap": true,
+    "target": "es5",
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "stripInternal": true,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "../build-arraybufferxhr",
+    "noEmitOnError": true
+  },
+  "types": [
+    "jasmine"
+  ],
+  "include": [
+    "arraybufferxhr.spec.ts"
+  ]
+}
