@@ -1,7 +1,7 @@
 {
-  "name": "@improbable-eng/grpc-web-arraybufferxhr-transport",
+  "name": "@improbable-eng/grpc-web-react-native-transport",
   "version": "0.11.0",
-  "description": "ArrayBufferXhr Transport for use with @improbable-eng/grpc-web",
+  "description": "Transport for use with @improbable-eng/grpc-web that works with React Native.",
   "main": "lib/index.js",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 import { grpc } from "@improbable-eng/grpc-web";
 
-export function ArrayBufferXhrTransport(init: grpc.XhrTransportInit): grpc.TransportFactory {
+export function ReactNativeTransport(init: grpc.XhrTransportInit): grpc.TransportFactory {
   return (opts: grpc.TransportOptions) => {
     return new ArrayBufferXHR(opts, init);
   }
