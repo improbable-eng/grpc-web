@@ -50,6 +50,27 @@ function detach(cb: () => void) {
   }, 0);
 }
 
+function stringToArrayBuffer(str: string): Uint8Array {
+  const asArray = new Uint8Array(str.length);
+  let arrayIndex = 0;
+  for (let i = 0; i < str.length; i++) {
+    const codePoint = (String.prototype as any).codePointAt ? (str as any).codePointAt(i) : codePointAtPolyfill(str, i);
+    asArray[arrayIndex++] = codePoint & 0xFF;
+  }
+  return asArray;
+}
+
+function codePointAtPolyfill(str: string, index: number) {
+  let code = str.charCodeAt(index);
+  if (code >= 0xd800 && code <= 0xdbff) {
+    const surr = str.charCodeAt(index + 1);
+    if (surr >= 0xdc00 && surr <= 0xdfff) {
+      code = 0x10000 + ((code - 0xd800) << 10) + (surr - 0xdc00);
+    }
+  }
+  return code;
+}
+
 class XHR implements grpc.Transport {
   options: grpc.TransportOptions;
   init: grpc.XhrTransportInit;
@@ -62,7 +83,15 @@ class XHR implements grpc.Transport {
     this.init = init;
   }
 
-  onProgressEvent() { }
+  protected onProgressEvent() {
+    this.options.debug && debug("XHR.onProgressEvent.length: ", this.xhr.response.length);
+    const rawText = this.xhr.response.substr(this.index);
+    this.index = this.xhr.response.length;
+    const asArrayBuffer = stringToArrayBuffer(rawText);
+    detach(() => {
+      this.options.onChunk(asArrayBuffer);
+    });
+  }
 
   onLoadEvent() {
     detach(() => {
@@ -125,6 +154,8 @@ class ArrayBufferXHR extends XHR {
     this.options.debug && debug("ArrayBufferXHR.configureXhr: setting responseType to 'arraybuffer'");
     (this.xhr as any).responseType = "arraybuffer";
   }
+
+  onProgressEvent() { }
 
   onLoadEvent(): void {
     const resp = this.xhr.response;
