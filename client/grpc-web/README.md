@@ -17,7 +17,7 @@ Please see the full [gRPC-Web README](https://github.com/improbable-eng/grpc-web
 
 ## Example Project
 
-There is an [example project available here](https://github.com/improbable-eng/grpc-web/tree/master/example)
+There is an [example project available here](https://github.com/improbable-eng/grpc-web/tree/master/client/grpc-web-react-example)
 
 ## Usage Overview
 * Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes. `ts-protoc-gen` can also generate gRPC service definitions with the `service=true` argument.
