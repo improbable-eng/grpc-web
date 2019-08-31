@@ -1,8 +1,4 @@
-import {Metadata} from "../../metadata";
-import {Transport, TransportFactory, TransportOptions} from "../Transport";
-import {debug} from "../../debug";
-import detach from "../../detach";
-import {encodeASCII} from "../../ChunkParser";
+import {Metadata, Transport, TransportFactory, TransportOptions, debug, detach, encodeASCII} from "@improbable-eng/grpc-web-core";
 
 enum WebsocketSignal {
   FINISH_SEND = 1

@@ -1,7 +1,4 @@
-import {Metadata} from "../../metadata";
-import {Transport, TransportFactory, TransportOptions} from "../Transport";
-import {debug} from "../../debug";
-import detach from "../../detach";
+import {Metadata, TransportOptions, TransportFactory, Transport, debug, detach} from "@improbable-eng/grpc-web-core";
 import {detectMozXHRSupport, detectXHROverrideMimeTypeSupport} from "./xhrUtil";
 
 export interface XhrTransportInit {
@@ -11,16 +8,16 @@ export interface XhrTransportInit {
 export function XhrTransport(init: XhrTransportInit): TransportFactory {
   return (opts: TransportOptions) => {
     if (detectMozXHRSupport()) {
-      return new MozChunkedArrayBufferXHR(opts, init);
+      return new MozChunkedArrayBufferXhrTransport(opts, init);
     } else if (detectXHROverrideMimeTypeSupport()) {
-      return new XHR(opts, init);
+      return new DefaultXhrTransport(opts, init);
     } else {
       throw new Error("This environment's XHR implementation cannot support binary transfer.");
     }
   }
 }
 
-export class XHR implements Transport {
+export class DefaultXhrTransport implements Transport {
   options: TransportOptions;
   init: XhrTransportInit;
   xhr: XMLHttpRequest;
@@ -105,7 +102,7 @@ export class XHR implements Transport {
   }
 }
 
-export class MozChunkedArrayBufferXHR extends XHR {
+export class MozChunkedArrayBufferXhrTransport extends DefaultXhrTransport {
   protected configureXhr(): void {
     this.options.debug && debug("MozXHR.configureXhr: setting responseType to 'moz-chunked-arraybuffer'");
     (this.xhr as any).responseType = "moz-chunked-arraybuffer";

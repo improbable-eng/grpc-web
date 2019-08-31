@@ -1,55 +1,43 @@
-import {BrowserHeaders} from "browser-headers";
-import * as impTransport from "./transports/Transport";
-import * as impTransportFetch from "./transports/http/fetch";
-import * as impTransportWebSocket from "./transports/websocket/websocket";
-import * as impTransportXhr from "./transports/http/xhr";
-import * as impTransportHttp from "./transports/http/http";
-import * as impCode from "./Code";
-import * as impInvoke from "./invoke";
-import * as impUnary from "./unary";
-import * as impClient from "./client";
-import * as impService from "./service";
-import * as impMessage from "./message";
+import * as impGrpc from "@improbable-eng/grpc-web-core";
+import { CrossBrowserHttpTransport } from "@improbable-eng/grpc-web-cross-browser-transport";
+import {TransportOptions} from "@improbable-eng/grpc-web-core";
 
+// Export under the `grpc` namespace for easy consumption.
 export namespace grpc {
-  export interface ProtobufMessageClass<T extends ProtobufMessage> extends impMessage.ProtobufMessageClass<T> {}
-  export interface ProtobufMessage extends impMessage.ProtobufMessage {}
+  export interface ProtobufMessageClass<T extends impGrpc.ProtobufMessage> extends impGrpc.ProtobufMessageClass<T> {}
+  export interface ProtobufMessage extends impGrpc.ProtobufMessage {}
+  export interface ServiceDefinition extends impGrpc.ServiceDefinition {}
 
-  export interface Transport extends impTransport.Transport {}
-  export interface TransportOptions extends impTransport.TransportOptions {}
-  export interface TransportFactory extends impTransport.TransportFactory {}
-  export const setDefaultTransport = impTransport.setDefaultTransportFactory;
+  export interface Transport extends impGrpc.Transport {}
+  export interface TransportOptions extends impGrpc.TransportOptions {}
+  export interface TransportFactory extends impGrpc.TransportFactory {}
 
-  export const CrossBrowserHttpTransport = impTransportHttp.CrossBrowserHttpTransport;
-  export interface CrossBrowserHttpTransportInit extends impTransportHttp.CrossBrowserHttpTransportInit {}
+  export interface UnaryMethodDefinition<TRequest extends impGrpc.ProtobufMessage, TResponse extends impGrpc.ProtobufMessage> extends impGrpc.UnaryMethodDefinition<TRequest, TResponse> {}
+  export interface MethodDefinition<TRequest extends ProtobufMessage, TResponse extends impGrpc.ProtobufMessage> extends impGrpc.MethodDefinition<TRequest, TResponse> {}
+  export interface RpcOptions extends impGrpc.RpcOptions {}
+  export interface Client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impGrpc.Client<TRequest, TResponse> {}
+  export interface ClientRpcOptions extends impGrpc.ClientRpcOptions {}
+  export interface Request extends impGrpc.Request {}
+  export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impGrpc.InvokeRpcOptions<TRequest, TResponse> {}
+  export interface UnaryOutput<TResponse extends ProtobufMessage> extends impGrpc.UnaryOutput<TResponse> {}
+  export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impGrpc.UnaryRpcOptions<TRequest, TResponse> {}
 
-  export const FetchReadableStreamTransport = impTransportFetch.FetchReadableStreamTransport;
-  export interface FetchReadableStreamInit extends impTransportFetch.FetchTransportInit {}
+  export import Code = impGrpc.Code;
+  export import Metadata = impGrpc.Metadata;
+  export import setDefaultTransport = impGrpc.setDefaultTransportFactory;
+  export import invoke = impGrpc.invoke;
+  export import unary = impGrpc.unary;
 
-  export const XhrTransport = impTransportXhr.XhrTransport;
-  export interface XhrTransportInit extends impTransportXhr.XhrTransportInit {}
-
-  export const WebsocketTransport = impTransportWebSocket.WebsocketTransport;
-
-  export interface UnaryMethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.UnaryMethodDefinition<TRequest, TResponse> {}
-  export interface MethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.MethodDefinition<TRequest, TResponse> {}
-  export interface ServiceDefinition extends impService.ServiceDefinition {}
-
-  export import Code = impCode.Code;
-  export import Metadata = BrowserHeaders;
-
-  export interface Client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impClient.Client<TRequest, TResponse> {}
-  export function client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: ClientRpcOptions): Client<TRequest, TResponse> {
-    return impClient.client(methodDescriptor, props);
+  export function client<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage, M extends MethodDefinition<TRequest, TResponse>>(methodDescriptor: M, props: impGrpc.ClientRpcOptions): Client<TRequest, TResponse> {
+    return impGrpc.client(methodDescriptor, props);
   }
-  export interface RpcOptions extends impClient.RpcOptions {}
-  export interface ClientRpcOptions extends impClient.ClientRpcOptions {}
 
-  export const invoke = impInvoke.invoke;
-  export interface Request extends impInvoke.Request {}
-  export interface InvokeRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impInvoke.InvokeRpcOptions<TRequest, TResponse> {}
 
-  export const unary = impUnary.unary;
-  export interface UnaryOutput<TResponse extends ProtobufMessage> extends impUnary.UnaryOutput<TResponse> {}
-  export interface UnaryRpcOptions<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impUnary.UnaryRpcOptions<TRequest, TResponse> {}
 }
+
+// Configure grpc-web to use one of the native browser transports (typically fetch, or XHR based) so that it works
+// "out of the box" for new users.
+const defaultCrossBrowserTransportFactory = (options: TransportOptions) => {
+  return CrossBrowserHttpTransport({ withCredentials: false })(options);
+};
+grpc.setDefaultTransport(defaultCrossBrowserTransportFactory);
