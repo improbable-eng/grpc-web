@@ -10,4 +10,4 @@ export { unary, UnaryOutput, UnaryRpcOptions } from "./unary";
 
 export { default as detach } from "./detach";
 export { debug } from "./debug";
-export { encodeASCII } from "./ChunkParser";
+export { decodeASCII, encodeASCII } from "./ChunkParser";
