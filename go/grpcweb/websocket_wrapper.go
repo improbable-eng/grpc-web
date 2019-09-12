@@ -45,6 +45,7 @@ func (w *webSocketResponseWriter) ping() {
 		close(dispose)
 		return nil
 	})
+	defer ticker.Stop()
 	for {
 		select {
 		case <-dispose:
