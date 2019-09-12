@@ -1,6 +1,7 @@
 package grpcweb
 
 import (
+	"sync"
 	"bufio"
 	"bytes"
 	"context"
@@ -21,21 +22,29 @@ type webSocketResponseWriter struct {
 	wsConn          *websocket.Conn
 	headers         http.Header
 	flushedHeaders  http.Header
-	timeOutInterval int
-	tickerCount     int
+	timeOutInterval uint
+	tickerCount     uint
+	tickerCountLock *sync.Mutex
 }
 
 func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter {
-	wsRW := &webSocketResponseWriter{
+	return &webSocketResponseWriter{
 		writtenHeaders:  false,
 		headers:         make(http.Header),
 		flushedHeaders:  make(http.Header),
 		wsConn:          wsConn,
-		timeOutInterval: 30,
-		tickerCount:     0,
 	}
-	go wsRW.ping()
-	return wsRW
+}
+
+func (w *webSocketResponseWriter) EnablePing(timeOutInterval uint) {
+	if timeOutInterval > 1 {
+		w.timeOutInterval = timeOutInterval
+	} else {
+		w.timeOutInterval = 30
+	}
+	w.tickerCount = 0
+	w.tickerCountLock = &sync.Mutex{}
+	go w.ping()
 }
 
 func (w *webSocketResponseWriter) ping() {
@@ -51,6 +60,8 @@ func (w *webSocketResponseWriter) ping() {
 		case <-dispose:
 			return
 		case <-ticker.C:
+			w.tickerCountLock.Lock()
+			defer w.tickerCountLock.Unlock()
 			w.tickerCount++
 			if w.tickerCount >= w.timeOutInterval {
 				w.tickerCount = 0
@@ -58,7 +69,6 @@ func (w *webSocketResponseWriter) ping() {
 			}
 		}
 	}
-	ticker.Stop()
 }
 
 func (w *webSocketResponseWriter) Header() http.Header {
@@ -69,6 +79,8 @@ func (w *webSocketResponseWriter) Write(b []byte) (int, error) {
 	if !w.writtenHeaders {
 		w.WriteHeader(http.StatusOK)
 	}
+	w.tickerCountLock.Lock()
+	defer w.tickerCountLock.Unlock()
 	w.tickerCount = 0
 	return len(b), w.wsConn.WriteMessage(websocket.BinaryMessage, b)
 }
