@@ -62,12 +62,14 @@ func (w *webSocketResponseWriter) ping() {
 		case <-ticker.C:
 			w.tickerCountLock.Lock()
 			w.tickerCount++
+			var sendPing = false
 			if w.tickerCount >= w.timeOutInterval {
 				w.tickerCount = 0
-				w.tickerCountLock.Unlock()
+				sendPing = true
+			}
+			w.tickerCountLock.Unlock()
+			if sendPing == true {
 				w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
-			} else {
-				w.tickerCountLock.Unlock()
 			}
 		}
 	}
