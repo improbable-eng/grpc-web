@@ -58,7 +58,6 @@ func (w *webSocketResponseWriter) ping() {
 			}
 		}
 	}
-Stop:
 	ticker.Stop()
 }
 
