@@ -162,7 +162,9 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 	defer cancelFunc()
 
 	respWriter := newWebSocketResponseWriter(wsConn)
-	respWriter.EnablePing(30)
+	if w.opts.websocketPingTimeout > 0 {
+		respWriter.EnablePing(w.opts.websocketPingTimeout)
+	}
 	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter, cancelFunc)
 
 	req.Body = wrappedReader

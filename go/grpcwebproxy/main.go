@@ -39,6 +39,7 @@ var (
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
 
 	useWebsockets = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
+	websocketPingTimeout = pflag.Int("websocket_ping_timeout_interval", 0, "websocket ping timeout interval, default 0 is disable, take effect when use_websockets = true")
 
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
@@ -71,6 +72,11 @@ func main() {
 			grpcweb.WithWebsockets(true),
 			grpcweb.WithWebsocketOriginFunc(makeWebsocketOriginFunc(allowedOrigins)),
 		)
+		
+		if *websocketPingTimeout > 0 {
+			logrus.Println("websocket ping timeout %v", *websocketPingTimeout)
+		}
+		grpcweb.WithWebsocketPingTimeout(*websocketPingTimeout),
 	}
 	wrappedGrpc := grpcweb.WrapServer(grpcServer, options...)
 

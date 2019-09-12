@@ -19,6 +19,7 @@ type options struct {
 	corsForRegisteredEndpointsOnly bool
 	originFunc                     func(origin string) bool
 	enableWebsockets               bool
+	websocketPingTimeout           uint
 	websocketOriginFunc            func(req *http.Request) bool
 	allowNonRootResources          bool
 }
