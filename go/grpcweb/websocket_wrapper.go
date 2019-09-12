@@ -49,7 +49,7 @@ func (w *webSocketResponseWriter) ping() {
 	for {
 		select {
 		case <-dispose:
-			goto Stop
+			return
 		case <-ticker.C:
 			w.tickerCount++
 			if w.tickerCount >= w.timeOutInterval {
