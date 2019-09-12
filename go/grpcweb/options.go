@@ -93,6 +93,15 @@ func WithWebsockets(enableWebsockets bool) Option {
 	}
 }
 
+// WithWebsocketPingTimeout allows for websocket send ping.
+//
+// The default behaviour is 0, i.e. to disallow websocket ping
+func WithWebsocketPingTimeout(websocketPingTimeout uint) Option {
+	return func(o *options) {
+		o.websocketPingTimeout = websocketPingTimeout
+	}
+}
+
 // WithWebsocketOriginFunc allows for customizing the acceptance of Websocket requests - usually to check that the origin
 // is valid.
 //
