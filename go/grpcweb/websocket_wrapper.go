@@ -10,25 +10,55 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/http2"
 )
 
 type webSocketResponseWriter struct {
-	writtenHeaders bool
-	wsConn         *websocket.Conn
-	headers        http.Header
-	flushedHeaders http.Header
+	writtenHeaders  bool
+	wsConn          *websocket.Conn
+	headers         http.Header
+	flushedHeaders  http.Header
+	timeOutInterval int
+	tickerCount     int
 }
 
 func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter {
-	return &webSocketResponseWriter{
-		writtenHeaders: false,
-		headers:        make(http.Header),
-		flushedHeaders: make(http.Header),
-		wsConn:         wsConn,
+	wsRW := &webSocketResponseWriter{
+		writtenHeaders:  false,
+		headers:         make(http.Header),
+		flushedHeaders:  make(http.Header),
+		wsConn:          wsConn,
+		timeOutInterval: 30,
+		tickerCount:     0,
 	}
+	go wsRW.ping()
+	return wsRW
+}
+
+func (w *webSocketResponseWriter) ping() {
+	dispose := make(chan bool)
+	ticker := time.NewTicker(time.Second)
+	w.wsConn.SetCloseHandler(func(code int, text string) error {
+		close(dispose)
+		return nil
+	})
+	for {
+		select {
+		case <-dispose:
+			goto Stop
+		case <-ticker.C:
+			w.tickerCount++
+			if w.tickerCount >= w.timeOutInterval {
+				w.tickerCount = 0
+				w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			}
+		}
+	}
+Stop:
+	ticker.Stop()
 }
 
 func (w *webSocketResponseWriter) Header() http.Header {
@@ -39,6 +69,7 @@ func (w *webSocketResponseWriter) Write(b []byte) (int, error) {
 	if !w.writtenHeaders {
 		w.WriteHeader(http.StatusOK)
 	}
+	w.tickerCount = 0
 	return len(b), w.wsConn.WriteMessage(websocket.BinaryMessage, b)
 }
 
