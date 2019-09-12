@@ -37,7 +37,7 @@ func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter
 }
 
 func (w *webSocketResponseWriter) EnablePing(timeOutInterval uint) {
-	if timeOutInterval > 1 {
+	if timeOutInterval >= 1 {
 		w.timeOutInterval = timeOutInterval
 	} else {
 		w.timeOutInterval = 30
@@ -61,11 +61,13 @@ func (w *webSocketResponseWriter) ping() {
 			return
 		case <-ticker.C:
 			w.tickerCountLock.Lock()
-			defer w.tickerCountLock.Unlock()
 			w.tickerCount++
 			if w.tickerCount >= w.timeOutInterval {
 				w.tickerCount = 0
+				w.tickerCountLock.Unlock()
 				w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			} else {
+				w.tickerCountLock.Unlock()
 			}
 		}
 	}
@@ -80,8 +82,8 @@ func (w *webSocketResponseWriter) Write(b []byte) (int, error) {
 		w.WriteHeader(http.StatusOK)
 	}
 	w.tickerCountLock.Lock()
-	defer w.tickerCountLock.Unlock()
 	w.tickerCount = 0
+	w.tickerCountLock.Unlock()
 	return len(b), w.wsConn.WriteMessage(websocket.BinaryMessage, b)
 }
 
