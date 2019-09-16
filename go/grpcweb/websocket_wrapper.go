@@ -1,7 +1,6 @@
 package grpcweb
 
 import (
-	"sync"
 	"bufio"
 	"bytes"
 	"context"
@@ -22,55 +21,45 @@ type webSocketResponseWriter struct {
 	wsConn          *websocket.Conn
 	headers         http.Header
 	flushedHeaders  http.Header
-	timeOutInterval uint
-	tickerCount     uint
-	tickerCountLock *sync.Mutex
+	timeOutInterval time.Duration
+	timer           *time.Timer
 }
 
 func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter {
 	return &webSocketResponseWriter{
-		writtenHeaders:  false,
-		headers:         make(http.Header),
-		flushedHeaders:  make(http.Header),
-		wsConn:          wsConn,
+		writtenHeaders: false,
+		headers:        make(http.Header),
+		flushedHeaders: make(http.Header),
+		wsConn:         wsConn,
 	}
 }
 
-func (w *webSocketResponseWriter) EnablePing(timeOutInterval uint) {
-	if timeOutInterval >= 1 {
-		w.timeOutInterval = timeOutInterval
-	} else {
-		w.timeOutInterval = 30
+func (w *webSocketResponseWriter) EnablePing(timeOutInterval time.Duration) {
+	if timeOutInterval < time.Second {
+		return
 	}
-	w.tickerCount = 0
-	w.tickerCountLock = &sync.Mutex{}
-	go w.ping()
-}
-
-func (w *webSocketResponseWriter) ping() {
+	w.timeOutInterval = timeOutInterval
+	w.timer = time.NewTimer(w.timeOutInterval)
 	dispose := make(chan bool)
-	ticker := time.NewTicker(time.Second)
 	w.wsConn.SetCloseHandler(func(code int, text string) error {
 		close(dispose)
 		return nil
 	})
-	defer ticker.Stop()
+	go w.ping(dispose)
+}
+
+func (w *webSocketResponseWriter) ping(dispose chan bool) {
+	if dispose == nil {
+		return
+	}
+	defer w.timer.Stop()
 	for {
 		select {
 		case <-dispose:
 			return
-		case <-ticker.C:
-			w.tickerCountLock.Lock()
-			w.tickerCount++
-			var sendPing = false
-			if w.tickerCount >= w.timeOutInterval {
-				w.tickerCount = 0
-				sendPing = true
-			}
-			w.tickerCountLock.Unlock()
-			if sendPing == true {
-				w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
-			}
+		case <-w.timer.C:
+			w.timer.Reset(w.timeOutInterval)
+			w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
 		}
 	}
 }
@@ -83,9 +72,9 @@ func (w *webSocketResponseWriter) Write(b []byte) (int, error) {
 	if !w.writtenHeaders {
 		w.WriteHeader(http.StatusOK)
 	}
-	w.tickerCountLock.Lock()
-	w.tickerCount = 0
-	w.tickerCountLock.Unlock()
+	if w.timeOutInterval > time.Second && w.timer != nil {
+		w.timer.Reset(w.timeOutInterval)
+	}
 	return len(b), w.wsConn.WriteMessage(websocket.BinaryMessage, b)
 }
 
