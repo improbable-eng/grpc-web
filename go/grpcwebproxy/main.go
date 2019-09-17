@@ -73,7 +73,7 @@ func main() {
 			grpcweb.WithWebsocketOriginFunc(makeWebsocketOriginFunc(allowedOrigins)),
 		)
 		if *websocketPingInterval >= time.Second {
-			logrus.Println(fmt.Sprintf("websocket keepalive pinging enabled, the ping interval is %s, the actual timeout is 1-2 times the interval.", websocketPingInterval.String()))
+			logrus.Infof("websocket keepalive pinging enabled, the ping interval is %s, the actual timeout is 1-2 times the interval.", websocketPingInterval.String())
 		}
 		options = append(
 			options,
