@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -17,12 +18,13 @@ import (
 )
 
 type webSocketResponseWriter struct {
-	writtenHeaders  bool
-	wsConn          *websocket.Conn
-	headers         http.Header
-	flushedHeaders  http.Header
-	timeOutInterval time.Duration
-	timer           *time.Timer
+	writtenHeaders      bool
+	wsConn              *websocket.Conn
+	headers             http.Header
+	flushedHeaders      http.Header
+	timeOutInterval     time.Duration
+	lastMessageTime     time.Time
+	lastMessageTimeLock *sync.Mutex
 }
 
 func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter {
@@ -34,12 +36,9 @@ func newWebSocketResponseWriter(wsConn *websocket.Conn) *webSocketResponseWriter
 	}
 }
 
-func (w *webSocketResponseWriter) EnablePing(timeOutInterval time.Duration) {
-	if timeOutInterval < time.Second {
-		return
-	}
+func (w *webSocketResponseWriter) enablePing(timeOutInterval time.Duration) {
 	w.timeOutInterval = timeOutInterval
-	w.timer = time.NewTimer(w.timeOutInterval)
+	w.lastMessageTimeLock = &sync.Mutex{}
 	dispose := make(chan bool)
 	w.wsConn.SetCloseHandler(func(code int, text string) error {
 		close(dispose)
@@ -52,14 +51,23 @@ func (w *webSocketResponseWriter) ping(dispose chan bool) {
 	if dispose == nil {
 		return
 	}
-	defer w.timer.Stop()
+	ticker := time.NewTicker(w.timeOutInterval)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-dispose:
 			return
-		case <-w.timer.C:
-			w.timer.Reset(w.timeOutInterval)
-			w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
+		case t := <-ticker.C:
+			var sendPing = false
+			w.lastMessageTimeLock.Lock()
+			if t.After(w.lastMessageTime.Add(w.timeOutInterval)) {
+				sendPing = true
+				w.lastMessageTime = time.Now()
+			}
+			w.lastMessageTimeLock.Unlock()
+			if sendPing {
+				w.wsConn.WriteMessage(websocket.PingMessage, []byte{})
+			}
 		}
 	}
 }
@@ -72,8 +80,10 @@ func (w *webSocketResponseWriter) Write(b []byte) (int, error) {
 	if !w.writtenHeaders {
 		w.WriteHeader(http.StatusOK)
 	}
-	if w.timeOutInterval > time.Second && w.timer != nil {
-		w.timer.Reset(w.timeOutInterval)
+	if w.timeOutInterval > time.Second {
+		w.lastMessageTimeLock.Lock()
+		w.lastMessageTime = time.Now()
+		w.lastMessageTimeLock.Unlock()
 	}
 	return len(b), w.wsConn.WriteMessage(websocket.BinaryMessage, b)
 }

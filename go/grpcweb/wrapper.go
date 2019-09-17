@@ -163,7 +163,7 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 
 	respWriter := newWebSocketResponseWriter(wsConn)
 	if w.opts.websocketPingInterval >= time.Second {
-		respWriter.EnablePing(w.opts.websocketPingInterval)
+		respWriter.enablePing(w.opts.websocketPingInterval)
 	}
 	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter, cancelFunc)
 
