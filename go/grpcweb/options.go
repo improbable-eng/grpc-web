@@ -3,7 +3,10 @@
 
 package grpcweb
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 var (
 	defaultOptions = &options{
@@ -19,6 +22,7 @@ type options struct {
 	corsForRegisteredEndpointsOnly bool
 	originFunc                     func(origin string) bool
 	enableWebsockets               bool
+	websocketPingInterval          time.Duration
 	websocketOriginFunc            func(req *http.Request) bool
 	allowNonRootResources          bool
 }
@@ -89,6 +93,15 @@ func WithAllowedRequestHeaders(headers []string) Option {
 func WithWebsockets(enableWebsockets bool) Option {
 	return func(o *options) {
 		o.enableWebsockets = enableWebsockets
+	}
+}
+
+// WithWebsocketPingInterval enables websocket keepalive pinging with the configured timeout.
+//
+// The default behaviour is to disable websocket pinging.
+func WithWebsocketPingInterval(websocketPingInterval time.Duration) Option {
+	return func(o *options) {
+		o.websocketPingInterval = websocketPingInterval
 	}
 }
 
