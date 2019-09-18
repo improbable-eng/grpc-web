@@ -96,7 +96,7 @@ func WithWebsockets(enableWebsockets bool) Option {
 	}
 }
 
-// WithWebsocketPingInterval enables websocket keepalive pinging with the configured timeout (in seconds).
+// WithWebsocketPingInterval enables websocket keepalive pinging with the configured timeout.
 //
 // The default behaviour is to disable websocket pinging.
 func WithWebsocketPingInterval(websocketPingInterval time.Duration) Option {
