@@ -136,6 +136,16 @@ requests - usually to check that the origin is valid.
 The default behaviour is to check that the origin of the request matches the
 host of the request and deny all requests from remote origins.
 
+#### func  WithWebsocketPingInterval
+
+```go
+func WithWebsocketPingInterval(websocketPingInterval time.Duration) Option
+```
+WithWebsocketPingInterval enables websocket keepalive pinging with the
+configured timeout.
+
+The default behaviour is to disable websocket pinging.
+
 #### func  WithWebsockets
 
 ```go
@@ -145,16 +155,6 @@ WithWebsockets allows for handling grpc-web requests of websockets - enabling
 bidirectional requests.
 
 The default behaviour is false, i.e. to disallow websockets
-
-#### func  WithWebsocketPingInterval
-
-```go
-func WithWebsocketPingInterval(websocketPingInterval time.Duration) Option
-```
-WithWebsocketPingInterval enables websocket keepalive pinging with the configured
-timeout.
-
-The default behaviour is to disable websocket pinging.
 
 #### type WrappedGrpcServer
 
