@@ -34,6 +34,7 @@ var (
 
 	flagAllowAllOrigins = pflag.Bool("allow_all_origins", false, "allow requests from any origin.")
 	flagAllowedOrigins  = pflag.StringSlice("allowed_origins", nil, "comma-separated list of origin URLs which are allowed to make cross-origin requests.")
+	flagAllowedHeaders  = pflag.StringSlice("allowed_headers", []string{}, "comma-separated list of headers which are allowed to propagate to the gRPC backend.")
 
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
@@ -80,6 +81,14 @@ func main() {
 			grpcweb.WithWebsocketPingInterval(*websocketPingInterval),
 		)
 	}
+
+	if len(*flagAllowedHeaders) > 0 {
+		options = append(
+			options,
+			grpcweb.WithAllowedRequestHeaders(*flagAllowedHeaders),
+		)
+	}
+
 	wrappedGrpc := grpcweb.WrapServer(grpcServer, options...)
 
 	if !*runHttpServer && !*runTlsServer {
