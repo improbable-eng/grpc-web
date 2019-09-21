@@ -35,6 +35,7 @@ type WrappedGrpcServer struct {
 	originFunc          func(origin string) bool
 	enableWebsockets    bool
 	websocketOriginFunc func(req *http.Request) bool
+	allowedHeaders      []string
 	endpointFunc        func(req *http.Request) string
 }
 
@@ -46,9 +47,10 @@ type WrappedGrpcServer struct {
 // You can control the behaviour of the wrapper (e.g. modifying CORS behaviour) using `With*` options.
 func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 	opts := evaluateOptions(options)
+	allowedHeaders := append(opts.allowedRequestHeaders, internalRequestHeadersWhitelist...)
 	corsWrapper := cors.New(cors.Options{
 		AllowOriginFunc:  opts.originFunc,
-		AllowedHeaders:   append(opts.allowedRequestHeaders, internalRequestHeadersWhitelist...),
+		AllowedHeaders:   allowedHeaders,
 		ExposedHeaders:   nil,                                 // make sure that this is *nil*, otherwise the WebResponse overwrite will not work.
 		AllowCredentials: true,                                // always allow credentials, otherwise :authorization headers won't work
 		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
@@ -73,6 +75,7 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 		originFunc:          opts.originFunc,
 		enableWebsockets:    opts.enableWebsockets,
 		websocketOriginFunc: websocketOriginFunc,
+		allowedHeaders:      allowedHeaders,
 		endpointFunc:        endpointFunc,
 	}
 }
@@ -137,10 +140,16 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
 		return
 	}
-	w.handleWebSocket(conn, req)
+	headers := make(http.Header)
+	for _, name := range w.allowedHeaders {
+		if values, exist := req.Header[name]; exist {
+			headers[name] = values
+		}
+	}
+	w.handleWebSocket(conn, req, headers)
 }
 
-func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Request) {
+func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Request, headers http.Header) {
 	messageType, readBytes, err := wsConn.ReadMessage()
 	if err != nil {
 		grpclog.Errorf("Unable to read first websocket message: %v", err)
@@ -152,7 +161,7 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 		return
 	}
 
-	headers, err := parseHeaders(string(readBytes))
+	wsHeaders, err := parseHeaders(string(readBytes))
 	if err != nil {
 		grpclog.Errorf("Unable to parse websocket headers: %v", err)
 		return
@@ -167,6 +176,9 @@ func (w *WrappedGrpcServer) handleWebSocket(wsConn *websocket.Conn, req *http.Re
 	}
 	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter, cancelFunc)
 
+	for name, values := range wsHeaders {
+		headers[name] = values
+	}
 	req.Body = wrappedReader
 	req.Method = http.MethodPost
 	req.Header = headers
