@@ -51,7 +51,7 @@
     "ts-node": "^8.0.2",
     "ts-protoc-gen": "0.10.0",
     "typescript": "3.5.1",
-    "wd": "^1.6.2",
+    "wd": "^1.11.4",
     "webpack": "^4.6.0",
     "webpack-cli": "^3.1.0"
   }
