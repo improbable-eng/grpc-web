@@ -24,14 +24,10 @@ https://github.com/improbable-eng/grpc-web/releases
 
 ### Building from source
 
-To build, you need to have Go >= 1.8, and call `go get` with `dep ensure`:
+To build, you need to have Go >= 1.11, and call `go get`:
 
 ```sh
-GOPATH=~/go ; export GOPATH
-git clone https://github.com/improbable-eng/grpc-web.git $GOPATH/src/github.com/improbable-eng/grpc-web
-cd $GOPATH/src/github.com/improbable-eng/grpc-web
-dep ensure # after installing dep
-go install ./go/grpcwebproxy # installs into $GOPATH/bin/grpcwebproxy
+go get github.com/improbable-eng/grpc-we/go/grpcwebproxy # installs into $(go env GOPATH)/bin/grpcwebproxy
 ```
 
 ## Running
@@ -63,7 +59,7 @@ grpcwebproxy
 By default, grpcwebproxy will not use websockets as a transport layer. To enable websockets, set the `--use_websockets` flag to true.
 
 ```
-$GOPATH/bin/grpcwebproxy \
+$(go env GOPATH)/bin/grpcwebproxy \
     --backend_addr=localhost:9090 \
     --use_websockets
 ```

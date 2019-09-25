@@ -21,6 +21,7 @@ echo "Generating proxy binaries"
 cd go
 rm -rf dist
 mkdir -p dist
+export GO111MODULE=on
 GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-x86_64" ./grpcwebproxy
 GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-win64.exe" ./grpcwebproxy
 GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-osx-x86_64" ./grpcwebproxy

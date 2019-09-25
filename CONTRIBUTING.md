@@ -1,6 +1,5 @@
 ## Developer Tool Prerequisites
-* [go](https://golang.org/doc/install) - The Go programming language
-* [dep](https://golang.github.io/dep/docs/installation.html) - Go dependency manager
+* [go](https://golang.org/doc/install) - The Go programming language. Version 1.11 or above required.
 * [nvm](https://github.com/creationix/nvm#installation) - Node Version Manager (for installing NodeJS and NPM)
 
 ## Performing a Fresh Checkout
@@ -8,15 +7,11 @@ The following steps guide you through a fresh checkout
 
 ```
 # Create a workspace
-cd ~/Projects/grpc-web  # or wherever you want your checkout to live
-export GOPATH=$(pwd)
+cd ~/Projects/  # or wherever you want your checkout to live
 
-# Checkout project sources into your new go workspace
-go get -u github.com/improbable-eng/grpc-web/go
-cd $GOPATH/src/github.com/improbable-eng/grpc-web 
-
-# Install go dependencies
-dep ensure
+# Checkout project sources
+git clone git@github.com:improbable-eng/grpc-web.git
+cd grpc-web
 
 # Install NodeJS dependencies
 nvm use
