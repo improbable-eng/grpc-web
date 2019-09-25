@@ -6,15 +6,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 
-	"strings"
 
-	library "github.com/improbable-eng/grpc-web/example/go/_proto/examplecom/library"
+	library "github.com/improbable-eng/grpc-web/client/grpc-web-react-example/go/_proto/examplecom/library"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"golang.org/x/net/context"
 )
