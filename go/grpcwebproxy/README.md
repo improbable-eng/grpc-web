@@ -13,13 +13,13 @@ Features:
  * both secure (plaintext) and TLS gRPC backend connectivity:
    * with customizable CA certificates for connections
 
-The indented use is as a companion process for gRPC server containers.
+The intended use is as a companion process for gRPC server containers.
 
 ## Installing
 
-### Pre-build binaries
+### Pre-built binaries
 
-There are pre-build binaries available for Windows, Mac and Linux (ARM and x86_64):
+There are pre-built binaries available for Windows, Mac and Linux (ARM and x86_64):
 https://github.com/improbable-eng/grpc-web/releases
 
 ### Building from source
