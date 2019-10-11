@@ -1,7 +1,6 @@
 import {Metadata} from "../../metadata";
 import {Transport, TransportFactory, TransportOptions} from "../Transport";
 import {debug} from "../../debug";
-import detach from "../../detach";
 import {detectMozXHRSupport, detectXHROverrideMimeTypeSupport} from "./xhrUtil";
 
 export interface XhrTransportInit {
@@ -37,24 +36,18 @@ export class XHR implements Transport {
     const rawText = this.xhr.response.substr(this.index);
     this.index = this.xhr.response.length;
     const asArrayBuffer = stringToArrayBuffer(rawText);
-    detach(() => {
-      this.options.onChunk(asArrayBuffer);
-    });
+    this.options.onChunk(asArrayBuffer);
   }
 
   onLoadEvent() {
     this.options.debug && debug("XHR.onLoadEvent");
-    detach(() => {
-      this.options.onEnd();
-    });
+    this.options.onEnd();
   }
 
   onStateChange() {
     this.options.debug && debug("XHR.onStateChange", this.xhr.readyState);
     if (this.xhr.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
-      detach(() => {
-        this.options.onHeaders(new Metadata(this.xhr.getAllResponseHeaders()), this.xhr.status);
-      });
+      this.options.onHeaders(new Metadata(this.xhr.getAllResponseHeaders()), this.xhr.status);
     }
   }
 
@@ -85,9 +78,7 @@ export class XHR implements Transport {
     xhr.addEventListener("loadend", this.onLoadEvent.bind(this));
     xhr.addEventListener("error", (err: ErrorEvent) => {
       this.options.debug && debug("XHR.error", err);
-      detach(() => {
-        this.options.onEnd(err.error);
-      });
+      this.options.onEnd(err.error);
     });
   }
 
@@ -114,9 +105,7 @@ export class MozChunkedArrayBufferXHR extends XHR {
   onProgressEvent() {
     const resp = this.xhr.response;
     this.options.debug && debug("MozXHR.onProgressEvent: ", new Uint8Array(resp));
-    detach(() => {
-      this.options.onChunk(new Uint8Array(resp));
-    });
+    this.options.onChunk(new Uint8Array(resp));
   }
 }
 

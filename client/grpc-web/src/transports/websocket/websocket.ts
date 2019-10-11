@@ -1,7 +1,6 @@
 import {Metadata} from "../../metadata";
 import {Transport, TransportFactory, TransportOptions} from "../Transport";
 import {debug} from "../../debug";
-import detach from "../../detach";
 import {encodeASCII} from "../../ChunkParser";
 
 enum WebsocketSignal {
@@ -68,9 +67,7 @@ function websocketRequest(options: TransportOptions): Transport {
 
       ws.onclose = function (closeEvent) {
         options.debug && debug("websocketRequest.onclose", closeEvent);
-        detach(() => {
-          options.onEnd();
-        });
+        options.onEnd();
       };
 
       ws.onerror = function (error) {
@@ -78,17 +75,13 @@ function websocketRequest(options: TransportOptions): Transport {
       };
 
       ws.onmessage = function (e) {
-        detach(() => {
-          options.onChunk(new Uint8Array(e.data));
-        });
+        options.onChunk(new Uint8Array(e.data));
       };
 
     },
     cancel: () => {
       options.debug && debug("websocket.abort");
-      detach(() => {
-        ws.close();
-      });
+      ws.close();
     }
   };
 }
