@@ -202,7 +202,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
 
     this.onEndCallbacks.forEach(callback => {
       if (this.closed) return;
-      callback(code, message, trailers);
+      try {
+        callback(code, message, trailers);
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
@@ -210,7 +216,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.props.debug && debug("rawOnHeaders", headers);
     if (this.completed) return;
     this.onHeadersCallbacks.forEach(callback => {
-      callback(headers);
+      try {
+        callback(headers);
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
@@ -220,7 +232,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.completed = true;
     this.onEndCallbacks.forEach(callback => {
       if (this.closed) return;
-      callback(code, msg, trailers);
+      try {
+        callback(code, msg, trailers);
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
@@ -229,7 +247,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.completed || this.closed) return;
     this.onMessageCallbacks.forEach(callback => {
       if (this.closed) return;
-      callback(res);
+      try {
+        callback(res);
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
