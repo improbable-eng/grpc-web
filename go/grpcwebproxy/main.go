@@ -48,6 +48,14 @@ var (
 
 func main() {
 	pflag.Parse()
+	if len(pflag.Args()) != 0 {
+		for _, flag := range pflag.Args() {
+			if flag == "true" || flag == "false" {
+				logrus.Fatal("Boolean flags should be set using --flag=false, --flag=true or --flag (which is short for --flag=true). You cannot use --flag true or --flag false.")
+			}
+		}
+		logrus.Fatal("Unknown argument: " + flag)
+	}
 
 	logrus.SetOutput(os.Stdout)
 	logEntry := logrus.NewEntry(logrus.StandardLogger())
