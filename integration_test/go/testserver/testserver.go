@@ -71,7 +71,7 @@ func main() {
 	}
 
 	http1Server := http.Server{
-		Addr:    fmt.Sprintf(":%d", *http1Port),
+		Addr:    fmt.Sprintf("localhost:%d", *http1Port),
 		Handler: http.HandlerFunc(handler),
 	}
 	http1Server.TLSNextProto = map[string]func(*http.Server, *tls.Conn, http.Handler){} // Disable HTTP2
@@ -88,7 +88,7 @@ func main() {
 		Handler: http.HandlerFunc(handler),
 	}
 	http2EmptyServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", *http2EmptyPort),
+		Addr:    fmt.Sprintf("localhost:%d", *http2EmptyPort),
 		Handler: http.HandlerFunc(emptyHandler),
 	}
 
