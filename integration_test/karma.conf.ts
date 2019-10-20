@@ -23,6 +23,7 @@ export default (config) => {
     },
     reporters: ['mocha'],
     protocol: 'https',
+    listenAddress: 'localhost',
     hostname: testHost,
     port: 9876,
     httpsServerOptions: {
