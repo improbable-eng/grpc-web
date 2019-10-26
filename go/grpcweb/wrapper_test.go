@@ -105,7 +105,7 @@ func (s *GrpcWebWrapperTestSuite) SetupTest() {
 
 	s.listener, err = net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(s.T(), err, "failed to set up server socket for test")
-	tlsConfig, err := connhelpers.TlsConfigForServerCerts("../../misc/localhost.crt", "../../misc/localhost.key")
+	tlsConfig, err := connhelpers.TlsConfigForServerCerts("../../keypairs/localhost.crt", "../../keypairs/localhost.key")
 	require.NoError(s.T(), err, "failed loading keys")
 	if s.httpMajorVersion == 2 {
 		tlsConfig, err = connhelpers.TlsConfigWithHttp2Enabled(tlsConfig)

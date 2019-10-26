@@ -29,19 +29,19 @@ Note you will also need to [install prototool](https://github.com/uber/prototool
 Before you run the tests for the first time, please follow these steps:
 
 ### Installing the Local Certificate
-In order to run the Karma (Integration) tests, you will need to add the certificate found in `misc/localhostCA.pem` to your system's list of trusted certificates. This will vary from operating system to operating system.
+In order to run the Karma (Integration) tests, you will need to add the certificate found in `keypairs/localhostCA.pem` to your system's list of trusted certificates. This will vary from operating system to operating system.
 
 ### macOS
 1. Open Keychain Access
 2. Select 'System' from the list of Keychains
 3. From the `File` menu, select `Import Items`
-4. Select `misc/localhost.crt`
+4. Select `keypairs/localhost.crt`
 5. Double click on the new `GRPC Web example dev server` certificate
 6. Expand the `Trust' section
 7. Change the `When using this certificate` option to `Always Trust` 
 8. Close the certificate details pop-up.
 
-Repeat the above process for `misc/localhostCA.pem`.
+Repeat the above process for `keypairs/localhostCA.pem`.
 
 ### Setting the required hostnames
 Add the following entries to your system's `hosts` file:
