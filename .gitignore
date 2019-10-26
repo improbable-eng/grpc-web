@@ -76,9 +76,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 env/
@@ -160,11 +157,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
-
-# localhost cert authority intermediate files
-misc/localhost.csr
-misc/localhostCA.key
-misc/localhostCA.srl
 
 node_modules
 vendor
