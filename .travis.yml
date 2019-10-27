@@ -42,6 +42,7 @@ before_install:
   - sudo apt-get install unzip
   - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfVVNFUk5BTUU9aW1wcm9iYWJsZWVuZ2JvdDEK`
   - true && `base64 --decode <<< ZXhwb3J0IEJST1dTRVJfU1RBQ0tfQUNDRVNTX0tFWT1SRG1Cc2pwQUJ4RlljcEVkeVp5bwo=`
+  - bash ./keypairs/gen_keypairs.sh
 install:
   - . ./install-prototool.sh
   - go get -u golang.org/x/tools/cmd/goimports
