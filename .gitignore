@@ -40,6 +40,9 @@
 # JIRA plugin
 atlassian-ide-plugin.xml
 
+# Visual Studio Code
+*.code-workspace
+
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
@@ -160,3 +163,9 @@ ENV/
 
 node_modules
 vendor
+
+#Prototool executable
+prototool
+
+# in case one is using yarn instead of npm
+yarn.lock
