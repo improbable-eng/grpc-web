@@ -151,6 +151,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 		md, _ := metadata.FromIncomingContext(ctx)
 		outCtx, _ := context.WithCancel(ctx)
 		mdCopy := md.Copy()
+		delete(mdCopy, "user-agent")
 		delete(mdCopy, "connection")
 		outCtx = metadata.NewOutgoingContext(outCtx, mdCopy)
 		return outCtx, backendConn, nil
