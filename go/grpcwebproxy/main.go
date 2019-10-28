@@ -152,6 +152,8 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 		outCtx, _ := context.WithCancel(ctx)
 		mdCopy := md.Copy()
 		delete(mdCopy, "user-agent")
+		// If this header is present in the request from the web client,
+		// the actual connection to the backend will not be established.
 		delete(mdCopy, "connection")
 		outCtx = metadata.NewOutgoingContext(outCtx, mdCopy)
 		return outCtx, backendConn, nil
