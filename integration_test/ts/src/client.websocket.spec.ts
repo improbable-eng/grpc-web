@@ -1,14 +1,15 @@
 // gRPC-Web library
-import { grpc } from "@improbable-eng/grpc-web";
-
-import { debug } from "../../../client/grpc-web/src/debug";
 import { assert } from "chai";
-// Generated Test Classes
-import { PingRequest, PingResponse } from "../_proto/improbable/grpcweb/test/test_pb";
-import { TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
+import { grpc } from "@improbable-eng/grpc-web";
+import { debug } from "@improbable-eng/grpc-web-core";
+import { WebsocketTransport } from "@improbable-eng/grpc-web-websocket-transport";
 import { DEBUG } from "./util";
 import { headerTrailerCombos, runWithHttp1AndHttp2 } from "./testRpcCombinations";
 import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
+
+// Generated Test Classes
+import { PingRequest, PingResponse } from "../_proto/improbable/grpcweb/test/test_pb";
+import { TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
 
 if (process.env.DISABLE_WEBSOCKET_TESTS) {
   console.log(`Skipping "clientWebsockets" suite as "DISABLE_WEBSOCKET_TESTS" is set`);
@@ -28,7 +29,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             const client = grpc.client(TestService.PingStream, {
               debug: DEBUG,
               host: testHostUrl,
-              transport: grpc.WebsocketTransport(),
+              transport: WebsocketTransport(),
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);
@@ -86,7 +87,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             const client = grpc.client(TestService.PingPongBidi, {
               debug: DEBUG,
               host: testHostUrl,
-              transport: grpc.WebsocketTransport(),
+              transport: WebsocketTransport(),
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);
@@ -145,7 +146,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
             const client = grpc.client(TestService.PingPongBidi, {
               debug: DEBUG,
               host: testHostUrl,
-              transport: grpc.WebsocketTransport(),
+              transport: WebsocketTransport(),
             });
             client.onHeaders((headers: grpc.Metadata) => {
               DEBUG && debug("headers", headers);

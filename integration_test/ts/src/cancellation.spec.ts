@@ -3,7 +3,7 @@ import {
   grpc,
 } from "@improbable-eng/grpc-web";
 
-import {debug} from "../../../client/grpc-web/src/debug";
+import { debug } from "@improbable-eng/grpc-web-core";
 import {assert} from "chai";
 
 // Generated Test Classes

@@ -144,7 +144,7 @@ This library is tested against:
   
 ## Node.js Support
 
-The `@improbable-eng/grpc-web` client also [supports Node.js through a transport](./client/grpc-web/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
+The `@improbable-eng/grpc-web` client also [supports Node.js through a transport](client/grpc-web-core/docs/transport.md#node-http-only-available-in-a-nodejs-environment) that uses the `http` and `https` packages. Usage does not vary from browser usage as transport is determined at runtime.
 
 If you want to use the `@improbable-eng/grpc-web` client in a node.js environment with Typescript, you must include `dom` in the `"lib"` Array in your `tsconfig.json` otherwise `tsc` will be unable to find some type declarations to compile. Note that `dom` will be included automatically if you do not declare `lib` in your configration and your target is one of `es5` or `es6`. (See [Typescript compiler options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)).
 
@@ -171,7 +171,7 @@ This, however, is useful for a lot of frontend functionality.
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
 
 ## Known Limitations
-See the `@improbable-eng/grpc-web` client Transport Documentation for [a list of Web Browser caveats](./client/grpc-web/docs/transport.md#http/2-based-transports).
+See the `@improbable-eng/grpc-web` client Transport Documentation for [a list of Web Browser caveats](client/grpc-web-core/docs/transport.md#http/2-based-transports).
 
 ### Contributing
 See [CONTRIBUTING](./CONTRIBUTING.md)

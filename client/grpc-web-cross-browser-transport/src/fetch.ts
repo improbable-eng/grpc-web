@@ -1,7 +1,4 @@
-import {Metadata} from "../../metadata";
-import {Transport, TransportFactory, TransportOptions} from "../Transport";
-import {debug} from "../../debug";
-import detach from "../../detach";
+import { Transport, TransportFactory, TransportOptions, Metadata, debug, detach } from "@improbable-eng/grpc-web-core";
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export type FetchTransportInit = Omit<RequestInit, "headers" | "method" | "body" | "signal">;

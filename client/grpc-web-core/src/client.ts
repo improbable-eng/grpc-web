@@ -3,7 +3,7 @@ import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Code, httpStatusToCode} from "./Code";
 import {debug} from "./debug";
 import detach from "./detach";
-import {Transport, TransportFactory, makeDefaultTransport} from "./transports/Transport";
+import {Transport, TransportFactory, makeDefaultTransport} from "./transport";
 import {MethodDefinition} from "./service";
 import {frameRequest} from "./util";
 import {ProtobufMessage} from "./message";

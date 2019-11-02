@@ -1,4 +1,4 @@
-import {TransportFactory} from "../Transport";
+import {TransportFactory} from "@improbable-eng/grpc-web-core";
 import {detectFetchSupport, FetchReadableStreamTransport, FetchTransportInit} from "./fetch";
 import {XhrTransport} from "./xhr";
 

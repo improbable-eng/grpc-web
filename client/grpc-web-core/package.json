@@ -1,0 +1,28 @@
+{
+  "name": "@improbable-eng/grpc-web-core",
+  "version": "0.11.0",
+  "description": "Core implementation of @improbable-eng/grpc-web, independent of any Transport",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf lib",
+    "postbootstrap": "npm run build",
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "google-protobuf": ">=3.7.1"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "^3.2.7",
+    "google-protobuf": "^3.7.1",
+    "typescript": "^3.1.3"
+  },
+  "dependencies": {
+    "browser-headers": "^0.4.1"
+  }
+}

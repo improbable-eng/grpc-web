@@ -1,5 +1,4 @@
-test/
 src/
 build/
-.*
-release.sh
+tsconfig.json
+webpack.config.js

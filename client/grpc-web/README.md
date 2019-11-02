@@ -21,8 +21,8 @@ There is an [example project available here](https://github.com/improbable-eng/g
 
 ## Usage Overview
 * Use [`ts-protoc-gen`](https://www.npmjs.com/package/ts-protoc-gen) with [`protoc`](https://github.com/google/protobuf) to generate `.js` and `.d.ts` files for your request and response classes. `ts-protoc-gen` can also generate gRPC service definitions with the `service=true` argument.
-  * [Go to code generation docs](docs/code-generation.md)
-* Make a request using [`unary()`](docs/unary.md), [`invoke()`](docs/invoke.md) or [`client()`](docs/client.md)
+  * [Go to code generation docs](../grpc-web-core/docs/code-generation.md)
+* Make a request using [`unary()`](../grpc-web-core/docs/unary.md), [`invoke()`](../grpc-web-core/docs/invoke.md) or [`client()`](../grpc-web-core/docs/client.md)
 
 ```javascript
 import {grpc} from "@improbable-eng/grpc-web";
@@ -56,14 +56,14 @@ request.cancel();
 
 There are three functions for making gRPC requests:
 
-### [`grpc.unary`](docs/unary.md)
+### [`grpc.unary`](../grpc-web-core/docs/unary.md)
 This is a convenience function for making requests that consist of a single request message and single response message. It can only be used with unary methods.
 
 ```protobuf
 rpc GetBook(GetBookRequest) returns (Book) {}
 ```
 
-### [`grpc.invoke`](docs/invoke.md)
+### [`grpc.invoke`](../grpc-web-core/docs/invoke.md)
 This is a convenience function for making requests that consist of a single request message and a stream of response messages (server-streaming). It can also be used with unary methods.
 
 ```protobuf
@@ -71,8 +71,8 @@ rpc GetBook(GetBookRequest) returns (Book) {}
 rpc QueryBooks(QueryBooksRequest) returns (stream Book) {}
 ```
 
-### [`grpc.client`](docs/client.md)
-`grpc.client` returns a client. Dependant upon [transport compatibility](docs/transport.md) this client is capable of sending multiple request messages (client-streaming) and receiving multiple response messages (server-streaming). It can be used with any type of method, but will enforce limiting the sending of messages for unary methods.
+### [`grpc.client`](../grpc-web-core/docs/client.md)
+`grpc.client` returns a client. Dependant upon [transport compatibility](../grpc-web-core/docs/transport.md) this client is capable of sending multiple request messages (client-streaming) and receiving multiple response messages (server-streaming). It can be used with any type of method, but will enforce limiting the sending of messages for unary methods.
 
 ```protobuf
 rpc GetBook(GetBookRequest) returns (Book) {}
@@ -86,9 +86,9 @@ Refer to [grpc-web-node-http-transport](https://www.npmjs.com/package/@improbabl
 
 ## All Docs
 
-* [unary()](docs/unary.md)
-* [invoke()](docs/invoke.md)
-* [client()](docs/client.md)
-* [Code Generation](docs/code-generation.md)
-* [Concepts](docs/concepts.md)
-* [Transport](docs/transport.md)
+* [unary()](../grpc-web-core/docs/unary.md)
+* [invoke()](../grpc-web-core/docs/invoke.md)
+* [client()](../grpc-web-core/docs/client.md)
+* [Code Generation](../grpc-web-core/docs/code-generation.md)
+* [Concepts](../grpc-web-core/docs/concepts.md)
+* [Transport](../grpc-web-core/docs/transport.md)
