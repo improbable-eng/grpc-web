@@ -101,7 +101,7 @@ function toArrayBuffer(buf: Buffer): Uint8Array {
 }
 
 function toBuffer(ab: Uint8Array): Buffer {
-  const buf = new Buffer(ab.byteLength);
+  const buf = Buffer.alloc(ab.byteLength);
   for (let i = 0; i < buf.length; i++) {
     buf[i] = ab[i];
   }
