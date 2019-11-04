@@ -163,6 +163,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 	return grpc.NewServer(
 		grpc.CustomCodec(proxy.Codec()), // needed for proxy to function.
 		grpc.UnknownServiceHandler(proxy.TransparentHandler(director)),
+		grpc.MaxRecvMsgSize(*flagMaxCallRecvMsgSize),
 		grpc_middleware.WithUnaryServerChain(
 			grpc_logrus.UnaryServerInterceptor(logger),
 			grpc_prometheus.UnaryServerInterceptor,
