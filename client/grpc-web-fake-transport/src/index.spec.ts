@@ -8,7 +8,6 @@ describe("FakeTransportBuilder", () => {
     it("should allow the response messages to be stubbed", done => {
       const pingResponseMsg = makePingResponse("hello");
       const transport = new FakeTransportBuilder()
-        .withManualTrigger()
         .withMessages([ pingResponseMsg ])
         .build();
 
@@ -21,7 +20,6 @@ describe("FakeTransportBuilder", () => {
     it("should allow the response trailers to be stubbed", done => {
       const expectedTrailers = new grpc.Metadata({ foo: "bar" });
       const transport = new FakeTransportBuilder()
-        .withManualTrigger()
         .withTrailers(expectedTrailers)
         .build();
 
@@ -33,7 +31,6 @@ describe("FakeTransportBuilder", () => {
 
     it("should allow an error to be injected before any headers are sent", done => {
       const transport = new FakeTransportBuilder()
-        .withManualTrigger()
         .withPreHeadersError(500)
         .withMessages([ makePingResponse("hello") ])
         .build();
@@ -53,7 +50,6 @@ describe("FakeTransportBuilder", () => {
       const pingResponseMsg = makePingResponse("hello");
       const trailers = new grpc.Metadata({ foo: "bar" });
       const transport = new FakeTransportBuilder()
-        .withManualTrigger()
         .withPreMessagesError(grpc.Code.FailedPrecondition, "failed precondition :)")
         .withMessages([ pingResponseMsg ])
         .withTrailers(trailers)
@@ -79,7 +75,6 @@ describe("FakeTransportBuilder", () => {
       const pingResponseMsg = makePingResponse("hello");
       const trailers = new grpc.Metadata({ foo: "bar" });
       const transport = new FakeTransportBuilder()
-        .withManualTrigger()
         .withPreTrailersError(grpc.Code.FailedPrecondition, "failed precondition :)")
         .withMessages([ pingResponseMsg ])
         .withTrailers(trailers)
@@ -105,7 +100,6 @@ describe("FakeTransportBuilder", () => {
       it("should not be called if no message is sent", done => {
         const messageSpy = jest.fn();
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
           .withMessageListener(messageSpy)
           .build();
 
@@ -121,8 +115,9 @@ describe("FakeTransportBuilder", () => {
         const expectedBytes = frameRequest(req);
 
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
-          .withMessageListener(messageSpy)
+          .withMessageListener(messageBytes => {
+            messageSpy(messageBytes);
+          })
           .build();
 
         doPingStreamRequest(transport, [ req ], () => {
@@ -139,7 +134,6 @@ describe("FakeTransportBuilder", () => {
         const expectedBytes = [ frameRequest(reqA), frameRequest(reqB) ];
 
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
           .withMessageListener(messageSpy)
           .build();
 
@@ -159,7 +153,6 @@ describe("FakeTransportBuilder", () => {
         const expectedHeaders = new grpc.Metadata({ expected: "header" });
 
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
           .withHeadersListener(headersSpy)
           .build();
 
@@ -172,7 +165,6 @@ describe("FakeTransportBuilder", () => {
 
         client.start(expectedHeaders);
         client.finishSend();
-        transport.sendAll();
       })
     });
 
@@ -181,7 +173,6 @@ describe("FakeTransportBuilder", () => {
         const requestSpy = jest.fn();
 
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
           .withRequestListener(requestSpy)
           .build();
 
@@ -200,7 +191,6 @@ describe("FakeTransportBuilder", () => {
         const cancelSpy = jest.fn();
 
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
           .withCancelListener(cancelSpy)
           .build();
 
@@ -220,7 +210,6 @@ describe("FakeTransportBuilder", () => {
         const finishSendSpy = jest.fn();
 
         const transport = new FakeTransportBuilder()
-          .withManualTrigger()
           .withFinishSendListener(finishSendSpy)
           .build();
 
@@ -240,13 +229,12 @@ describe("FakeTransportBuilder", () => {
   });
 
   describe("manual trigger", () => {
-    it("should allow the consumer to control the lifecycle of the server response", done => {
+    it("should allow the consumer to control the lifecycle of the server response", () => {
       const onHeadersSpy = jest.fn();
       const onMessageSpy = jest.fn();
       const onEndSpy = jest.fn();
 
       const transport = new FakeTransportBuilder()
-        .withManualTrigger()
         .withManualTrigger()
         .withHeaders(new grpc.Metadata({ header: "value" }))
         .withMessages([ makePingResponse("msgA") ])
@@ -272,27 +260,19 @@ describe("FakeTransportBuilder", () => {
 
       transport.sendHeaders();
 
-      setTimeout(() => {
-        expect(onHeadersSpy).toHaveBeenCalled();
-        expect(onMessageSpy).not.toHaveBeenCalled();
-        expect(onEndSpy).not.toHaveBeenCalled();
+      expect(onHeadersSpy).toHaveBeenCalled();
+      expect(onMessageSpy).not.toHaveBeenCalled();
+      expect(onEndSpy).not.toHaveBeenCalled();
 
-        transport.sendMessages();
-        setTimeout(() => {
-          expect(onHeadersSpy).toHaveBeenCalled();
-          expect(onMessageSpy).toHaveBeenCalled();
-          expect(onEndSpy).not.toHaveBeenCalled();
+      transport.sendMessages();
+      expect(onHeadersSpy).toHaveBeenCalled();
+      expect(onMessageSpy).toHaveBeenCalled();
+      expect(onEndSpy).not.toHaveBeenCalled();
 
-          transport.sendTrailers();
-          setTimeout(() => {
-            expect(onHeadersSpy).toHaveBeenCalled();
-            expect(onMessageSpy).toHaveBeenCalled();
-            expect(onEndSpy).toHaveBeenCalled();
-
-            done();
-          }, 0);
-        }, 0);
-      }, 0);
+      transport.sendTrailers();
+      expect(onHeadersSpy).toHaveBeenCalled();
+      expect(onMessageSpy).toHaveBeenCalled();
+      expect(onEndSpy).toHaveBeenCalled();
     });
   });
 
@@ -353,7 +333,6 @@ describe("FakeTransportBuilder", () => {
     client.start();
     client.send(req);
     client.finishSend();
-    transport.sendAll();
   }
 
   function doPingStreamRequest(transport: TriggerableTransport, requests: PingRequest[], callback: (data: RequestResponse<PingResponse>) => void) {
@@ -363,6 +342,5 @@ describe("FakeTransportBuilder", () => {
       client.send(req);
     }
     client.finishSend();
-    transport.sendAll();
   }
 });
