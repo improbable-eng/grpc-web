@@ -40,7 +40,7 @@ type WrappedGrpcServer struct {
 	endpointsFunc       func() []string
 }
 
-// WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that provides gRPC-Web Compatibility.
+// WrapServer takes a gRPC Server in Go and returns a *WrappedGrpcServer that provides gRPC-Web Compatibility.
 //
 // The internal implementation fakes out a http.Request that carries standard gRPC, and performs the remapping inside
 // http.ResponseWriter, i.e. mostly the re-encoding of Trailers (that carry gRPC status).
@@ -55,7 +55,7 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 // WrapHandler takes a http.Handler (such as a http.Mux) and returns a WrappedHttpHandler that provides gRPC-Web Compatibility.
 //
 // This behaves nearly identically to WrapServer except when the `corsForRegisteredEndpointsOnly` setting is true.
-// Then a `WithEndpointFilter` option must be provided or all CORs requests will NOT be handled
+// Then a `WithEndpointsFunc` option must be provided or all CORS requests will NOT be handled
 func WrapHandler(handler http.Handler, options ...Option) *WrappedGrpcServer {
 	return wrapGrpc(options, handler, func() [] string {
 		return []string{}
