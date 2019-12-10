@@ -47,7 +47,7 @@ type WrappedGrpcServer struct {
 //
 // You can control the behaviour of the wrapper (e.g. modifying CORS behaviour) using `With*` options.
 func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
-	return wrapGrpc(options, server, func() [] string {
+	return wrapGrpc(options, server, func() []string {
 		return ListGRPCResources(server)
 	})
 }
@@ -58,7 +58,7 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 // This behaves nearly identically to WrapServer except when the WithCorsForRegisteredEndpointsOnly setting is true.
 // Then a WithEndpointsFunc option must be provided or all CORS requests will NOT be handled.
 func WrapHandler(handler http.Handler, options ...Option) *WrappedGrpcServer {
-	return wrapGrpc(options, handler, func() [] string {
+	return wrapGrpc(options, handler, func() []string {
 		return []string{}
 	})
 }
