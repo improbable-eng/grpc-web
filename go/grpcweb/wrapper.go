@@ -52,10 +52,11 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 	})
 }
 
-// WrapHandler takes a http.Handler (such as a http.Mux) and returns a WrappedHttpHandler that provides gRPC-Web Compatibility.
+// WrapHandler takes a http.Handler (such as a http.Mux) and returns a *WrappedGrpcServer that provides gRPC-Web
+// Compatibility.
 //
 // This behaves nearly identically to WrapServer except when the `corsForRegisteredEndpointsOnly` setting is true.
-// Then a `WithEndpointsFunc` option must be provided or all CORS requests will NOT be handled
+// Then a `WithEndpointsFunc` option must be provided or all CORS requests will NOT be handled.
 func WrapHandler(handler http.Handler, options ...Option) *WrappedGrpcServer {
 	return wrapGrpc(options, handler, func() [] string {
 		return []string{}
