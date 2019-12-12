@@ -443,6 +443,55 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_AllowedByOriginFunc() {
 	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
 	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
 	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must be in the response headers")
+
+	corsResp, err = s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/Unknown", headers, nil, false)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+	assert.Equal(s.T(), 500, corsResp.StatusCode, "cors should return 500 as grpc server does not understand that endpoint")
+}
+
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_EndpointsOnlyTrueWithHandlerFunc() {
+	/**
+	OPTIONS /improbable.grpcweb.test.TestService/Ping
+	Access-Control-Request-Method: POST
+	Access-Control-Request-Headers: origin, x-requested-with, accept
+	Origin: http://foo.client.com
+	*/
+	headers := http.Header{}
+	headers.Add("Access-Control-Request-Method", "POST")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
+	headers.Add("Origin", "https://foo.client.com")
+
+	// Create a new grpc server that uses WrapHandler and the WithEndpointsFunc option
+	const pingMethod = "/improbable.grpcweb.test.TestService/PingList"
+	const badMethod = "/improbable.grpcweb.test.TestService/Bad"
+
+	mux := http.NewServeMux()
+	mux.Handle(pingMethod, s.grpcServer)
+	mux.Handle(badMethod, http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		resp.WriteHeader(401)
+	}))
+
+	s.wrappedServer = grpcweb.WrapHandler(mux,
+		grpcweb.WithEndpointsFunc(func() []string {
+			return []string{pingMethod}
+		}),
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return origin == "https://foo.client.com"
+		}),
+	)
+
+	corsResp, err := s.makeRequest("OPTIONS", pingMethod, headers, nil, false)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+
+	preflight := corsResp.Header
+	assert.Equal(s.T(), "https://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the response headers")
+	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
+	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
+	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must be in the response headers")
+
+	corsResp, err = s.makeRequest("OPTIONS", badMethod, headers, nil, false)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+	assert.Equal(s.T(), 401, corsResp.StatusCode, "cors should return 403 as mocked")
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {

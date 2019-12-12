@@ -108,6 +108,25 @@ endpoints (e.g. for proxying).
 The default behaviour is `true`, i.e. only allows CORS requests for registered
 endpoints.
 
+#### func  WithEndpointsFunc
+
+```go
+func WithEndpointsFunc(endpointsFunc func() []string) Option
+```
+WithEndpointsFunc allows for providing a custom function that provides all
+supported endpoints for use when the when `WithCorsForRegisteredEndpoints`
+option` is not set to false (i.e. the default state).
+
+When wrapping a http.Handler with `WrapHttpHandler`, failing to specify the
+`WithEndpointsFunc` option will cause all CORS requests to result in a 403 error
+for websocket requests (if websockets are enabled) or be passed to the handler
+http.Handler or grpc.Server backend (i.e. as if it wasn't wrapped).
+
+When wrapping grpc.Server with `WrapGrpcServer`, registered endpoints will be
+automatically detected, however if this `WithEndpointsFunc` option is specified,
+the server will not be queried for its endpoints and this function will be
+called instead.
+
 #### func  WithOriginFunc
 
 ```go
@@ -164,12 +183,24 @@ type WrappedGrpcServer struct {
 ```
 
 
+#### func  WrapHandler
+
+```go
+func WrapHandler(handler http.Handler, options ...Option) *WrappedGrpcServer
+```
+WrapHandler takes a http.Handler (such as a http.Mux) and returns a
+*WrappedGrpcServer that provides gRPC-Web Compatibility.
+
+This behaves nearly identically to WrapServer except when the
+WithCorsForRegisteredEndpointsOnly setting is true. Then a WithEndpointsFunc
+option must be provided or all CORS requests will NOT be handled.
+
 #### func  WrapServer
 
 ```go
 func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer
 ```
-WrapServer takes a gRPC Server in Go and returns a WrappedGrpcServer that
+WrapServer takes a gRPC Server in Go and returns a *WrappedGrpcServer that
 provides gRPC-Web Compatibility.
 
 The internal implementation fakes out a http.Request that carries standard gRPC,

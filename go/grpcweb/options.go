@@ -25,6 +25,7 @@ type options struct {
 	websocketPingInterval          time.Duration
 	websocketOriginFunc            func(req *http.Request) bool
 	allowNonRootResources          bool
+	endpointsFunc                  *func() []string
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -63,6 +64,22 @@ func WithOriginFunc(originFunc func(origin string) bool) Option {
 func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option {
 	return func(o *options) {
 		o.corsForRegisteredEndpointsOnly = onlyRegistered
+	}
+}
+
+// WithEndpointsFunc allows for providing a custom function that provides all supported endpoints for use when the
+// when `WithCorsForRegisteredEndpoints` option` is not set to false (i.e. the default state).
+//
+// When wrapping a http.Handler with `WrapHttpHandler`, failing to specify the `WithEndpointsFunc` option will cause
+// all CORS requests to result in a 403 error for websocket requests (if websockets are enabled) or be passed to the
+// handler http.Handler or grpc.Server backend (i.e. as if it wasn't wrapped).
+//
+// When wrapping grpc.Server with `WrapGrpcServer`, registered endpoints will be automatically detected, however if this
+// `WithEndpointsFunc` option is specified, the server will not be queried for its endpoints and this function will
+// be called instead.
+func WithEndpointsFunc(endpointsFunc func() []string) Option {
+	return func(o *options) {
+		o.endpointsFunc = &endpointsFunc
 	}
 }
 
