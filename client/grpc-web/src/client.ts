@@ -2,7 +2,6 @@ import {Metadata} from "./metadata";
 import {ChunkParser, Chunk, ChunkType} from "./ChunkParser";
 import {Code, httpStatusToCode} from "./Code";
 import {debug} from "./debug";
-import detach from "./detach";
 import {Transport, TransportFactory, makeDefaultTransport} from "./transports/Transport";
 import {MethodDefinition} from "./service";
 import {frameRequest} from "./util";
@@ -202,10 +201,14 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.completed = true;
 
     this.onEndCallbacks.forEach(callback => {
-      detach(() => {
-        if (this.closed) return;
+      if (this.closed) return;
+      try {
         callback(code, message, trailers);
-      });
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
@@ -213,9 +216,13 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.props.debug && debug("rawOnHeaders", headers);
     if (this.completed) return;
     this.onHeadersCallbacks.forEach(callback => {
-      detach(() => {
+      try {
         callback(headers);
-      });
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
@@ -224,10 +231,14 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     if (this.completed) return;
     this.completed = true;
     this.onEndCallbacks.forEach(callback => {
-      detach(() => {
-        if (this.closed) return;
+      if (this.closed) return;
+      try {
         callback(code, msg, trailers);
-      });
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 
@@ -235,10 +246,14 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
     this.props.debug && debug("rawOnMessage", res.toObject());
     if (this.completed || this.closed) return;
     this.onMessageCallbacks.forEach(callback => {
-      detach(() => {
-        if (this.closed) return;
+      if (this.closed) return;
+      try {
         callback(res);
-      });
+      } catch (e) {
+        setTimeout(() => {
+          throw e;
+        })
+      }
     });
   }
 

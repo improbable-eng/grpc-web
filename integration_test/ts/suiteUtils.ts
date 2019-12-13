@@ -5,7 +5,6 @@ export enum SuiteEnum {
   unary,
   ChunkParser,
   cancellation,
-  detach,
 }
 
 type enumMap = {[key: string]: number} & {[key: number]: string};
