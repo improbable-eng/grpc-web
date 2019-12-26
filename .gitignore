@@ -168,3 +168,6 @@ misc/localhostCA.srl
 
 node_modules
 vendor
+
+bazel-out
+.DS_Store
