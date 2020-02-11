@@ -12,7 +12,7 @@ This is an example of a complete invokation of `protoc` with `ts-protoc-gen` ass
 protoc \
 --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
 --js_out=import_style=commonjs,binary:my-generated-code \
---ts_out=service=true:my-generated-code \
+--ts_out=service=grpc-web:my-generated-code \
 -I ./my-protos \
 my-protos/*.proto
 ```
