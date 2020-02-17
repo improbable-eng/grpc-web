@@ -277,9 +277,6 @@ export class FakeTransportBuilder {
           if (mock.headersListener) {
             mock.headersListener(metadata);
           }
-          if (mock.autoTrigger) {
-            triggers.sendAll();
-          }
         },
         sendMessage: (msgBytes: ArrayBufferView) => {
           if (mock.messageListener) {
@@ -289,6 +286,9 @@ export class FakeTransportBuilder {
         finishSend: () => {
           if (mock.finishSendListener) {
             mock.finishSendListener();
+          }
+          if (mock.autoTrigger) {
+            triggers.sendAll();
           }
         },
         cancel: () => {

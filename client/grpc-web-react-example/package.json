@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-react-example",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "private": true,
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
@@ -14,7 +14,7 @@
   },
   "license": "none",
   "dependencies": {
-    "@improbable-eng/grpc-web": "^0.11.0",
+    "@improbable-eng/grpc-web": "^0.12.0",
     "google-protobuf": "^3.6.1"
   },
   "devDependencies": {

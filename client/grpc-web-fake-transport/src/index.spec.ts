@@ -115,7 +115,9 @@ describe("FakeTransportBuilder", () => {
         const expectedBytes = frameRequest(req);
 
         const transport = new FakeTransportBuilder()
-          .withMessageListener(messageSpy)
+          .withMessageListener(messageBytes => {
+            messageSpy(messageBytes);
+          })
           .build();
 
         doPingStreamRequest(transport, [ req ], () => {
@@ -227,7 +229,7 @@ describe("FakeTransportBuilder", () => {
   });
 
   describe("manual trigger", () => {
-    it("should allow the consumer to control the lifecycle of the server response", done => {
+    it("should allow the consumer to control the lifecycle of the server response", () => {
       const onHeadersSpy = jest.fn();
       const onMessageSpy = jest.fn();
       const onEndSpy = jest.fn();
@@ -258,30 +260,19 @@ describe("FakeTransportBuilder", () => {
 
       transport.sendHeaders();
 
-      // Note that we must defer the assertions as the grpc-web package detaches all callbacks, so they
-      // will not run immediately.
-      setTimeout(() => {
-        expect(onHeadersSpy).toHaveBeenCalled();
-        expect(onMessageSpy).not.toHaveBeenCalled();
-        expect(onEndSpy).not.toHaveBeenCalled();
+      expect(onHeadersSpy).toHaveBeenCalled();
+      expect(onMessageSpy).not.toHaveBeenCalled();
+      expect(onEndSpy).not.toHaveBeenCalled();
 
-        transport.sendMessages();
-        setTimeout(() => {
-          expect(onHeadersSpy).toHaveBeenCalled();
-          expect(onMessageSpy).toHaveBeenCalled();
-          expect(onEndSpy).not.toHaveBeenCalled();
+      transport.sendMessages();
+      expect(onHeadersSpy).toHaveBeenCalled();
+      expect(onMessageSpy).toHaveBeenCalled();
+      expect(onEndSpy).not.toHaveBeenCalled();
 
-          transport.sendTrailers();
-          setTimeout(() => {
-            expect(onHeadersSpy).toHaveBeenCalled();
-            expect(onMessageSpy).toHaveBeenCalled();
-            expect(onEndSpy).toHaveBeenCalled();
-
-            done();
-          }, 0);
-        }, 0);
-
-      }, 0);
+      transport.sendTrailers();
+      expect(onHeadersSpy).toHaveBeenCalled();
+      expect(onMessageSpy).toHaveBeenCalled();
+      expect(onEndSpy).toHaveBeenCalled();
     });
   });
 

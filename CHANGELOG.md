@@ -1,3 +1,13 @@
+## 0.12.0
+### Other Changes
+* Server: Add option to enabled websocket keepalive pinging. [@angwangiot](https://github.com/angwangiot) in [#546](https://github.com/improbable-eng/grpc-web/pull/546)
+* Server: Support header whitelist in websocket transport. [@alexvas](https://github.com/alexvas) in [#558](https://github.com/improbable-eng/grpc-web/pull/558)
+* Server: Check that there aren't any unknown command line arguments. [@Timmmm](https://github.com/Timmmm) in [#577](https://github.com/improbable-eng/grpc-web/pull/577)
+* Server: Remove connection header from grpcwebproxy. [@crlssn](https://github.com/crlssn) in [#588](https://github.com/improbable-eng/grpc-web/pull/588)
+* Client: React Native support - Adds and exposes ReactNativeTransport. [@pbsf](https://github.com/pbsf) in [#458](https://github.com/improbable-eng/grpc-web/pull/458)
+* Client: node-http-transport fix deprecation. [@the729](https://github.com/the729) in [#595](https://github.com/improbable-eng/grpc-web/pull/595)
+* Server: Add "WrapHandler" function and "WithEndpointsFunc" option. [@yinzara](https://github.com/yinzara) in [#619](https://github.com/improbable-eng/grpc-web/pull/619)
+
 ## 0.11.0
 ### Breaking changes
 * Server: Revert changes to flusher interface which accidentally introduced a recursive call to `Flush()`. [@johanbrandhorst](https://github.com/johanbrandhorst) in [#527](https://github.com/improbable-eng/grpc-web/pull/527)
