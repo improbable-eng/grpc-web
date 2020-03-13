@@ -15,15 +15,26 @@ protocol specification.
 Here's an example of how to use it inside an existing gRPC Go server on a
 separate http.Server that serves over TLS:
 
-    grpcServer := grpc.Server()
-    wrappedGrpc := grpcweb.WrapServer(grpcServer)
-    tlsHttpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-    	if wrappedGrpc.IsGrpcWebRequest(req) {
+```go
+import (
+    "net/http"
+    
+    "google.golang.org/grpc"
+    "github.com/improbable-eng/grpc-web/go/grpcweb"
+)
+
+func attachGRPCWeb(httpServer *http.Server, grpcServer *grpc.Server, options ...grpcweb.Option) {
+    wrappedGrpc := gretpcweb.WrapServer(grpcServer, options...)
+    httpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+    	if wrappedGrpc.IsGrpcWebRequest(req) || wrappedGrpc.IsGrpcWebRequest(req) {
     		wrappedGrpc.ServeHTTP(resp, req)
+            return
     	}
     	// Fall back to other servers.
     	http.DefaultServeMux.ServeHTTP(resp, req)
     })
+}
+```
 
 If you'd like to have a standalone binary, please take a look at `grpcwebproxy`.
 
