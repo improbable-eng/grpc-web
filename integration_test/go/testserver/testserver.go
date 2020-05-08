@@ -25,8 +25,8 @@ var (
 	http1EmptyPort  = flag.Int("http1_empty_port", 9095, "Port to listen with HTTP1.1 with TLS on with a grpc server that has no services.")
 	http2Port       = flag.Int("http2_port", 9100, "Port to listen with HTTP2 with TLS on.")
 	http2EmptyPort  = flag.Int("http2_empty_port", 9105, "Port to listen with HTTP2 with TLS on with a grpc server that has no services.")
-	tlsCertFilePath = flag.String("tls_cert_file", "../../../misc/localhost.crt", "Path to the CRT/PEM file.")
-	tlsKeyFilePath  = flag.String("tls_key_file", "../../../misc/localhost.key", "Path to the private key file.")
+	tlsCertFilePath = flag.String("tls_cert_file", "../../../keypairs/localhost.crt", "Path to the CRT/PEM file.")
+	tlsKeyFilePath  = flag.String("tls_key_file", "../../../keypairs/localhost.key", "Path to the private key file.")
 )
 
 func main() {

@@ -40,8 +40,8 @@ Here's a simple example that fronts a local, TLS gRPC server:
 
 ```sh
 grpcwebproxy
-    --server_tls_cert_file=../../misc/localhost.crt \
-    --server_tls_key_file=../../misc/localhost.key \
+    --server_tls_cert_file=../../keypairs/localhost.crt \
+    --server_tls_key_file=../../keypairs/localhost.key \
     --backend_addr=localhost:9090 \
     --backend_tls_noverify
 ```

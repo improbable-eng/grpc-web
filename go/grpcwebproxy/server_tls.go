@@ -19,7 +19,7 @@ var (
 
 	flagTlsServerKey = pflag.String(
 		"server_tls_key_file",
-		"../misc/localhost.key",
+		"../keypairs/localhost.key",
 		"Path to the PEM key for the certificate for the server use.")
 
 	flagTlsServerClientCertVerification = pflag.String(

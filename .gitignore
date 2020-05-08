@@ -40,6 +40,9 @@
 # JIRA plugin
 atlassian-ide-plugin.xml
 
+# Visual Studio Code
+*.code-workspace
+
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
@@ -75,9 +78,6 @@ _testmain.go
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
-*.so
 
 # Distribution / packaging
 .Python
@@ -161,10 +161,11 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# localhost cert authority intermediate files
-misc/localhost.csr
-misc/localhostCA.key
-misc/localhostCA.srl
-
 node_modules
 vendor
+
+#Prototool executable
+prototool
+
+# in case one is using yarn instead of npm
+yarn.lock
