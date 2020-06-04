@@ -181,7 +181,7 @@ func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 
 	// If the frame consists of only a single byte of value 1 then this indicates the client has finished sending
 	if len(framePayload) == 1 && framePayload[0] == 1 {
-		return 0, io.EOF
+		return 0, nil
 	}
 
 	// If the frame is somehow empty then just return the error
