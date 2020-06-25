@@ -82,7 +82,7 @@ interface XhrTransportInit {
 The `XhrTransport` will automatically detect the Firefox Browser v21+ and make use of the `moz-chunked-arraybuffer` feature which provides enables efficient server-streaming. All other browsers will fall-back to buffering the entire response in memory for the lifecycle of the stream (see [known limitations of HTTP/2-based transports](#http/2-based-transports)).
 
 ### Socket-based Transports
-Browser based HTTP/2 transports have a number of limitations and caveats. We can work around all of these, including support for client-streams and bi-directional streams, by utilising the browser's native [`WebSocket` API](). Note that the `grpc-web-proxy` must be [configured to enable WebSocket support](../../go/grpcwebproxy/README.md#enabling-websocket-transport). 
+Browser based HTTP/2 transports have a number of limitations and caveats. We can work around all of these, including support for client-streams and bi-directional streams, by utilising the browser's native [`WebSocket` API](). Note that the `grpc-web-proxy` must be [configured to enable WebSocket support](../../../go/grpcwebproxy/README.md#enabling-websocket-transport). 
 
 ## Alternative Transports
 Custom transports can be created by implementing the `Transport` interface; the following transports exist as npm packages which you can import and make use of:
