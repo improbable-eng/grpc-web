@@ -6,7 +6,7 @@ import {testHost} from './hosts-config';
 export default (config) => {
   const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
-  const useBrowserStack = process.env.BROWSER_STACK_USERNAME !== undefined;
+  const useBrowserStack = process.env.BROWSERSTACK_USERNAME !== undefined;
   const browsers = useBrowserStack ? Object.keys(customLaunchers) : [];
 
   config.set({
