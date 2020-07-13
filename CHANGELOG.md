@@ -1,3 +1,8 @@
+## 0.13.0
+### Other Changes
+* Client: No longer invoking callbacks within timeouts - this may affect the temporal ordering of some usage. [@marcuslongmuir](https://github.com/marcuslongmuir) in [#576](https://github.com/improbable-eng/grpc-web/pull/576)
+* Server: grpcwebproxy uses `backend_max_call_recv_msg_size` flag value for client call to backend (in addition to its usage as its own receive limit). [@itwalton](https://github.com/itwalton) in [#654](https://github.com/improbable-eng/grpc-web/pull/654)
+
 ## 0.12.0
 ### Other Changes
 * Server: Add option to enabled websocket keepalive pinging. [@angwangiot](https://github.com/angwangiot) in [#546](https://github.com/improbable-eng/grpc-web/pull/546)
