@@ -149,7 +149,7 @@ conditionallyRunTestSuite(SuiteEnum.invoke, () => {
 
           const ping = new PingRequest();
           ping.setValue("hello world");
-          ping.setResponseCount(3000);
+          ping.setResponseCount(30);
           ping.setSendHeaders(withHeaders);
           ping.setSendTrailers(withTrailers);
 
