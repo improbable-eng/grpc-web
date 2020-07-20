@@ -73,8 +73,9 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   self._start = (testUrl) => {
     const testUrlWithSuite = `${testUrl}#${caps.testSuite ? caps.testSuite : ''}`;
     self.localTunnel = new LocalTunnel(self.log, (err, tunnelIdentifier) => {
+      self.log.info(`Using tunnel with identifier: ${tunnelIdentifier}`);
       if (err) {
-        return self.log.error("Could not create local testing", err);
+        return self.log.error(`Could not create local testing tunnel with identifier: ${tunnelIdentifier}`, err);
       }
 
       self.log.debug('Local Tunnel Connected. Now testing...');
