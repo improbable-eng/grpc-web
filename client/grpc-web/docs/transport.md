@@ -87,4 +87,4 @@ Browser based HTTP/2 transports have a number of limitations and caveats. We can
 ## Alternative Transports
 Custom transports can be created by implementing the `Transport` interface; the following transports exist as npm packages which you can import and make use of:
 
-* [grpc-web-node-http-transport](http://npmjs.com/package/grpc-web-node-http-transport) - Enables the use of grpc-web in NodeJS (ie: non-browser) environments.
+* [@improbable-eng/grpc-web-node-http-transport](https://www.npmjs.com/package/@improbable-eng/grpc-web-node-http-transport) - Enables the use of grpc-web in NodeJS (ie: non-browser) environments.
