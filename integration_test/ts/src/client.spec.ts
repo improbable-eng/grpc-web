@@ -215,7 +215,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
               assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
             }
             assert.ok(didGetOnHeaders);
-            assert.strictEqual(onMessageId, 3000);
+            assert.strictEqual(onMessageId, 30);
             done();
           });
           client.start();
