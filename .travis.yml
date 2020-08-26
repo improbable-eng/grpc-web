@@ -38,9 +38,6 @@ env:
 cache:
   directories:
     - node_modules
-branches:
-  only:
-  - master
 before_install:
   - sudo apt-get install unzip
 install:
