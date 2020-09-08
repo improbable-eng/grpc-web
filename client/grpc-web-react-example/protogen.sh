@@ -30,5 +30,5 @@ protoc \
   -I ./proto \
   --js_out=import_style=commonjs,binary:./ts/_proto \
   --go_out=plugins=grpc:./go/_proto \
-  --ts_out=service=true:./ts/_proto \
+  --ts_out=service=grpc-web:./ts/_proto \
   ./proto/examplecom/library/book_service.proto
