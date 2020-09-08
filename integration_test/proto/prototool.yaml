@@ -20,5 +20,5 @@ generate:
 
     - name: ts
       path: ../node_modules/.bin/protoc-gen-ts
-      flags: service=true
+      flags: service=grpc-web
       output: ../ts/_proto

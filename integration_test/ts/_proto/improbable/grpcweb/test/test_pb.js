@@ -1,3 +1,4 @@
+// source: improbable/grpcweb/test/test.proto
 /**
  * @fileoverview
  * @enhanceable
@@ -360,9 +361,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getValue = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setValue = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -375,9 +379,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getResponseCount = function(
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setResponseCount = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -390,9 +397,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getErrorCodeReturned = funct
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setErrorCodeReturned = function(value) {
-  jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
@@ -405,9 +415,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getFailureType = function() 
 };
 
 
-/** @param {!proto.improbable.grpcweb.test.PingRequest.FailureType} value */
+/**
+ * @param {!proto.improbable.grpcweb.test.PingRequest.FailureType} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setFailureType = function(value) {
-  jspb.Message.setProto3EnumField(this, 4, value);
+  return jspb.Message.setProto3EnumField(this, 4, value);
 };
 
 
@@ -420,9 +433,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getCheckMetadata = function(
 };
 
 
-/** @param {boolean} value */
+/**
+ * @param {boolean} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setCheckMetadata = function(value) {
-  jspb.Message.setProto3BooleanField(this, 5, value);
+  return jspb.Message.setProto3BooleanField(this, 5, value);
 };
 
 
@@ -435,9 +451,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getSendHeaders = function() 
 };
 
 
-/** @param {boolean} value */
+/**
+ * @param {boolean} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setSendHeaders = function(value) {
-  jspb.Message.setProto3BooleanField(this, 6, value);
+  return jspb.Message.setProto3BooleanField(this, 6, value);
 };
 
 
@@ -450,9 +469,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getSendTrailers = function()
 };
 
 
-/** @param {boolean} value */
+/**
+ * @param {boolean} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setSendTrailers = function(value) {
-  jspb.Message.setProto3BooleanField(this, 7, value);
+  return jspb.Message.setProto3BooleanField(this, 7, value);
 };
 
 
@@ -465,9 +487,12 @@ proto.improbable.grpcweb.test.PingRequest.prototype.getStreamIdentifier = functi
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.improbable.grpcweb.test.PingRequest} returns this
+ */
 proto.improbable.grpcweb.test.PingRequest.prototype.setStreamIdentifier = function(value) {
-  jspb.Message.setProto3StringField(this, 8, value);
+  return jspb.Message.setProto3StringField(this, 8, value);
 };
 
 
@@ -604,9 +629,12 @@ proto.improbable.grpcweb.test.PingResponse.prototype.getValue = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.improbable.grpcweb.test.PingResponse} returns this
+ */
 proto.improbable.grpcweb.test.PingResponse.prototype.setValue = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -619,9 +647,12 @@ proto.improbable.grpcweb.test.PingResponse.prototype.getCounter = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.improbable.grpcweb.test.PingResponse} returns this
+ */
 proto.improbable.grpcweb.test.PingResponse.prototype.setCounter = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -770,9 +801,12 @@ proto.improbable.grpcweb.test.TextMessage.prototype.getText = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.improbable.grpcweb.test.TextMessage} returns this
+ */
 proto.improbable.grpcweb.test.TextMessage.prototype.setText = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -785,9 +819,12 @@ proto.improbable.grpcweb.test.TextMessage.prototype.getSendHeaders = function() 
 };
 
 
-/** @param {boolean} value */
+/**
+ * @param {boolean} value
+ * @return {!proto.improbable.grpcweb.test.TextMessage} returns this
+ */
 proto.improbable.grpcweb.test.TextMessage.prototype.setSendHeaders = function(value) {
-  jspb.Message.setProto3BooleanField(this, 2, value);
+  return jspb.Message.setProto3BooleanField(this, 2, value);
 };
 
 
@@ -800,9 +837,12 @@ proto.improbable.grpcweb.test.TextMessage.prototype.getSendTrailers = function()
 };
 
 
-/** @param {boolean} value */
+/**
+ * @param {boolean} value
+ * @return {!proto.improbable.grpcweb.test.TextMessage} returns this
+ */
 proto.improbable.grpcweb.test.TextMessage.prototype.setSendTrailers = function(value) {
-  jspb.Message.setProto3BooleanField(this, 3, value);
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -927,9 +967,12 @@ proto.improbable.grpcweb.test.ContinueStreamRequest.prototype.getStreamIdentifie
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.improbable.grpcweb.test.ContinueStreamRequest} returns this
+ */
 proto.improbable.grpcweb.test.ContinueStreamRequest.prototype.setStreamIdentifier = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1054,9 +1097,12 @@ proto.improbable.grpcweb.test.CheckStreamClosedRequest.prototype.getStreamIdenti
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.improbable.grpcweb.test.CheckStreamClosedRequest} returns this
+ */
 proto.improbable.grpcweb.test.CheckStreamClosedRequest.prototype.setStreamIdentifier = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1181,9 +1227,12 @@ proto.improbable.grpcweb.test.CheckStreamClosedResponse.prototype.getClosed = fu
 };
 
 
-/** @param {boolean} value */
+/**
+ * @param {boolean} value
+ * @return {!proto.improbable.grpcweb.test.CheckStreamClosedResponse} returns this
+ */
 proto.improbable.grpcweb.test.CheckStreamClosedResponse.prototype.setClosed = function(value) {
-  jspb.Message.setProto3BooleanField(this, 1, value);
+  return jspb.Message.setProto3BooleanField(this, 1, value);
 };
 
 
