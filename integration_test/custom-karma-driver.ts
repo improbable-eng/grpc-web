@@ -72,12 +72,13 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   const caps = args.capabilities;
   self._start = (testUrl) => {
     const testUrlWithSuite = `${testUrl}#${caps.testSuite ? caps.testSuite : ''}`;
+    self.log.info(`Starting web driver with test suite url: ${testUrlWithSuite}`);
     self.localTunnel = new LocalTunnel(self.log, (err, tunnelIdentifier) => {
       if (err) {
         return self.log.error("Could not create local testing", err);
       }
 
-      self.log.debug('Local Tunnel Connected. Now testing...');
+      self.log.info('Local Tunnel Connected. Now testing...');
       const browser = wd.remote(seleniumHost, seleniumPort, username, accessKey);
       self.browser = browser;
       browser.on('status', function(info) {
@@ -105,10 +106,12 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           self.log.error("browser.init", err);
           throw err;
         }
+        self.log.info('Browser initialised');
         const next = (i) => {
           const via = viaUrls[i];
           if (!via) {
             browser.get(testUrlWithSuite, function() {
+              self.log.info(`Navigated to test suite url: ${testUrlWithSuite}`);
               self.captured = true;
               // This will wait on the page until the browser is killed
 
@@ -116,9 +119,11 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
               // poll the title of the page to keep the session alive.
               const interval = setInterval(function() {
                 if (self.ended) {
+                  self.log.info('Title polling ended');
                   clearInterval(interval);
                   return;
                 }
+                self.log.info('Polling page title...');
                 browser.title(function (err) {
                   if (err) {
                     console.error("Failed to get page title: ", err);
@@ -128,6 +133,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
               }, 10000);
             });
           } else {
+            self.log.info(`Navigating browser to via url: ${via}`);
             browser.get(via, function () {
               next(i + 1);
             });
