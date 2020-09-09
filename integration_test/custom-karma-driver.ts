@@ -78,7 +78,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         return self.log.error("Could not create local testing", err);
       }
 
-      self.log.info('Local Tunnel Connected. Now testing...');
+      self.log.info(`Local Tunnel Connected with identifier: ${tunnelIdentifier}. Now testing...`);
       const browser = wd.remote(seleniumHost, seleniumPort, username, accessKey);
       self.browser = browser;
       browser.on('status', function(info) {
@@ -98,6 +98,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         "browserstack.local": true,
         "browserstack.tunnel": true,
         "browserstack.debug": true,
+        "browserstack.networkLogs": true,
         "tunnelIdentifier": tunnelIdentifier,
         "browserstack.localIdentifier": tunnelIdentifier
       }, caps);
