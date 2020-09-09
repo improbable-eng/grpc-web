@@ -36,7 +36,6 @@
     "assert": "^2.0.0",
     "babel-loader": "^8.1.0",
     "babel-preset-env": "^1.7.0",
-    "browserstack-local": "^1.4.7",
     "chai": "^4.2.0",
     "colors": "^1.4.0",
     "jasmine": "^3.6.1",
@@ -46,12 +45,12 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-sourcemap-loader": "^0.3.8",
     "karma-webpack": "^4.0.2",
+    "karma-browserstack-launcher": "1.6.0",
     "lodash": "^4.17.20",
     "ts-loader": "^8.0.3",
     "ts-node": "^9.0.0",
     "ts-protoc-gen": "0.12.0",
     "typescript": "4.0.2",
-    "wd": "^1.13.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
   }
