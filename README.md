@@ -1,7 +1,7 @@
 # gRPC-Web: Typed Frontend Development
 
 
-[![Master Build](https://travis-ci.org/improbable-eng/grpc-web.svg)](https://travis-ci.org/improbable-eng/grpc-web)
+[![Master Build](https://travis-ci.org/improbable-eng/grpc-web.svg?branch=master)](https://travis-ci.org/improbable-eng/grpc-web)
 ![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=L0k3QjhiNnByd3hWVVhtS0FxTmNrZERwbDBqR053OFJKV01veUpkL1FqOD0tLXZyS0d2WC9TaGEzeTBjbXZ6L1JNa2c9PQ==--b460187586f63fc2a48f557a515f9900f5639d10)
 [![NPM](https://img.shields.io/npm/v/@improbable-eng/grpc-web.svg)](https://www.npmjs.com/package/@improbable-eng/grpc-web)
 [![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/improbable-eng/grpc-web/go/grpcweb) 
