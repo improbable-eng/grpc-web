@@ -43,13 +43,8 @@ function goimports_all {
 
 function govet_all {
     echo "- Running govet"
-    ret=0
-    for i in $(print_real_go_files); do
-        output=$(go tool vet -all=true -tests=false ${i})
-        ret=$(($ret | $?))
-        echo -n ${output}
-    done;
-    if [[ $ret -ne 0 ]]; then
+    go vet -all=true -tests=false ./...
+    if [[ $? -ne 0 ]]; then
         echo "ERROR: govet errors detected, please commit/fix them."
         exit 1
     fi
