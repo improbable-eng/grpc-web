@@ -379,7 +379,7 @@ describe("invoke", () => {
         });
       });
 
-      fit("should report failure for a trailers-only response", (done) => {
+      it("should report failure for a trailers-only response", (done) => {
         let didGetOnHeaders = false;
         let didGetOnMessage = false;
 

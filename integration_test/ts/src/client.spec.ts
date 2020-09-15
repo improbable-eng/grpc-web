@@ -430,7 +430,7 @@ describe("Client", () => {
         });
       }
 
-      fit(`should report failure for a request to an invalid host`, (done) => {
+      it(`should report failure for a request to an invalid host`, (done) => {
         let didGetOnHeaders = false;
         let didGetOnMessage = false;
 
