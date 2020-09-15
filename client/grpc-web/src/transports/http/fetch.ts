@@ -25,7 +25,7 @@ class Fetch implements Transport {
   init: FetchTransportInit;
   reader: ReadableStreamReader;
   metadata: Metadata;
-  controller: AbortController | undefined = (self as any).AbortController && new AbortController();
+  controller = new AbortController();
 
   constructor(transportOptions: TransportOptions, init: FetchTransportInit) {
     this.options = transportOptions;
@@ -67,7 +67,7 @@ class Fetch implements Transport {
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
-      signal: this.controller && this.controller.signal
+      signal: this.controller.signal
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
       this.options.onHeaders(new Metadata(res.headers as any), res.status);
@@ -105,19 +105,26 @@ class Fetch implements Transport {
       return;
     }
     this.cancelled = true;
+
+    this.options.debug && debug("Fetch.abort.controller.abort");
+    this.controller.abort();
+
     if (this.reader) {
       // If the reader has already been received in the pump then it can be cancelled immediately
-      this.options.debug && debug("Fetch.abort.cancel");
+      this.options.debug && debug("Fetch.abort.reader.cancel");
       this.reader.cancel();
     } else {
       this.options.debug && debug("Fetch.abort.cancel before reader");
-    }
-    if (this.controller) {
-      this.controller.abort();
     }
   }
 }
 
 export function detectFetchSupport(): boolean {
-  return typeof Response !== "undefined" && Response.prototype.hasOwnProperty("body") && typeof Headers === "function";
+  return typeof Response !== "undefined" &&
+    Response.prototype.hasOwnProperty("body")
+    &&
+    typeof Headers === "function"
+    &&
+    // Must support the AbortController to enable cancelling requests
+    typeof AbortController == "function";
 }
