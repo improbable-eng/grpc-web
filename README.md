@@ -138,9 +138,9 @@ The gRPC semantics encourage you to make multiple requests at once. With most mo
 This library is tested against:
   * Chrome >= 41
   * Firefox >= 21
-  * Edge >= 13
+  * Edge >= 16
   * IE >= 11
-  * Safari >= 6
+  * Safari >= 8
   
 ## Node.js Support
 
