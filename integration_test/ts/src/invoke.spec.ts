@@ -19,9 +19,8 @@ import { DEBUG, continueStream, UncaughtExceptionListener } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
-import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-conditionallyRunTestSuite(SuiteEnum.invoke, () => {
+describe('invoke', () => {
   runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
     runWithSupportedTransports(transport => {
       it(`should reject a client-streaming method`, () => {
