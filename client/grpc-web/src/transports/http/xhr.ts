@@ -104,8 +104,9 @@ export class MozChunkedArrayBufferXHR extends XHR {
 
   onProgressEvent() {
     const resp = this.xhr.response;
-    this.options.debug && debug("MozXHR.onProgressEvent: ", new Uint8Array(resp));
-    this.options.onChunk(new Uint8Array(resp));
+    const bytes = new Uint8Array(resp);
+    this.options.debug && debug("MozXHR.onProgressEvent: ", bytes.length);
+    this.options.onChunk(bytes);
   }
 }
 
