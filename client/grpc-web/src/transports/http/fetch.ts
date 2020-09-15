@@ -126,5 +126,5 @@ export function detectFetchSupport(): boolean {
     typeof Headers === "function"
     &&
     // Must support the AbortController to enable cancelling requests
-    typeof AbortController == "function";
+    typeof AbortController === "function";
 }
