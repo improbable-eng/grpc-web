@@ -17,7 +17,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
     });
   });
 } else {
-  describe('ClientWebsockets', () => {
+  describe("ClientWebsockets", () => {
     runWithHttp1AndHttp2(({testHostUrl}) => {
       describe("client-streaming (websockets)", () => {
         headerTrailerCombos((withHeaders, withTrailers) => {
