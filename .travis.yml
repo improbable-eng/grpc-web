@@ -30,13 +30,13 @@ env:
     - BROWSER=edge18_win
     - BROWSER=edge17_win
     - BROWSER=edge16_win
-    - BROWSER=safari13_1
-    - BROWSER=safari12_1
-    - BROWSER=safari11_1
-    - BROWSER=safari10_1
-    - BROWSER=safari9_1
-    - BROWSER=safari8
     # Browsers that do not support trusting self-signed certs for wss:// connections are disabled (see https://github.com/improbable-eng/grpc-web/issues/165)
+    - BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
+    - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
     - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
 cache:
   directories:
