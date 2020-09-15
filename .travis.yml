@@ -1,6 +1,6 @@
 language: go
 go:
-  - "1.11"
+  - "1.15.2"
 go_import_path: github.com/improbable-eng/grpc-web
 addons:
   hosts:

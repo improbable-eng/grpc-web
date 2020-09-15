@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 echo "Linting go sources"
 cd go && . ./lint.sh && cd ..
 
