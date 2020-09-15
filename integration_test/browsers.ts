@@ -1,48 +1,16 @@
-import {SuiteEnum} from "./ts/suiteUtils";
-
 function browser(browserName, browserVersion, os, osVersion) {
   const browsers = [];
-  if (process.env.TEST_SUITE_NAME) {
-    browsers.push({
-      configName: `${os}_${osVersion}_${browserName}_${browserVersion}_${process.env.TEST_SUITE_NAME}`,
-      base: 'CustomWebDriver',
-      capabilities: {
-        testSuite: process.env.TEST_SUITE_NAME,
-        browserName: browserName,
-        browserVersion: browserVersion,
-        os: os,
-        os_version: osVersion
-      }
-    });
-  } else if (process.env.SEPARATE_TEST_SUITES) {
-    for (let suiteName in SuiteEnum) {
-      if (isNaN(Number(suiteName))) {
-        browsers.push({
-          configName: `${os}_${osVersion}_${browserName}_${browserVersion}_${suiteName}`,
-          base: 'CustomWebDriver',
-          capabilities: {
-            testSuite: suiteName,
-            browserName: browserName,
-            browserVersion: browserVersion,
-            os: os,
-            os_version: osVersion
-          }
-        });
-      }
+  browsers.push({
+    configName: `${os}_${osVersion}_${browserName}_${browserVersion}_allsuites`,
+    base: 'CustomWebDriver',
+    capabilities: {
+      testSuite: undefined,
+      browserName: browserName,
+      browserVersion: browserVersion,
+      os: os,
+      os_version: osVersion
     }
-  } else {
-    browsers.push({
-      configName: `${os}_${osVersion}_${browserName}_${browserVersion}_allsuites`,
-      base: 'CustomWebDriver',
-      capabilities: {
-        testSuite: undefined,
-        browserName: browserName,
-        browserVersion: browserVersion,
-        os: os,
-        os_version: osVersion
-      }
-    })
-  }
+  })
   return browsers;
 }
 

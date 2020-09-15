@@ -11,7 +11,6 @@ env:
   global:
     # GLOBAL_TESTSERVER is used to skip starting the testserver in run-with-testserver.sh
     - GLOBAL_TESTSERVER=true
-    - SEPARATE_TEST_SUITES=true
     - PROTOTOOL_VER=1.7.0
     # BROWSERSTACK environment variables
     - secure: sDMaJtQCte+9xTWKORX2IQYV7DPkuNBUK7Debk6q8jb6vvc1AiyNqN9SNaZm1V2VgnagoShYAzRyL2QhNeST/UFuO+2JsxjPlu2Elku4cJTYmDhuERlS3SS8llRoqRGSxK003ZRPyx5GGD0fS7eESaNCmS+4S+LA2KQrOZ9dGbn+wKjNueMDkCtRudyEqQzHRc8vBNxF3V3nkXckAuATjvnSim7odJEED+DW5aXMYZIrYTvM2ZmqmLlerP/wJJCxws0kKSssJhWEfcxEMTAmdC180EC0cBZ2ap4V3YnFYeEOnZ5lMR5mLHxyPQvjbYqGG693na6nBsim1abJqXzCF+H+7MBeXzM+hejkZd/1BNjS1+C5orkFx/Af7/9zTTKV9o3rAaYPm3zCikmhm5kRSkbjRGirTNN4Ogki66w1HCCxVEtp77Uiylj3KMQk1iqDeL/m0jLjYnWvzHPZBc1h6I856AgO9WpOnfVBsIAK9dqbwqH+cy+zzxL+IXvOLZlhRqyd5MeasMoLzZQC4vA8Fbp6o6G0vFkuxCXR/uF34vDaHYI98Qq2NmfWP3jD/+ytgswfB9K75v5hNZ9OGEVBQJI4UYDzQmm6fkTXRFGjR44XbClmtTI2E4Se32JvkLIMQVJ1NLWo5fMsz4S6yJjqtMdkblNhWjHhCqhxI+exRXQ=
