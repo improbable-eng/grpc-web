@@ -35,11 +35,11 @@ stages:
 
 jobs:
   include:
-    - stage: lint
-      script: ./lint-all.sh
-
-    - stage: unit-test
-      script: ./test-all.sh
+#    - stage: lint
+#      script: ./lint-all.sh
+#
+#    - stage: unit-test
+#      script: ./test-all.sh
 
     - stage: prebuild-integration-tests
       script: npm run build:integration

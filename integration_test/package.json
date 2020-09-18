@@ -9,7 +9,7 @@
     "build:ts": "cd ts && rm -rf build && webpack-cli",
     "build:dev": "cd ts && rm -rf build && webpack-cli --watch",
     "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp -R _proto build-node/integration_test/ts)",
-    "build": "npm run build:proto && npm run build:ts && npm run build:node && build:testserver",
+    "build": "npm run build:proto && npm run build:ts && npm run build:node && npm run build:testserver",
     "start": "./test.sh",
     "test:browser": "./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
     "test:node": "./run-with-testserver.sh jasmine ts/build-node/integration_test/ts/node-src/node.spec.js",
