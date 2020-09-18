@@ -2,7 +2,12 @@
 set -e
 set +o pipefail
 
-npm run build
+if [ -z "$PREBUILT_INTEGRATION_TESTS" ]; then
+  echo "Building integration test JS"
+  npm run build
+else
+  echo "Skipping integration test JS build because PREBUILT_INTEGRATION_TESTS is set"
+fi
 
 if [ -z "$BROWSER" ]; then
   echo "No Browser specified, starting local test run"
