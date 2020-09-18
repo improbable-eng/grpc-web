@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { decodeASCII, encodeASCII } from "../../../client/grpc-web/src/ChunkParser";
 
-describe('ChunkParser', () => {
+describe("ChunkParser", () => {
   describe("decodeASCII", () => {
     it("should allow valid HTTP headers around", () => {
       assert.equal(decodeASCII(new Uint8Array([

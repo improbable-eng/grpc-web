@@ -16,7 +16,7 @@ import {TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/te
 import {DEBUG, continueStream} from "./util";
 import { runWithHttp1AndHttp2 } from "./testRpcCombinations";
 
-describe('Cancellation', () => {
+describe("Cancellation", () => {
   runWithHttp1AndHttp2(({testHostUrl}) => {
     it("should allow the caller to abort an rpc before it completes", () => {
       let transportCancelFuncInvoked = false;
