@@ -48,9 +48,9 @@ export default (config) => {
       'karma-jasmine'
     ],
     autoWatch: true,
-    captureTimeout: 120000,
-    browserDisconnectTimeout: 120000,
-    browserNoActivityTimeout: 120000,
+    captureTimeout: 300000,
+    browserDisconnectTimeout: 300000,
+    browserNoActivityTimeout: 300000,
     singlerun: useBrowserStack,
     concurrency: 1,
     customLaunchers: customLaunchers,
