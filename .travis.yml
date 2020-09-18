@@ -46,6 +46,7 @@ jobs:
       workspaces:
         create:
           name: pre-built-integration-test-workspace
+          paths: .
 
     - stage: nodejs-test
       script: BROWSER=nodejs npm run test:integration:ci
