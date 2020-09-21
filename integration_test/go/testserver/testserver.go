@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -149,6 +150,7 @@ func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testp
 }
 
 func (s *testSrv) Echo(ctx context.Context, text *testproto.TextMessage) (*testproto.TextMessage, error) {
+	time.Sleep(time.Second)
 	if text.GetSendHeaders() {
 		grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
 	}
