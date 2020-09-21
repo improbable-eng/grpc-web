@@ -154,9 +154,11 @@ func (s *testSrv) Echo(ctx context.Context, text *testproto.TextMessage) (*testp
 	if text.GetSendHeaders() {
 		grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
 	}
+	time.Sleep(time.Second)
 	if text.GetSendTrailers() {
 		grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	}
+	time.Sleep(time.Second)
 	return text, nil
 }
 
