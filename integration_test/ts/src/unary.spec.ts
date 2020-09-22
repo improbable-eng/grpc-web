@@ -125,7 +125,7 @@ describe("unary", () => {
               done();
             }
           });
-        });
+        }, 20000); // 20s timeout
       });
 
       headerTrailerCombos((withHeaders, withTrailers) => {
