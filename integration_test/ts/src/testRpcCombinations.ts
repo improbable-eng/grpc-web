@@ -48,23 +48,23 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
   describe("(http1)", () => {
     cb(http1Config);
   });
-  // describe("(http2)", () => {
-  //   cb(http2Config);
-  // });
+  describe("(http2)", () => {
+    cb(http2Config);
+  });
 }
 
 export function runWithSupportedTransports(cb: (transport: grpc.TransportFactory | undefined) => void) {
   const transports: {[key: string]: grpc.TransportFactory | undefined} = {
-    // "httpTransport": undefined
+    "httpTransport": undefined
   };
 
   if (process.env.BROWSER === "nodejs") {
     grpc.setDefaultTransport(NodeHttpTransport());
   }
 
-  // if (!process.env.DISABLE_WEBSOCKET_TESTS) {
+  if (!process.env.DISABLE_WEBSOCKET_TESTS) {
     transports["websocketTransport"] = grpc.WebsocketTransport();
-  // }
+  }
 
   for (let transportName in transports) {
     describe(transportName, () => {
