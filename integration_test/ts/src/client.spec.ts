@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { Empty, } from "google-protobuf/google/protobuf/empty_pb";
 import { PingRequest, PingResponse, } from "../_proto/improbable/grpcweb/test/test_pb";
 import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
-import { continueStream, DEBUG, UncaughtExceptionListener } from "./util";
+import { continueStream, DEBUG, UncaughtExceptionListener, DISABLE_CORS_TESTS } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
