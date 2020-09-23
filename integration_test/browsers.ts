@@ -32,8 +32,6 @@ const browsers = {
 
   // Edge
   edge85_win: browser("edge", "85", "Windows", "10"),
-  edge18_win: browser("edge", "18", "Windows", "10"),
-  edge17_win: browser("edge", "17", "Windows", "10"),
   edge16_win: browser('edge', "16", 'Windows', "10"),
 
   // Safari
