@@ -4,7 +4,9 @@ import {
   grpc,
 } from "@improbable-eng/grpc-web";
 
-export const DEBUG: boolean = (global as any).DEBUG;
+export const DEBUG: boolean = (self as any).DEBUG;
+export const DISABLE_CORS_TESTS: boolean = (self as any).DISABLE_CORS_TESTS;
+export const DISABLE_WEBSOCKET_TESTS: boolean = (self as any).DISABLE_WEBSOCKET_TESTS;
 
 export class UncaughtExceptionListener {
   private attached: boolean = false;

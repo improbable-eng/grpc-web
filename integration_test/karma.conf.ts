@@ -6,6 +6,7 @@ import {testHost} from './hosts-config';
 export default (config) => {
   const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
+  const DISABLE_WEBSOCKET_TESTS = process.env.DISABLE_WEBSOCKET_TESTS !== undefined;
   const useBrowserStack = process.env.BROWSERSTACK_USERNAME !== undefined;
   const browsers = useBrowserStack ? Object.keys(customLaunchers) : [];
 
@@ -41,7 +42,7 @@ export default (config) => {
       {'preprocessor:config-inject': [
         'factory', () =>
           (content, file, done) =>
-            done(`window.DEBUG = ${DEBUG};\n${content}`)
+            done(`window.DEBUG = ${DEBUG};window.DISABLE_WEBSOCKET_TESTS = ${DISABLE_WEBSOCKET_TESTS};\n${content}`)
       ]},
       'karma-sourcemap-loader',
       'karma-mocha-reporter',

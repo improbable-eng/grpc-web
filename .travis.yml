@@ -146,7 +146,7 @@ jobs:
 
     # Internet Explorer (IE)
     - stage: ie-test
-      script: DEBUG=true BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
+      script: DEBUG=true BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace

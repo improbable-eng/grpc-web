@@ -394,7 +394,7 @@ describe("Client", () => {
         });
       });
 
-      if (!process.env.DISABLE_CORS_TESTS) {
+      if (!DISABLE_CORS_TESTS) {
         it(`should report failure for a CORS failure`, (done) => {
           let didGetOnHeaders = false;
           let didGetOnMessage = false;
