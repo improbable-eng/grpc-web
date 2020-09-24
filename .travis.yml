@@ -57,56 +57,56 @@ jobs:
 
     # Firefox
     - stage: firefox-test
-      script: DEBUG=true BROWSER=firefox80_osx npm run test:integration:ci
+      script: BROWSER=firefox80_osx npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: firefox-test
-      script: DEBUG=true BROWSER=firefox39_osx npm run test:integration:ci
+      script: BROWSER=firefox39_osx npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: firefox-test
-      script: DEBUG=true BROWSER=firefox38_osx npm run test:integration:ci
+      script: BROWSER=firefox38_osx npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: firefox-test
-      script: DEBUG=true BROWSER=firefox21_osx npm run test:integration:ci
+      script: BROWSER=firefox21_osx npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
 
     # Chrome
     - stage: chrome-test
-      script: DEBUG=true BROWSER=chrome_85 npm run test:integration:ci
+      script: BROWSER=chrome_85 npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: chrome-test
-      script: DEBUG=true BROWSER=chrome_52 npm run test:integration:ci
+      script: BROWSER=chrome_52 npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: chrome-test
-      script: DEBUG=true BROWSER=chrome_43 npm run test:integration:ci
+      script: BROWSER=chrome_43 npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: chrome-test
-      script: DEBUG=true BROWSER=chrome_42 npm run test:integration:ci
+      script: BROWSER=chrome_42 npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
 
     # Edge
     - stage: edge-test
-      script: DEBUG=true BROWSER=edge85_win npm run test:integration:ci
+      script: BROWSER=edge85_win npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: edge-test
-      script: DEBUG=true BROWSER=edge16_win npm run test:integration:ci
+      script: BROWSER=edge16_win npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
@@ -114,39 +114,39 @@ jobs:
     # Browsers that do not support trusting self-signed certs for wss:// connections have websocket tests disabled (see https://github.com/improbable-eng/grpc-web/issues/165)
     # Safari
     - stage: safari-test
-      script: DEBUG=true BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: safari-test
-      script: DEBUG=true BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: safari-test
-      script: DEBUG=true BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: safari-test
-      script: DEBUG=true BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: safari-test
-      script: DEBUG=true BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: safari-test
-      script: DEBUG=true BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
 
     # Internet Explorer (IE)
     - stage: ie-test
-      script: DEBUG=true BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      script: BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
