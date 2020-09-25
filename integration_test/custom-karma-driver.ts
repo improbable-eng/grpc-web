@@ -96,7 +96,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         "defaultVideo": true,
         "browserstack.local": true,
         "browserstack.console": "info",
-        "browserstack.networkLogs": true,
         "browserstack.tunnel": true,
         "browserstack.debug": true,
         "tunnelIdentifier": tunnelIdentifier,
