@@ -18,6 +18,7 @@ cache:
     - node_modules
 before_install:
   - sudo apt-get install unzip
+  - sudo apt-get install moreutils
 install:
   - . ./install-prototool.sh
   - go get -u golang.org/x/tools/cmd/goimports
