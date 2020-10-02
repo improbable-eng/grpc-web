@@ -50,6 +50,7 @@ export default (config) => {
     ],
     autoWatch: true,
     captureTimeout: 300000,
+    browserDisconnectTolerance: 1,
     browserDisconnectTimeout: 300000,
     browserNoActivityTimeout: 300000,
     singlerun: useBrowserStack,
