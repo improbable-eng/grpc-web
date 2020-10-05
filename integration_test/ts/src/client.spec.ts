@@ -184,7 +184,7 @@ describe("Client", () => {
 
           const ping = new PingRequest();
           ping.setValue("hello world");
-          ping.setResponseCount(3000);
+          ping.setResponseCount(300);
           ping.setSendHeaders(withHeaders);
           ping.setSendTrailers(withTrailers);
 
@@ -214,7 +214,7 @@ describe("Client", () => {
               assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
             }
             assert.ok(didGetOnHeaders);
-            assert.strictEqual(onMessageId, 3000);
+            assert.strictEqual(onMessageId, 300);
             done();
           });
           client.start();
