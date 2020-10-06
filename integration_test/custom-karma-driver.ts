@@ -86,7 +86,7 @@ function pollTitleToKeepAlive(self: any, browser: any) {
         clearInterval(interval);
       }
     });
-  }, 10000);
+  }, 25000);
 }
 
 function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
@@ -116,6 +116,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           'username': username,
           'accessKey': accessKey,
           'tunnelIdentifier': tunnelIdentifier,
+          'recordScreenshots': false,
           'acceptSslCerts': true,
           'acceptInsecureCerts': true,
           'javascriptEnabled': true,
