@@ -1,14 +1,14 @@
-function browser(browserName, browserVersion, os, osVersion) {
+function browser(browserName, browserVersion, os, options?: {}) {
   const browsers = [];
   browsers.push({
-    configName: `${os}_${osVersion}_${browserName}_${browserVersion}_allsuites`,
+    configName: `${os}_${browserName}_${browserVersion}_allsuites`,
     base: 'CustomWebDriver',
     capabilities: {
+      ...(options || {}),
       testSuite: undefined,
       browserName: browserName,
       browserVersion: browserVersion,
       os: os,
-      os_version: osVersion
     }
   })
   return browsers;
@@ -18,32 +18,32 @@ function browser(browserName, browserVersion, os, osVersion) {
 // commented out.
 const browsers = {
   // Firefox
-  firefox80_osx: browser('firefox', "80", 'OS X', "Sierra"),
-  firefox39_osx: browser('firefox', "39", 'OS X', "Sierra"), // Basic fetch added in 39
-  firefox38_osx: browser('firefox', "38", 'OS X', "Sierra"),
-  firefox21_osx: browser('firefox', "21", 'OS X', "Sierra"),
+  firefox80_osx: browser('firefox', '80', 'OS X Sierra'),
+  firefox39_osx: browser('firefox', '39', 'OS X Sierra'), // Basic fetch added in 39
+  firefox38_osx: browser('firefox', '38', 'OS X Sierra'),
+  firefox21_osx: browser('firefox', '21', 'OS X Sierra'),
 
   // Chrome
-  chrome_85: browser('chrome', "57", 'Windows', "7"),
-  chrome_52: browser('chrome', "52", 'Windows', "7"),
-  chrome_43: browser('chrome', "43", 'Windows', "7"), // Readable stream fetch support added in 43
-  chrome_42: browser('chrome', "42", 'Windows', "7"), // Basic fetch added in 42
-  chrome_41: browser('chrome', "41", 'Windows', "7"),
+  chrome_85: browser('chrome', '57', 'Windows 7'),
+  chrome_52: browser('chrome', '52', 'Windows 7'),
+  chrome_43: browser('chrome', '43', 'Windows 7'), // Readable stream fetch support added in 43
+  chrome_42: browser('chrome', '42', 'Windows 7'), // Basic fetch added in 42
+  chrome_41: browser('chrome', '41', 'Windows 7'),
 
   // Edge
-  edge85_win: browser("edge", "85", "Windows", "10"),
-  edge16_win: browser('edge', "16", 'Windows', "10"),
+  edge85_win: browser('MicrosoftEdge', '85', 'Windows 10'),
+  edge16_win: browser('MicrosoftEdge', '16', 'Windows 10', {edgeAcceptSsl: true}),
 
   // Safari
-  safari13_1: browser("safari", "13.1", "OS X", "Catalina"),
-  safari12_1: browser("safari", "12.1", "OS X", "Mojave"),
-  safari11_1: browser("safari", "11.1", "OS X", "High Sierra"),
-  safari10_1: browser("safari", "10.1", "OS X", "Sierra"),
-  safari9_1: browser("safari", "9.1", "OS X", "El Capitan"),
-  safari8: browser("safari", "8", "OS X", "Yosemite"),
+  safari13_1: browser('safari', '13.1', 'OS X 10.15', {useSslBumping: true}),
+  safari12_1: browser('safari', '12.0', 'OS X 10.14',{useSslBumping: true}),
+  safari11_1: browser('safari', '11.1', 'OS X 10.13',{useSslBumping: true}),
+  safari10_1: browser('safari', '10.1', 'OS X 10.12',{useSslBumping: true}),
+  safari9_1: browser('safari', '9.0', 'OS X 10.11',{useSslBumping: true}),
+  safari8: browser('safari', '8.0', 'OS X 10.10',{useSslBumping: true}),
 
   // IE
-  ie11_win: browser('ie', "11", 'Windows', "7"),
+  ie11_win: browser('ie', '11', 'Windows 7'),
 };
 
 export default () => {

@@ -47,6 +47,8 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.0",
     "lodash": "^4.17.10",
+    "saucelabs": "^4.5.0",
+    "selenium-webdriver": "^4.0.0-alpha.7",
     "ts-loader": "^6.0.1",
     "ts-node": "^8.0.2",
     "ts-protoc-gen": "0.10.0",

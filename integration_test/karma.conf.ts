@@ -7,8 +7,8 @@ export default (config) => {
   const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
   const DISABLE_WEBSOCKET_TESTS = process.env.DISABLE_WEBSOCKET_TESTS !== undefined;
-  const useBrowserStack = process.env.BROWSERSTACK_USERNAME !== undefined;
-  const browsers = useBrowserStack ? Object.keys(customLaunchers) : [];
+  const useSauceLabs = process.env.SAUCELABS_USERNAME !== undefined;
+  const browsers = useSauceLabs ? Object.keys(customLaunchers) : [];
 
   config.set({
     basePath: '',
@@ -50,10 +50,9 @@ export default (config) => {
     ],
     autoWatch: true,
     captureTimeout: 300000,
-    browserDisconnectTolerance: 1,
     browserDisconnectTimeout: 300000,
     browserNoActivityTimeout: 300000,
-    singlerun: useBrowserStack,
+    singlerun: useSauceLabs,
     concurrency: 1,
     customLaunchers: customLaunchers,
     browsers: browsers
