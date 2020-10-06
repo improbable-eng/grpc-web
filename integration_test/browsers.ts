@@ -18,10 +18,10 @@ function browser(browserName, browserVersion, os, options?: {}) {
 // commented out.
 const browsers = {
   // Firefox
-  firefox80_osx: browser('firefox', '80', 'OS X Sierra'),
-  firefox39_osx: browser('firefox', '39', 'OS X Sierra'), // Basic fetch added in 39
-  firefox38_osx: browser('firefox', '38', 'OS X Sierra'),
-  firefox21_osx: browser('firefox', '21', 'OS X Sierra'),
+  firefox80_osx: browser('firefox', '80', 'Windows 10'),
+  firefox39_osx: browser('firefox', '39', 'Windows 10'), // Basic fetch added in 39
+  firefox38_osx: browser('firefox', '38', 'Windows 10'),
+  firefox21_osx: browser('firefox', '21', 'Windows 10'),
 
   // Chrome
   chrome_85: browser('chrome', '57', 'Windows 7'),

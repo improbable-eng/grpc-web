@@ -117,6 +117,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           'accessKey': accessKey,
           'tunnelIdentifier': tunnelIdentifier,
           'acceptSslCerts': true,
+          'acceptInsecureCerts': true,
           'javascriptEnabled': true,
         })
         .usingServer("https://" + username + ":" + accessKey +
