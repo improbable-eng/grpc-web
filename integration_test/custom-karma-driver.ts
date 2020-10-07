@@ -1,5 +1,5 @@
 import { Builder } from 'selenium-webdriver';
-import SauceLabs from 'saucelabs';
+const sauceConnectLauncher = require('sauce-connect-launcher');
 import { corsHost, testHost } from "./hosts-config";
 
 const username = process.env.SAUCELABS_USERNAME;
@@ -19,56 +19,31 @@ const viaUrls = [
   "https://" + corsHost + ":9105"
 ];
 
-let tunnelId = null;
-let sauceConnectProxy = null;
-let localCallbacks = [];
-const localTunnels = [];
 
 function LocalTunnel(logger, useSslBumping, cb) {
-  localTunnels.push(this);
-
-  if (tunnelId !== null) {
-    cb(null, tunnelId);
-  } else {
-    localCallbacks.push(cb);
-    const tunnelIdentifier = `tunnel-${Math.random()}`;
-    if (localCallbacks.length === 1) {
-      const sauceLabsClient = new SauceLabs({user: username, key: accessKey});
-      console.log("Sauce connect initialising")
-      sauceLabsClient.startSauceConnect({
-        noSslBumpDomains: useSslBumping ? undefined : `${testHost},${corsHost}`,
-        logger: (stdout) => console.log(stdout),
-        tunnelIdentifier: tunnelIdentifier
-      }).then(sc => {
-        console.log("Sauce connected", sc)
-        sauceConnectProxy = sc;
-        tunnelId = tunnelIdentifier;
-        localCallbacks.forEach(cb => {
-          cb(null, tunnelIdentifier)
-        });
-        localCallbacks = [];
-      }).catch(error => {
-        console.log("Sauce connect failed", error)
-        localCallbacks.forEach(cb => {
-          cb(error, tunnelIdentifier)
-        });
-        localCallbacks = [];
-      });
+  let sauceConnectProxy = null;
+  const tunnelIdentifier = `tunnel-${Math.random()}`;
+  sauceConnectLauncher({
+    username: username,
+    accessKey: accessKey,
+    noSslBumpDomains: useSslBumping ? undefined : `${testHost},${corsHost}`,
+    logger: (stdout) => console.log(stdout),
+    tunnelIdentifier: tunnelIdentifier
+  }, (err, sc) => {
+    if (err !== null) {
+      console.log("Sauce connect error", err)
+      cb(err, tunnelIdentifier)
+      return;
     }
-  }
+    console.log("Sauce connect initialised with tunnelIdentifier", tunnelIdentifier);
+    sauceConnectProxy = sc;
+    cb(null, tunnelIdentifier)
+  });
 
   this.dispose = function (cb) {
-    localTunnels.splice(localTunnels.indexOf(this), 1);
-    if (localTunnels.length === 0) {
-      tunnelId = null;
-      sauceConnectProxy.close().then(() => {
-        cb(null);
-      }).catch(error => {
-        cb(error);
-      });
-    } else {
+    sauceConnectProxy.close(() => {
       cb(null);
-    }
+    });
   }
 }
 
