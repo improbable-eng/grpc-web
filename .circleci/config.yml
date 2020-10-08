@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  build:
+    working_directory: /go/src/github.com/improbable-eng/grpc-web
+    docker:
+      - image: circleci/golang:1.15.2
+        auth:
+          username: mydockerhub-user
+          password: $DOCKERHUB_PASSWORD
+
+    environment:
+      PROTOTOOL_VER: 1.7.0
+
+    steps:
+      - checkout
+      - run:
+          command: echo 127.0.0.1 testhost | sudo tee -a /etc/hosts
+      - run:
+          command: echo 127.0.0.1 corshost | sudo tee -a /etc/hosts
+      - run: sudo apt-get install unzip
+      - run: sudo apt-get install moreutils
+      - run: . ./install-prototool.sh
+      - run: go get -u golang.org/x/tools/cmd/goimports
+      - run: go get -u github.com/robertkrimen/godocdown/godocdown
+      - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+      - run: dep ensure
+      - run: go install ./vendor/github.com/golang/protobuf/protoc-gen-go
+      - run: export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
+      - run: nvm install
+      - run: npm install
+      - run:
+          name: Pre-Build Integration Test
+          command: npm run build:integration
+
+workflows:
+  version: 2
+  build-workflow:
+    jobs:
+      - build
