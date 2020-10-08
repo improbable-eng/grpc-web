@@ -41,7 +41,9 @@ function LocalTunnel(logger, useSslBumping, cb) {
   });
 
   this.dispose = function (cb) {
+    console.log("Tunnel.Dispose");
     sauceConnectProxy.close(() => {
+      console.log("Tunnel.DidClose");
       cb(null);
     });
   }
