@@ -26,11 +26,20 @@ jobs:
       - run: dep ensure
       - run: go install ./vendor/github.com/golang/protobuf/protoc-gen-go
       - run: export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
-      - run: nvm install
+      - run:
+          command: |
+            set +e
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.36.0/install.sh | bash
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install
       - run: npm install
       - run:
           name: Pre-Build Integration Test
           command: npm run build:integration
+      - run:
+          name: Integration Test
+          command: BROWSER=chrome_85 npm run test:integration:ci
 
 workflows:
   version: 2
