@@ -131,9 +131,7 @@ type webSocketWrappedReader struct {
 }
 
 func (w *webSocketWrappedReader) Close() error {
-	time.Sleep(time.Second)
 	w.respWriter.FlushTrailers()
-	time.Sleep(time.Second)
 	return w.wsConn.Close()
 }
 

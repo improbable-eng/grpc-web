@@ -4,13 +4,6 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"sync"
-	"time"
-
 	google_protobuf "github.com/golang/protobuf/ptypes/empty"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	testproto "github.com/improbable-eng/grpc-web/integration_test/go/_proto/improbable/grpcweb/test"
@@ -19,6 +12,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"sync"
 )
 
 var (
@@ -150,15 +148,12 @@ func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testp
 }
 
 func (s *testSrv) Echo(ctx context.Context, text *testproto.TextMessage) (*testproto.TextMessage, error) {
-	time.Sleep(time.Second)
 	if text.GetSendHeaders() {
 		grpc.SendHeader(ctx, metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
 	}
-	time.Sleep(time.Second)
 	if text.GetSendTrailers() {
 		grpc.SetTrailer(ctx, metadata.Pairs("TrailerTestKey1", "ServerValue1", "TrailerTestKey2", "ServerValue2"))
 	}
-	time.Sleep(time.Second)
 	return text, nil
 }
 
