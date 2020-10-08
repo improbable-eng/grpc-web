@@ -145,9 +145,12 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   };
 
   this.on('kill', function (done) {
+    console.log("KarmaDriver.kill")
     self.ended = true;
     self.localTunnel.dispose(function () {
+      console.log("KarmaDriver.quit()")
       self.browser.quit().finally(() => {
+        console.log("KarmaDriver.quit.finally")
         self._done();
         done();
       });
