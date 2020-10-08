@@ -47,7 +47,6 @@ jobs:
     executor: my-executor
     parallelism: 4
     steps:
-      - checkout
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
       - run: BROWSER=nodejs npm run test:integration:ci
@@ -78,6 +77,7 @@ workflows:
       - pre-build-browser-tests
       - browser-tests:
           pre-steps:
+            - checkout
             - run: echo 127.0.0.1 testhost | sudo tee -a /etc/hosts
             - run: echo 127.0.0.1 corshost | sudo tee -a /etc/hosts
             - run:
