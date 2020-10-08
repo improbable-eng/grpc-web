@@ -24,7 +24,7 @@ const browsers = {
   firefox21_win: browser('firefox', '21', 'Windows 10'),
 
   // Chrome
-  chrome_85: browser('chrome', '57', 'Windows 7'),
+  chrome_85: browser('chrome', '85', 'Windows 7'),
   chrome_52: browser('chrome', '52', 'Windows 7'),
   chrome_43: browser('chrome', '43', 'Windows 7'), // Readable stream fetch support added in 43
   chrome_42: browser('chrome', '42', 'Windows 7'), // Basic fetch added in 42
