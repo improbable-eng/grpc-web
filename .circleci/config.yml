@@ -30,10 +30,9 @@ jobs:
           command: |
             set +e
             curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
-            export NVM_DIR="/opt/circleci/.nvm"
+            export NVM_DIR="/home/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install v10.9.0
-            nvm alias default v10.9.0
+            nvm install
       - run: npm install
       - run:
           name: Pre-Build Integration Test
