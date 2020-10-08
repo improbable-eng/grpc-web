@@ -37,7 +37,9 @@ class Fetch implements Transport {
     if (this.cancelled) {
       // If the request was cancelled before the first pump then cancel it here
       this.options.debug && debug("Fetch.pump.cancel at first pump");
-      this.reader.cancel();
+      this.reader.cancel().catch(() => {
+        // This can be ignored. It will likely throw an exception due to the request being aborted
+      });
       return;
     }
     this.reader.read()
@@ -112,7 +114,9 @@ class Fetch implements Transport {
     if (this.reader) {
       // If the reader has already been received in the pump then it can be cancelled immediately
       this.options.debug && debug("Fetch.abort.reader.cancel");
-      this.reader.cancel();
+      this.reader.cancel().catch(() => {
+        // This can be ignored. It will likely throw an exception due to the request being aborted
+      });
     } else {
       this.options.debug && debug("Fetch.abort.cancel before reader");
     }
