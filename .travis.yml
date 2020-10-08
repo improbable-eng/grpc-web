@@ -58,22 +58,22 @@ jobs:
 
     # Firefox
     - stage: firefox-test
-      script: BROWSER=firefox80_osx npm run test:integration:ci
+      script: BROWSER=firefox80_win npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: firefox-test
-      script: BROWSER=firefox39_osx npm run test:integration:ci
+      script: BROWSER=firefox39_win npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: firefox-test
-      script: BROWSER=firefox38_osx npm run test:integration:ci
+      script: BROWSER=firefox38_win npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
     - stage: firefox-test
-      script: BROWSER=firefox21_osx npm run test:integration:ci
+      script: BROWSER=firefox21_win npm run test:integration:ci
       workspaces:
         use:
           - pre-built-integration-test-workspace
