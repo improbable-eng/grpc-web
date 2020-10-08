@@ -29,10 +29,11 @@ jobs:
       - run:
           command: |
             set +e
-            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.36.0/install.sh | bash
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install
+            nvm install v10.9.0
+            nvm alias default v10.9.0
       - run: npm install
       - run:
           name: Pre-Build Integration Test
