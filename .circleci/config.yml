@@ -60,25 +60,8 @@ workflows:
       - browser-tests:
           matrix:
             parameters:
-              browser-params:
-#                - BROWSER=nodejs
-                - BROWSER=firefox80_win
-                - BROWSER=firefox39_win
-                - BROWSER=firefox38_win
-                - BROWSER=firefox21_win
-                - BROWSER=chrome_85
-                - BROWSER=chrome_52
-                - BROWSER=chrome_43
-                - BROWSER=chrome_42
-                - BROWSER=edge85_win
-                - BROWSER=edge16_win
-                - BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
+              browser-params: ["BROWSER=firefox80_win", "BROWSER=firefox39_win", "BROWSER=firefox38_win", "BROWSER=firefox21_win", "BROWSER=chrome_85", "BROWSER=chrome_52", "BROWSER=chrome_43", "BROWSER=chrome_42", "BROWSER=edge85_win", "BROWSER=edge16_win", "BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true"]
+#             - BROWSER=nodejs
           pre-steps:
             - checkout
             - run: sudo apt-get install moreutils
