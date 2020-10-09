@@ -34,8 +34,8 @@ export default (config) => {
     logLevel: DEBUG ? 'DEBUG' : 'INFO',
     client: {
       captureConsole: true,
-      runInParent: true,
-      useIframe: false
+      runInParent: false,
+      useIframe: true,
     },
     plugins: [
       customKarmaDriver,
