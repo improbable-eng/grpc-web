@@ -48,24 +48,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
-#      - run: BROWSER=nodejs npm run test:integration:ci
-      - run: BROWSER=firefox80_win npm run test:integration:ci
-      - run: BROWSER=firefox39_win npm run test:integration:ci
-      - run: BROWSER=firefox38_win npm run test:integration:ci
-      - run: BROWSER=firefox21_win npm run test:integration:ci
-      - run: BROWSER=chrome_85 npm run test:integration:ci
-      - run: BROWSER=chrome_52 npm run test:integration:ci
-      - run: BROWSER=chrome_43 npm run test:integration:ci
-      - run: BROWSER=chrome_42 npm run test:integration:ci
-      - run: BROWSER=edge85_win npm run test:integration:ci
-      - run: BROWSER=edge16_win npm run test:integration:ci
-      - run: BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
-      - run: BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
-      - run: BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
-      - run: BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
-      - run: BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
-      - run: BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
-      - run: BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true npm run test:integration:ci
+      - run: << parameters.browser-params >> npm run test:integration:ci
 workflows:
   version: 2
   test-workflow:
@@ -75,6 +58,27 @@ workflows:
 #      - lint
       - pre-build-browser-tests
       - browser-tests:
+          matrix:
+            parameters:
+              browser-params:
+#                - BROWSER=nodejs
+                - BROWSER=firefox80_win
+                - BROWSER=firefox39_win
+                - BROWSER=firefox38_win
+                - BROWSER=firefox21_win
+                - BROWSER=chrome_85
+                - BROWSER=chrome_52
+                - BROWSER=chrome_43
+                - BROWSER=chrome_42
+                - BROWSER=edge85_win
+                - BROWSER=edge16_win
+                - BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
           pre-steps:
             - checkout
             - run: sudo apt-get install moreutils
