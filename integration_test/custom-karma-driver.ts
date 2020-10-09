@@ -97,6 +97,9 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           'acceptSslCerts': true,
           'acceptInsecureCerts': true,
           'javascriptEnabled': true,
+          'commandTimeout': 600,
+          'idleTimeout': 600,
+          'maxDuration': 600,
         })
         .usingServer("https://" + username + ":" + accessKey +
           "@ondemand.saucelabs.com:443/wd/hub")

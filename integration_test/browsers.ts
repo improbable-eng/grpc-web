@@ -43,7 +43,7 @@ const browsers = {
   safari8: browser('safari', '8.0', 'OS X 10.10',{useSslBumping: true}),
 
   // IE
-  ie11_win: browser('ie', '11', 'Windows 7'),
+  ie11_win: browser('ie', '11', 'Windows 10'),
 };
 
 export default () => {
