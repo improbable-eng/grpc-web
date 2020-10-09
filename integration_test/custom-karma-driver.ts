@@ -49,23 +49,6 @@ function LocalTunnel(logger, useSslBumping, cb) {
   }
 }
 
-function pollTitleToKeepAlive(self: any, browser: any) {
-  // To avoid SauceLabs killing the session because there is no interaction with the page
-  // poll the title of the page to keep the session alive.
-  const interval = setInterval(function () {
-    if (self.ended) {
-      clearInterval(interval);
-      return;
-    }
-    browser.getTitle().catch((err) => {
-      if (err) {
-        console.error("Failed to get page title: ", err);
-        clearInterval(interval);
-      }
-    });
-  }, 25000);
-}
-
 function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   baseBrowserDecorator(this);
   const self = this;
@@ -120,8 +103,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
               console.log("Attempting to bypass cert issue on final")
               browser.get("javascript:document.getElementById('invalidcert_continue').click()");
               // This will wait on the page until the browser is killed
-
-              pollTitleToKeepAlive(self, browser);
             });
           } else {
             browser.get(via).then(() => {
@@ -140,8 +121,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         browser.get(testUrlWithSuite).then(() => {
           console.log("Did capture");
           self.captured = true;
-
-          pollTitleToKeepAlive(self, browser);
         });
       }
     });
