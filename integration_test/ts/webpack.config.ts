@@ -12,7 +12,7 @@ module.exports = {
       "process.env": JSON.stringify(process.env),
     }),
   ],
-  devtool: "inline-source-map",
+  devtool: "source-map",
   module: {
     rules: [
       {
