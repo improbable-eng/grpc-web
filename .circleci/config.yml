@@ -44,10 +44,23 @@ jobs:
             - integration_test
   browser-tests:
     executor: my-executor
-    parallelism: 4
     steps:
+      - checkout
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
+      - run: sudo apt-get install moreutils
+      - run: echo 127.0.0.1 testhost | sudo tee -a /etc/hosts
+      - run: echo 127.0.0.1 corshost | sudo tee -a /etc/hosts
+      - run:
+          command: |
+            set +e
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
+            export NVM_DIR="/home/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install
+            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
+            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
+      - run: npm install
       - run: << parameters.browser-params >> npm run test:integration:ci
 workflows:
   version: 2
@@ -62,20 +75,5 @@ workflows:
             parameters:
               browser-params: ["BROWSER=firefox80_win", "BROWSER=firefox39_win", "BROWSER=firefox38_win", "BROWSER=firefox21_win", "BROWSER=chrome_85", "BROWSER=chrome_52", "BROWSER=chrome_43", "BROWSER=chrome_42", "BROWSER=edge85_win", "BROWSER=edge16_win", "BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true"]
 #             - BROWSER=nodejs
-          pre-steps:
-            - checkout
-            - run: sudo apt-get install moreutils
-            - run: echo 127.0.0.1 testhost | sudo tee -a /etc/hosts
-            - run: echo 127.0.0.1 corshost | sudo tee -a /etc/hosts
-            - run:
-                command: |
-                  set +e
-                  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
-                  export NVM_DIR="/home/circleci/.nvm"
-                  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                  nvm install
-                  echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
-                  echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
-            - run: npm install
           requires:
             - pre-build-browser-tests
