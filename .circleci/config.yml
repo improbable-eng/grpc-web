@@ -43,6 +43,9 @@ jobs:
           paths:
             - integration_test
   browser-tests:
+    parameters:
+      browser-params:
+        type: string
     executor: my-executor
     steps:
       - checkout
@@ -73,7 +76,24 @@ workflows:
       - browser-tests:
           matrix:
             parameters:
-              browser-params: ["BROWSER=firefox80_win", "BROWSER=firefox39_win", "BROWSER=firefox38_win", "BROWSER=firefox21_win", "BROWSER=chrome_85", "BROWSER=chrome_52", "BROWSER=chrome_43", "BROWSER=chrome_42", "BROWSER=edge85_win", "BROWSER=edge16_win", "BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true", "BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true"]
-#             - BROWSER=nodejs
+              browser-params:
+                - BROWSER=firefox80_win
+                - BROWSER=firefox39_win
+                - BROWSER=firefox38_win
+                - BROWSER=firefox21_win
+                - BROWSER=chrome_85
+                - BROWSER=chrome_52
+                - BROWSER=chrome_43
+                - BROWSER=chrome_42
+                - BROWSER=edge85_win
+                - BROWSER=edge16_win
+                - BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
+#                - BROWSER=nodejs
           requires:
             - pre-build-browser-tests
