@@ -69,6 +69,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       self.log.debug('Local Tunnel Connected. Now testing...');
       let browser = new Builder()
         .withCapabilities({
+          ...(caps.custom || {}),
           'browserName': caps.browserName,
           'platform': caps.os,
           'version': caps.browserVersion,
@@ -78,7 +79,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
           'tunnelIdentifier': tunnelIdentifier,
           'recordScreenshots': false,
           'acceptSslCerts': true,
-          'acceptInsecureCerts': true,
           'javascriptEnabled': true,
           'commandTimeout': 600,
           'idleTimeout': 600,

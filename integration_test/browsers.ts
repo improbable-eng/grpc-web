@@ -18,10 +18,10 @@ function browser(browserName, browserVersion, os, options?: {}) {
 // commented out.
 const browsers = {
   // Firefox
-  firefox80_win: browser('firefox', '80', 'Windows 10'),
-  firefox39_win: browser('firefox', '39', 'Windows 10'), // Basic fetch added in 39
-  firefox38_win: browser('firefox', '38', 'Windows 10'),
-  firefox21_win: browser('firefox', '21', 'Windows 10'),
+  firefox80_win: browser('firefox', '80', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
+  firefox39_win: browser('firefox', '39', 'Windows 10',{custom: {acceptInsecureCerts: true}}), // Basic fetch added in 39
+  firefox38_win: browser('firefox', '38', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
+  firefox21_win: browser('firefox', '21', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
 
   // Chrome
   chrome_85: browser('chrome', '85', 'Windows 7'),
@@ -43,7 +43,7 @@ const browsers = {
   safari8: browser('safari', '8.0', 'OS X 10.10',{useSslBumping: true}),
 
   // IE
-  ie11_win: browser('ie', '11', 'Windows 10'),
+  ie11_win: browser('internet explorer', '11', 'Windows 10'),
 };
 
 export default () => {
