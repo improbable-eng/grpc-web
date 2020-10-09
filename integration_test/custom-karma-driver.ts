@@ -91,7 +91,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       console.log("Built webdriver");
 
       self.browser = browser;
-      if (caps.edgeAcceptSsl) {
+      if (caps.certOverrideJSElement) {
         const next = (i) => {
           const via = viaUrls[i];
           if (!via) {
@@ -101,13 +101,13 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
               self.captured = true;
 
               console.log("Attempting to bypass cert issue on final")
-              browser.get("javascript:document.getElementById('invalidcert_continue').click()");
+              browser.get(`javascript:document.getElementById('${caps.certOverrideJSElement}').click()`);
               // This will wait on the page until the browser is killed
             });
           } else {
             browser.get(via).then(() => {
               console.log("Attempting to bypass cert issue")
-              browser.get("javascript:document.getElementById('invalidcert_continue').click()").then(() => {
+              browser.get(`javascript:document.getElementById('${caps.certOverrideJSElement}').click()`).then(() => {
                 next(i + 1);
               });
             }).catch(err => {

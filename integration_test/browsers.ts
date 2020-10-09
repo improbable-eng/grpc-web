@@ -32,7 +32,7 @@ const browsers = {
 
   // Edge
   edge85_win: browser('MicrosoftEdge', '85', 'Windows 10'),
-  edge16_win: browser('MicrosoftEdge', '16', 'Windows 10', {edgeAcceptSsl: true}),
+  edge16_win: browser('MicrosoftEdge', '16', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
 
   // Safari
   safari13_1: browser('safari', '13.1', 'OS X 10.15', {useSslBumping: true}),
@@ -43,7 +43,7 @@ const browsers = {
   safari8: browser('safari', '8.0', 'OS X 10.10',{useSslBumping: true}),
 
   // IE
-  ie11_win: browser('internet explorer', '11', 'Windows 10'),
+  ie11_win: browser('internet explorer', '11', 'Windows 10', {certOverrideJSElement: 'overridelink'}),
 };
 
 export default () => {
