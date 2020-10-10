@@ -101,14 +101,16 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
               self.captured = true;
 
               console.log("Attempting to bypass cert issue on final")
-              browser.get(`javascript:document.getElementById('${caps.certOverrideJSElement}').click()`);
+              browser.executeScript(`var el = document.getElementById('${caps.certOverrideJSElement}'); if (el) {el.click()}`);
               // This will wait on the page until the browser is killed
             });
           } else {
             browser.get(via).then(() => {
               console.log("Attempting to bypass cert issue")
-              browser.get(`javascript:document.getElementById('${caps.certOverrideJSElement}').click()`).then(() => {
-                next(i + 1);
+              browser.executeScript(`var el = document.getElementById('${caps.certOverrideJSElement}'); if (el) {el.click()}`).then(() => {
+                setTimeout(() => {
+                  next(i + 1);
+                }, 5000);
               });
             }).catch(err => {
               console.error("Failed to navigate via page", err);

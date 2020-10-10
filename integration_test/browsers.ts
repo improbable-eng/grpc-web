@@ -24,14 +24,14 @@ const browsers = {
   firefox21_win: browser('firefox', '21', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
 
   // Chrome
-  chrome_85: browser('chrome', '85', 'Windows 7'),
+  chrome_85: browser('chrome', '85', 'Windows 7', {certOverrideJSElement: 'proceed-link'}),
   chrome_52: browser('chrome', '52', 'Windows 7'),
   chrome_43: browser('chrome', '43', 'Windows 7'), // Readable stream fetch support added in 43
   chrome_42: browser('chrome', '42', 'Windows 7'), // Basic fetch added in 42
   chrome_41: browser('chrome', '41', 'Windows 7'),
 
   // Edge
-  edge85_win: browser('MicrosoftEdge', '85', 'Windows 10'),
+  edge85_win: browser('MicrosoftEdge', '85', 'Windows 10', {certOverrideJSElement: 'proceed-link'}),
   edge16_win: browser('MicrosoftEdge', '16', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
 
   // Safari
