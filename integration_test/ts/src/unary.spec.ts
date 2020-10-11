@@ -293,7 +293,7 @@ describe("unary", () => {
                 assert.lengthOf(exceptionsCaught, 1);
                 assert.include(exceptionsCaught[0], "onEnd exception");
                 done();
-              }, 100);
+              }, 1000);
               throw new Error("onEnd exception");
             }
           });

@@ -447,7 +447,7 @@ describe("invoke", () => {
                 assert.include(exceptionsCaught[1], "onMessage exception");
                 assert.include(exceptionsCaught[2], "onEnd exception");
                 done();
-              }, 100);
+              }, 1000);
               throw new Error("onEnd exception");
             }
           });
