@@ -40,12 +40,8 @@ function LocalTunnel(logger, useSslBumping, cb) {
     cb(null, tunnelIdentifier)
   });
 
-  this.dispose = function (cb) {
-    console.log("Tunnel.Dispose");
-    sauceConnectProxy.close(() => {
-      console.log("Tunnel.DidClose");
-      cb(null);
-    });
+  this.dispose = function () {
+    sauceConnectProxy.close();
   }
 }
 
@@ -131,13 +127,12 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   this.on('kill', function (done) {
     console.log("KarmaDriver.kill")
     self.ended = true;
-    self.localTunnel.dispose(function () {
-      console.log("KarmaDriver.quit()")
-      self.browser.quit().finally(() => {
-        console.log("KarmaDriver.quit.finally")
-        self._done();
-        done();
-      });
+    self.localTunnel.dispose();
+    console.log("KarmaDriver.quit()")
+    self.browser.quit().finally(() => {
+      console.log("KarmaDriver.quit.finally")
+      self._done();
+      done();
     });
   });
 
