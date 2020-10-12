@@ -9,7 +9,7 @@
     "test": "lerna run test",
     "build:integration": "cd integration_test && npm run build",
     "test:integration": "cd integration_test && npm run start",
-    "test:integration:ci": "bash -o pipefail -c \"(export PREBUILT_INTEGRATION_TESTS=1 && cd integration_test && npm run start) | ts -s \\\"%.s\\\"\"",
+    "test:integration-browsers:ci": "bash -o pipefail -c \"(export PREBUILT_INTEGRATION_TESTS=1 && export BROWSER_ONLY=1 && cd integration_test && npm run start) | ts -s \\\"%.s\\\"\"",
     "lint": "tslint -c ./tslint.json ./client/**/*.ts ./integration_test/ts/*.ts ./integration_test/ts/**/*.ts"
   },
   "author": "Improbable",

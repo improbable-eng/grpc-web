@@ -3,10 +3,11 @@ import customLaunchersGenerator from './browsers';
 import customKarmaDriver from './custom-karma-driver';
 import {testHost} from './hosts-config';
 
+const junitReportDirectory = process.env.JUNIT_REPORT_PATH || './test-results';
+
 export default (config) => {
   const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
-  const DISABLE_WEBSOCKET_TESTS = process.env.DISABLE_WEBSOCKET_TESTS !== undefined;
   const useSauceLabs = process.env.SAUCELABS_USERNAME !== undefined;
   const browsers = useSauceLabs ? Object.keys(customLaunchers) : [];
 
@@ -17,9 +18,12 @@ export default (config) => {
       'ts/build/integration-tests.js'
     ],
     preprocessors: {
-      '**/*.js': ['sourcemap', 'config-inject']
+      '**/*.js': ['sourcemap']
     },
-    reporters: ['mocha'],
+    reporters: ['junit'],
+    junitReporter: {
+      outputDir: junitReportDirectory,
+    },
     protocol: 'https',
     hostname: testHost,
     port: 9876,
@@ -36,13 +40,8 @@ export default (config) => {
     },
     plugins: [
       customKarmaDriver,
-      {'preprocessor:config-inject': [
-        'factory', () =>
-          (content, file, done) =>
-            done(`window.DEBUG = ${DEBUG};window.DISABLE_WEBSOCKET_TESTS = ${DISABLE_WEBSOCKET_TESTS};\n${content}`)
-      ]},
       'karma-sourcemap-loader',
-      'karma-mocha-reporter',
+      'karma-junit-reporter',
       'karma-jasmine'
     ],
     transports: ['polling'],
@@ -52,7 +51,7 @@ export default (config) => {
     browserDisconnectTimeout: 300000,
     browserNoActivityTimeout: 300000,
     singlerun: useSauceLabs,
-    concurrency: 1,
+    concurrency: 4,
     customLaunchers: customLaunchers,
     browsers: browsers
   });

@@ -35,15 +35,15 @@ const browsers = {
   edge16_win: browser('MicrosoftEdge', '16', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
 
   // Safari
-  safari13_1: browser('safari', '13.1', 'OS X 10.15', {useSslBumping: true}),
-  safari12_1: browser('safari', '12.0', 'OS X 10.14',{useSslBumping: true}),
-  safari11_1: browser('safari', '11.1', 'OS X 10.13',{useSslBumping: true}),
-  safari10_1: browser('safari', '10.1', 'OS X 10.12',{useSslBumping: true}),
-  safari9_1: browser('safari', '9.0', 'OS X 10.11',{useSslBumping: true}),
-  safari8: browser('safari', '8.0', 'OS X 10.10',{useSslBumping: true}),
+  safari13_1: browser('safari', '13.1', 'OS X 10.15', {useSslBumping: true, disableWebsocketTests: true}),
+  safari12_1: browser('safari', '12.0', 'OS X 10.14',{useSslBumping: true, disableWebsocketTests: true}),
+  safari11_1: browser('safari', '11.1', 'OS X 10.13',{useSslBumping: true, disableWebsocketTests: true}),
+  safari10_1: browser('safari', '10.1', 'OS X 10.12',{useSslBumping: true, disableWebsocketTests: true}),
+  safari9_1: browser('safari', '9.0', 'OS X 10.11',{useSslBumping: true, disableWebsocketTests: true}),
+  safari8: browser('safari', '8.0', 'OS X 10.10',{useSslBumping: true, disableWebsocketTests: true}),
 
   // IE
-  ie11_win: browser('internet explorer', '11', 'Windows 10', {certOverrideJSElement: 'overridelink'}),
+  ie11_win: browser('internet explorer', '11', 'Windows 10', {certOverrideJSElement: 'overridelink', disableWebsocketTests: true}),
 };
 
 export default () => {

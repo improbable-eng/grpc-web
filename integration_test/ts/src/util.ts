@@ -6,7 +6,13 @@ import {
 
 export const DEBUG: boolean = (self as any).DEBUG;
 export const DISABLE_CORS_TESTS: boolean = (self as any).DISABLE_CORS_TESTS;
-export const DISABLE_WEBSOCKET_TESTS: boolean = (self as any).DISABLE_WEBSOCKET_TESTS;
+export let DISABLE_WEBSOCKET_TESTS: boolean = false;
+
+if (typeof (self as any).DISABLE_WEBSOCKET_TESTS !== "undefined") {
+  DISABLE_WEBSOCKET_TESTS = (self as any).DISABLE_WEBSOCKET_TESTS;
+} else if (typeof window !== "undefined") {
+  DISABLE_WEBSOCKET_TESTS = window.location.hash.length > 1 ? window.location.hash.substring(1) === 'disableWebsocketTests' : false;
+}
 
 export class UncaughtExceptionListener {
   private attached: boolean = false;

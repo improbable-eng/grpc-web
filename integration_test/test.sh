@@ -9,10 +9,10 @@ else
   echo "Skipping integration test JS build because PREBUILT_INTEGRATION_TESTS is set"
 fi
 
-if [ -z "$BROWSER" ]; then
-  echo "No Browser specified, starting local test run"
+if [ -z "$BROWSER_ONLY" ]; then
+  echo "No Browser only run specified, starting local test run"
   npm run test:node
-  npm run test:browser
+  npm run test:browsers
   exit 0
 fi
 
@@ -21,6 +21,6 @@ if [ "$BROWSER" == "nodejs" ]; then
   exit 0
 fi
 
-npm run test:browser
+npm run test:browsers
 
 exit 0
