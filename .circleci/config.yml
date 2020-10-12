@@ -63,7 +63,7 @@ jobs:
       - run: npm install
       - run: npm run test:integration-browsers:ci
       - store_test_results:
-          path: ./integration-tests/test-results
+          path: ./integration-test/test-results
 workflows:
   version: 2
   test-workflow:
