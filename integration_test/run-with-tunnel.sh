@@ -4,6 +4,9 @@ set -x
 
 cd "$(dirname "$0")"
 
+mkdir -p sauce-connect-proxy
+pushd sauce-connect-proxy
+
 wait_file() {
   local file="$1"; shift
   local wait_seconds="${1:-10}"; shift
@@ -14,6 +17,12 @@ wait_file() {
 BASE_SAUCELABS_TUNNEL_ID=$(openssl rand -base64 12)
 export SAUCELABS_TUNNEL_ID_NO_SSL_BUMP="$BASE_SAUCELABS_TUNNEL_ID-no-ssl-bump"
 export SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP="$BASE_SAUCELABS_TUNNEL_ID-with-ssl-bump"
+
+
+SAUCELABS_READY_FILE_NO_SSL_BUMP=./sauce-connect-readyfile-no-ssl-bump
+SAUCELABS_READY_FILE_WITH_SSL_BUMP=./sauce-connect-readyfile-with-ssl-bump
+# Clear the ready files in case they already exist
+rm -f $SAUCELABS_READY_FILE_WITH_SSL_BUMP $SAUCELABS_READY_FILE_NO_SSL_BUMP
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   SAUCELABS_TUNNEL_PATH=./sc-4.6.2-linux/bin/sc
@@ -31,11 +40,11 @@ else
   echo "Unsupported platform"
 fi
 
-SAUCELABS_READY_FILE_NO_SSL_BUMP=./sauce-connect-readyfile-no-ssl-bump
 $SAUCELABS_TUNNEL_PATH \
   -u $SAUCELABS_USERNAME \
   -k $SAUCELABS_ACCESS_KEY \
   --logfile ./saucelabs-no-ssl-bump-logs \
+  --pidfile ./saucelabs-no-ssl-bump-pid \
   --no-ssl-bump-domains testhost,corshost \
   --tunnel-identifier $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP \
   --readyfile $SAUCELABS_READY_FILE_NO_SSL_BUMP \
@@ -44,11 +53,11 @@ SAUCELABS_PROCESS_ID_NO_SSL_BUMP=$!
 echo "SAUCELABS_PROCESS_ID_NO_SSL_BUMP:"
 echo $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
 
-SAUCELABS_READY_FILE_WITH_SSL_BUMP=./sauce-connect-readyfile-with-ssl-bump
 $SAUCELABS_TUNNEL_PATH \
   -u $SAUCELABS_USERNAME \
   -k $SAUCELABS_ACCESS_KEY \
   --logfile ./saucelabs-with-ssl-bump-logs \
+  --pidfile ./saucelabs-with-ssl-bump-pid \
   --tunnel-identifier $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP \
   --readyfile $SAUCELABS_READY_FILE_WITH_SSL_BUMP \
   -x https://saucelabs.com/rest/v1 &
@@ -60,7 +69,6 @@ function killTunnels {
   echo "Killing Sauce Labs Tunnels..."
   kill $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
   kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
-  rm -f $SAUCELABS_READY_FILE_WITH_SSL_BUMP $SAUCELABS_READY_FILE_NO_SSL_BUMP
 }
 
 trap killTunnels SIGINT
@@ -69,18 +77,20 @@ trap killTunnels EXIT
 # Wait for tunnels to indicate ready status
 wait_file "$SAUCELABS_READY_FILE_NO_SSL_BUMP" 60 || {
   echo "Timed out waiting for sauce labs tunnel (with ssl bump)"
-  kill SAUCELABS_PROCESS_ID_NO_SSL_BUMP
+  kill $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
   exit 1
 }
 
 wait_file "$SAUCELABS_READY_FILE_WITH_SSL_BUMP" 60 || {
   echo "Timed out waiting for sauce labs tunnel (no ssl bump)"
-  kill SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
+  kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
   exit 1
 }
 
 echo "Sauce Labs tunnels are ready"
 echo "SAUCELABS_TUNNEL_ID_NO_SSL_BUMP: $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP"
 echo "SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP: $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP"
+
+popd
 
 $@
