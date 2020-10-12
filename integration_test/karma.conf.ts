@@ -13,9 +13,6 @@ export default (config) => {
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
-    browserStack: {
-      forcelocal: true
-    },
     files: [
       'ts/build/integration-tests.js'
     ],
@@ -27,15 +24,15 @@ export default (config) => {
     hostname: testHost,
     port: 9876,
     httpsServerOptions: {
-      key: fs.readFileSync('..//misc/localhost.key', 'utf8'),
-      cert: fs.readFileSync('..//misc/localhost.crt', 'utf8')
+      key: fs.readFileSync('../misc/localhost.key', 'utf8'),
+      cert: fs.readFileSync('../misc/localhost.crt', 'utf8')
     },
     colors: true,
     logLevel: DEBUG ? 'DEBUG' : 'INFO',
     client: {
       captureConsole: true,
-      runInParent: true,
-      useIframe: false,
+      runInParent: false,
+      useIframe: true,
     },
     plugins: [
       customKarmaDriver,
@@ -48,7 +45,9 @@ export default (config) => {
       'karma-mocha-reporter',
       'karma-jasmine'
     ],
+    transports: ['polling'],
     autoWatch: true,
+    disconnectTolerance: 5,
     captureTimeout: 300000,
     browserDisconnectTimeout: 300000,
     browserNoActivityTimeout: 300000,
