@@ -35,6 +35,7 @@ SAUCELABS_READY_FILE_NO_SSL_BUMP=./sauce-connect-readyfile-no-ssl-bump
 $SAUCELABS_TUNNEL_PATH \
   -u $SAUCELABS_USERNAME \
   -k $SAUCELABS_ACCESS_KEY \
+  --logfile ./saucelabs-no-ssl-bump-logs \
   --no-ssl-bump-domains testhost,corshost \
   --tunnel-identifier $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP \
   --readyfile $SAUCELABS_READY_FILE_NO_SSL_BUMP \
@@ -47,6 +48,7 @@ SAUCELABS_READY_FILE_WITH_SSL_BUMP=./sauce-connect-readyfile-with-ssl-bump
 $SAUCELABS_TUNNEL_PATH \
   -u $SAUCELABS_USERNAME \
   -k $SAUCELABS_ACCESS_KEY \
+  --logfile ./saucelabs-with-ssl-bump-logs \
   --tunnel-identifier $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP \
   --readyfile $SAUCELABS_READY_FILE_WITH_SSL_BUMP \
   -x https://saucelabs.com/rest/v1 &
