@@ -8,6 +8,7 @@ const junitReportDirectory = process.env.JUNIT_REPORT_PATH || './test-results';
 export default (config) => {
   const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
+  const DISABLE_WEBSOCKET_TESTS = process.env.DISABLE_WEBSOCKET_TESTS !== undefined;
   const useSauceLabs = process.env.SAUCELABS_USERNAME !== undefined;
   const browsers = useSauceLabs ? Object.keys(customLaunchers) : [];
 
@@ -18,7 +19,7 @@ export default (config) => {
       'ts/build/integration-tests.js'
     ],
     preprocessors: {
-      '**/*.js': ['sourcemap']
+      '**/*.js': ['sourcemap', 'config-inject']
     },
     reporters: ['junit'],
     junitReporter: {
@@ -40,6 +41,11 @@ export default (config) => {
     },
     plugins: [
       customKarmaDriver,
+      {'preprocessor:config-inject': [
+          'factory', () =>
+            (content, file, done) =>
+              done(`window.DEBUG = ${DEBUG};window.DISABLE_WEBSOCKET_TESTS = ${DISABLE_WEBSOCKET_TESTS};\n${content}`)
+        ]},
       'karma-sourcemap-loader',
       'karma-junit-reporter',
       'karma-jasmine'
