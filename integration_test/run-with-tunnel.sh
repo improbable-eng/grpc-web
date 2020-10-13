@@ -40,56 +40,66 @@ else
   echo "Unsupported platform"
 fi
 
-$SAUCELABS_TUNNEL_PATH \
-  -u $SAUCELABS_USERNAME \
-  -k $SAUCELABS_ACCESS_KEY \
-  --logfile ./saucelabs-no-ssl-bump-logs \
-  --pidfile ./saucelabs-no-ssl-bump-pid \
-  --no-ssl-bump-domains testhost,corshost \
-  --tunnel-identifier $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP \
-  --readyfile $SAUCELABS_READY_FILE_NO_SSL_BUMP \
-  -x https://saucelabs.com/rest/v1 &
-SAUCELABS_PROCESS_ID_NO_SSL_BUMP=$!
-echo "SAUCELABS_PROCESS_ID_NO_SSL_BUMP:"
-echo $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
+if [[ -z "${SC_SSL_BUMPING}" ]]; then
+  $SAUCELABS_TUNNEL_PATH \
+    -u $SAUCELABS_USERNAME \
+    -k $SAUCELABS_ACCESS_KEY \
+    --logfile ./saucelabs-no-ssl-bump-logs \
+    --pidfile ./saucelabs-no-ssl-bump-pid \
+    --no-ssl-bump-domains testhost,corshost \
+    --tunnel-identifier $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP \
+    --readyfile $SAUCELABS_READY_FILE_NO_SSL_BUMP \
+    -x https://saucelabs.com/rest/v1 &
+  SAUCELABS_PROCESS_ID_NO_SSL_BUMP=$!
+  echo "SAUCELABS_PROCESS_ID_NO_SSL_BUMP:"
+  echo $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
+fi
 
-$SAUCELABS_TUNNEL_PATH \
-  -u $SAUCELABS_USERNAME \
-  -k $SAUCELABS_ACCESS_KEY \
-  --logfile ./saucelabs-with-ssl-bump-logs \
-  --pidfile ./saucelabs-with-ssl-bump-pid \
-  --tunnel-identifier $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP \
-  --readyfile $SAUCELABS_READY_FILE_WITH_SSL_BUMP \
-  -x https://saucelabs.com/rest/v1 &
-SAUCELABS_PROCESS_ID_WITH_SSL_BUMP=$!
-echo "SAUCELABS_PROCESS_ID_WITH_SSL_BUMP:"
-echo $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
+if [[ ! -z "${SC_SSL_BUMPING}" ]]; then
+  $SAUCELABS_TUNNEL_PATH \
+    -u $SAUCELABS_USERNAME \
+    -k $SAUCELABS_ACCESS_KEY \
+    --logfile ./saucelabs-with-ssl-bump-logs \
+    --pidfile ./saucelabs-with-ssl-bump-pid \
+    --tunnel-identifier $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP \
+    --readyfile $SAUCELABS_READY_FILE_WITH_SSL_BUMP \
+    -x https://saucelabs.com/rest/v1 &
+  SAUCELABS_PROCESS_ID_WITH_SSL_BUMP=$!
+  echo "SAUCELABS_PROCESS_ID_WITH_SSL_BUMP:"
+  echo $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
+fi
 
 function killTunnels {
   echo "Killing Sauce Labs Tunnels..."
-  kill $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
-  kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
+  if [[ -z "${SC_SSL_BUMPING}" ]]; then
+    kill $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
+  fi
+  if [[ ! -z "${SC_SSL_BUMPING}" ]]; then
+    kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
+  fi
 }
 
 trap killTunnels SIGINT
 trap killTunnels EXIT
 
 # Wait for tunnels to indicate ready status
-wait_file "$SAUCELABS_READY_FILE_NO_SSL_BUMP" 60 || {
-  echo "Timed out waiting for sauce labs tunnel (with ssl bump)"
-  kill $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
-  exit 1
-}
+if [[ -z "${SC_SSL_BUMPING}" ]]; then
+  wait_file "$SAUCELABS_READY_FILE_NO_SSL_BUMP" 60 || {
+    echo "Timed out waiting for sauce labs tunnel (with ssl bump)"
+    kill $SAUCELABS_PROCESS_ID_NO_SSL_BUMP
+    exit 1
+  }
+  echo "SAUCELABS_TUNNEL_ID_NO_SSL_BUMP: $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP"
+fi
 
-wait_file "$SAUCELABS_READY_FILE_WITH_SSL_BUMP" 60 || {
-  echo "Timed out waiting for sauce labs tunnel (no ssl bump)"
-  kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
-  exit 1
-}
-
-echo "Sauce Labs tunnels are ready"
-echo "SAUCELABS_TUNNEL_ID_NO_SSL_BUMP: $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP"
-echo "SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP: $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP"
+if [[ ! -z "${SC_SSL_BUMPING}" ]]; then
+  wait_file "$SAUCELABS_READY_FILE_WITH_SSL_BUMP" 60 || {
+    echo "Timed out waiting for sauce labs tunnel (no ssl bump)"
+    kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
+    exit 1
+  }
+  echo "SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP: $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP"
+fi
 
 popd
 

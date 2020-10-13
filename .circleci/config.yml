@@ -43,6 +43,9 @@ jobs:
           paths:
             - integration_test
   browser-tests:
+    parameters:
+      browser-params:
+        type: string
     executor: my-executor
     steps:
       - checkout
@@ -61,7 +64,7 @@ jobs:
             echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
             echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
       - run: npm install
-      - run: npm run test:integration-browsers:ci
+      - run: << parameters.browser-params >> npm run test:integration-browsers:ci
       - store_test_results:
           path: ./integration_test/test-results
 workflows:
@@ -73,5 +76,26 @@ workflows:
 #      - lint
       - pre-build-browser-tests
       - browser-tests:
+          matrix:
+            parameters:
+              browser-params:
+                - BROWSER=firefox80_win
+                - BROWSER=firefox39_win
+                - BROWSER=firefox38_win
+                - BROWSER=firefox21_win
+                - BROWSER=chrome_85
+                - BROWSER=chrome_52
+                - BROWSER=chrome_43
+                - BROWSER=chrome_42
+                - BROWSER=edge85_win
+                - BROWSER=edge16_win
+                - SC_SSL_BUMPING=true BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
+                - SC_SSL_BUMPING=true BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true
+                - SC_SSL_BUMPING=true BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true
+                - SC_SSL_BUMPING=true BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true
+                - SC_SSL_BUMPING=true BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
+                - SC_SSL_BUMPING=true BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
+                #- BROWSER=nodejs
           requires:
             - pre-build-browser-tests
