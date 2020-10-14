@@ -15,6 +15,9 @@ export default (config) => {
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
+    jasmine: {
+      random: false,
+    },
     files: [
       'ts/build/integration-tests.js'
     ],
