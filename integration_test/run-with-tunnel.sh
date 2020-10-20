@@ -77,6 +77,12 @@ function killTunnels {
   if [[ ! -z "${SC_SSL_BUMPING}" ]]; then
     kill $SAUCELABS_PROCESS_ID_WITH_SSL_BUMP
   fi
+
+  echo "Printing SauceConnect no-ssl bump logs:"
+  cat ./saucelabs-no-ssl-bump-logs || true
+
+  echo "Printing SauceConnect with-ssl bump logs:"
+  cat ./saucelabs-with-ssl-bump-logs || true
 }
 
 trap killTunnels SIGINT
