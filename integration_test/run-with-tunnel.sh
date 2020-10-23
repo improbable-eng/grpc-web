@@ -79,10 +79,10 @@ function killTunnels {
   fi
 
   echo "Printing SauceConnect no-ssl bump logs:"
-  cat ./saucelabs-no-ssl-bump-logs || true
+  cat ./sauce-connect-proxy/saucelabs-no-ssl-bump-logs || true
 
   echo "Printing SauceConnect with-ssl bump logs:"
-  cat ./saucelabs-with-ssl-bump-logs || true
+  cat ./sauce-connect-proxy/saucelabs-with-ssl-bump-logs || true
 }
 
 trap killTunnels SIGINT
