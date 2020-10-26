@@ -24,7 +24,7 @@ export default (config) => {
     preprocessors: {
       '**/*.js': ['sourcemap', 'config-inject']
     },
-    reporters: ['junit'],
+    reporters: ['mocha', 'junit'],
     junitReporter: {
       outputDir: junitReportDirectory,
     },
@@ -50,6 +50,7 @@ export default (config) => {
               done(`window.DEBUG = ${DEBUG};window.DISABLE_WEBSOCKET_TESTS = ${DISABLE_WEBSOCKET_TESTS};\n${content}`)
         ]},
       'karma-sourcemap-loader',
+      'karma-mocha-reporter',
       'karma-junit-reporter',
       'karma-jasmine'
     ],

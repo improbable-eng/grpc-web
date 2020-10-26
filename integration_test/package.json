@@ -43,6 +43,7 @@
     "karma": "5.2.3",
     "karma-jasmine": "4.0.1",
     "karma-junit-reporter": "2.0.1",
+    "karma-mocha-reporter": "2.2.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "4.0.2",
     "lodash": "^4.17.10",
