@@ -156,6 +156,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 		// the actual connection to the backend will not be established.
 		// https://github.com/improbable-eng/grpc-web/issues/568
 		delete(mdCopy, "connection")
+		delete(mdCopy, "proxy-connection")
 		outCtx = metadata.NewOutgoingContext(outCtx, mdCopy)
 		return outCtx, backendConn, nil
 	}
