@@ -48,7 +48,7 @@
     "karma-webpack": "^3.0.0",
     "lodash": "^4.17.10",
     "ts-loader": "^6.0.1",
-    "ts-node": "^8.0.2",
+    "ts-node": "^9.1.0",
     "ts-protoc-gen": "0.10.0",
     "typescript": "3.5.1",
     "wd": "^1.11.4",
