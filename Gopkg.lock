@@ -18,6 +18,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:c28a369c8fec7124b081d49b9097ac3349e0bf73555f05a8b384632b5278c80c"
+  name = "github.com/desertbit/timer"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c41aec40b27f0eeb2b94300fffcd624c69b02990"
+
+[[projects]]
   digest = "1:529d738b7976c3848cae5cf3a8036440166835e389c1f617af701eeb12a0518d"
   name = "github.com/golang/protobuf"
   packages = [
@@ -289,6 +297,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/desertbit/timer",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/protoc-gen-go",
     "github.com/golang/protobuf/ptypes/empty",
