@@ -66,11 +66,11 @@ workflows:
 #      - go-test
       - pre-build-tests
 #      - ts-test:
-#        requires:
-#          - pre-build-tests
+#          requires:
+#            - pre-build-tests
       - lint:
-        requires:
-          - pre-build-tests
+          requires:
+            - pre-build-tests
       - browser-tests:
           matrix:
             parameters:
