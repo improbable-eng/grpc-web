@@ -65,10 +65,10 @@ workflows:
     jobs:
 #      - go-test
       - pre-build-tests
-#      - ts-test
+#      - ts-test:
 #        requires:
 #          - pre-build-tests
-      - lint
+      - lint:
         requires:
           - pre-build-tests
       - browser-tests:
