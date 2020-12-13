@@ -1,7 +1,7 @@
 version: 2.1
 
 executors:
-  my-executor:
+  test-executor:
     docker:
       - image: circleci/golang:1.15.2
         auth:
@@ -13,8 +13,8 @@ executors:
 
 
 jobs:
-  pre-build-browser-tests:
-    executor: my-executor
+  pre-build-tests:
+    executor: test-executor
     steps:
       - checkout
       - run: sudo apt-get install unzip
@@ -46,7 +46,7 @@ jobs:
     parameters:
       browser-params:
         type: string
-    executor: my-executor
+    executor: test-executor
     steps:
       - checkout
       - attach_workspace:
@@ -63,7 +63,6 @@ jobs:
             nvm install
             echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
             echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
-      - run: npm install
       - run: << parameters.browser-params >> npm run test:integration-browsers:ci
       - store_test_results:
           path: ./integration_test/test-results
@@ -74,7 +73,7 @@ workflows:
 #      - go-test
 #      - ts-test
 #      - lint
-      - pre-build-browser-tests
+      - pre-build-tests
       - browser-tests:
           matrix:
             parameters:
@@ -98,4 +97,4 @@ workflows:
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
                 #- BROWSER=nodejs
           requires:
-            - pre-build-browser-tests
+            - pre-build-tests
