@@ -25,15 +25,7 @@ jobs:
       - run: dep ensure
       - run: go install ./vendor/github.com/golang/protobuf/protoc-gen-go
       - run: export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
-      - run:
-          command: |
-            set +e
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
-            export NVM_DIR="/home/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install
-            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
-            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
+      - run: ./nvm-install.sh
       - run: npm install
       - run:
           name: Pre-Build Integration Test
@@ -54,26 +46,31 @@ jobs:
       - run: sudo apt-get install moreutils
       - run: echo 127.0.0.1 testhost | sudo tee -a /etc/hosts
       - run: echo 127.0.0.1 corshost | sudo tee -a /etc/hosts
-      - run:
-          command: |
-            set +e
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
-            export NVM_DIR="/home/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install
-            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
-            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
+      - run: ./nvm-install.sh
       - run: << parameters.browser-params >> npm run test:integration-browsers:ci
       - store_test_results:
           path: ./integration_test/test-results
+  lint:
+    executor: test-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /go/src/github.com/improbable-eng/grpc-web
+      - run: ./nvm-install.sh
+      - run: npm install
+      - run: ./lint-all.sh
 workflows:
   version: 2
   test-workflow:
     jobs:
 #      - go-test
-#      - ts-test
-#      - lint
       - pre-build-tests
+#      - ts-test
+#        requires:
+#          - pre-build-tests
+      - lint
+        requires:
+          - pre-build-tests
       - browser-tests:
           matrix:
             parameters:
