@@ -13,7 +13,7 @@ executors:
 
 
 jobs:
-  pre-build-tests:
+  initial-unit-test-lint-prebuild:
     executor: test-executor
     steps:
       - checkout
@@ -33,6 +33,11 @@ jobs:
             echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
             echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
       - run: npm install
+      # Lint
+      - run: ./lint-all.sh
+      # Unit Tests
+      - run: ./test-all.sh
+      # Build server binary to be used across all subsequent browser tests
       - run:
           name: Pre-Build Integration Test
           command: npm run build:integration
@@ -64,40 +69,11 @@ jobs:
       - run: << parameters.browser-params >> npm run test:integration-browsers:ci
       - store_test_results:
           path: ./integration_test/test-results
-  lint:
-    executor: test-executor
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /go/src/github.com/improbable-eng/grpc-web
-      - run: echo 'export GOBIN=/go/bin' >> $BASH_ENV
-      - run: go get -u golang.org/x/tools/cmd/goimports
-      - run: go get -u github.com/robertkrimen/godocdown/godocdown
-      - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - run: dep ensure
-      - run:
-          command: |
-            set +e
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.33.5/install.sh | bash
-            export NVM_DIR="/home/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install
-            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
-            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
-      - run: npm install
-      - run: ./lint-all.sh
 workflows:
   version: 2
   test-workflow:
     jobs:
-#      - go-test
-      - pre-build-tests
-#      - ts-test:
-#          requires:
-#            - pre-build-tests
-      - lint:
-          requires:
-            - pre-build-tests
+      - initial-unit-test-lint-prebuild
       - browser-tests:
           matrix:
             parameters:
@@ -119,7 +95,6 @@ workflows:
                 - SC_SSL_BUMPING=true BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
                 - SC_SSL_BUMPING=true BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
-                #- BROWSER=nodejs
+                - BROWSER=nodejs
           requires:
-            - lint
-            - pre-build-tests
+            - initial-unit-test-lint-prebuild
