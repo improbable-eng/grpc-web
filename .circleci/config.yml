@@ -98,6 +98,6 @@ workflows:
                 - SC_SSL_BUMPING=true BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
                 - SC_SSL_BUMPING=true BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=nodejs
+                - BROWSER=nodejs DISABLE_CORS_TESTS=true
           requires:
             - initial-unit-test-lint-prebuild
