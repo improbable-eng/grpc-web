@@ -73,6 +73,8 @@ jobs:
       - run: echo 'export GOBIN=/go/bin' >> $BASH_ENV
       - run: go get -u golang.org/x/tools/cmd/goimports
       - run: go get -u github.com/robertkrimen/godocdown/godocdown
+      - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+      - run: dep ensure
       - run:
           command: |
             set +e
