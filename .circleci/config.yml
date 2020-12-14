@@ -70,6 +70,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
+      - run: echo 'export GOBIN=/go/bin' >> $BASH_ENV
       - run: go get -u golang.org/x/tools/cmd/goimports
       - run: go get -u github.com/robertkrimen/godocdown/godocdown
       - run:
@@ -81,7 +82,6 @@ jobs:
             nvm install
             echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
             echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
-      - run: npm install
       - run: ./lint-all.sh
 workflows:
   version: 2
