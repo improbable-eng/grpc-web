@@ -47,7 +47,8 @@ jobs:
       - persist_to_workspace:
           root: /go/src/github.com/improbable-eng/grpc-web
           paths:
-            - ./
+            - integration_test
+            - client
   browser-tests:
     parameters:
       browser-params:
