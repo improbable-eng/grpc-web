@@ -19,8 +19,6 @@ jobs:
       - checkout
       - run: sudo apt-get install unzip
       - run: . ./install-prototool.sh
-      - run: go get -u golang.org/x/tools/cmd/goimports
-      - run: go get -u github.com/robertkrimen/godocdown/godocdown
       - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - run: dep ensure
       - run: go install ./vendor/github.com/golang/protobuf/protoc-gen-go
@@ -72,6 +70,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
+      - run: go get -u golang.org/x/tools/cmd/goimports
+      - run: go get -u github.com/robertkrimen/godocdown/godocdown
       - run:
           command: |
             set +e
