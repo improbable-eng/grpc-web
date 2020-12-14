@@ -84,6 +84,7 @@ jobs:
             nvm install
             echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
             echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
+      - run: npm install
       - run: ./lint-all.sh
 workflows:
   version: 2
