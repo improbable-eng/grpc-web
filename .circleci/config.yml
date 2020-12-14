@@ -19,6 +19,9 @@ jobs:
       - checkout
       - run: sudo apt-get install unzip
       - run: . ./install-prototool.sh
+      - run: echo 'export GOBIN=/go/bin' >> $BASH_ENV
+      - run: go get -u golang.org/x/tools/cmd/goimports
+      - run: go get -u github.com/robertkrimen/godocdown/godocdown
       - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - run: dep ensure
       - run: go install ./vendor/github.com/golang/protobuf/protoc-gen-go
