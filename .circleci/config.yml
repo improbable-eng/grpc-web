@@ -118,4 +118,5 @@ workflows:
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
                 #- BROWSER=nodejs
           requires:
+            - lint
             - pre-build-tests
