@@ -6,11 +6,10 @@ import { assert } from "chai";
 // Generated Test Classes
 import { PingRequest, PingResponse } from "../_proto/improbable/grpcweb/test/test_pb";
 import { TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
-import { DEBUG } from "./util";
+import { DEBUG, DISABLE_WEBSOCKET_TESTS } from "./util";
 import { headerTrailerCombos, runWithHttp1AndHttp2 } from "./testRpcCombinations";
-import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-if (process.env.DISABLE_WEBSOCKET_TESTS) {
+if (DISABLE_WEBSOCKET_TESTS) {
   console.log(`Skipping "clientWebsockets" suite as "DISABLE_WEBSOCKET_TESTS" is set`);
   describe("skipping client-streaming (websockets)", () => {
     it("should skip client-streaming request tests", (done) => {
@@ -18,7 +17,7 @@ if (process.env.DISABLE_WEBSOCKET_TESTS) {
     });
   });
 } else {
-  conditionallyRunTestSuite(SuiteEnum.clientWebsockets, () => {
+  describe("ClientWebsockets", () => {
     runWithHttp1AndHttp2(({testHostUrl}) => {
       describe("client-streaming (websockets)", () => {
         headerTrailerCombos((withHeaders, withTrailers) => {
