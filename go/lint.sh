@@ -34,7 +34,7 @@ function check_gofmt {
 
 function goimports_all {
     echo "- Running goimports"
-    ${GOPATH}/bin/goimports -l -w $(print_real_go_files)
+    ${GOBIN}/goimports -l -w $(print_real_go_files)
     if [[ $? -ne 0 ]]; then
         echo "ERROR: goimports changes detected, please commit them."
         exit 1
