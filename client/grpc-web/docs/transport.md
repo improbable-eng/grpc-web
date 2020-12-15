@@ -43,7 +43,7 @@ It's great that we have more than one choice when it comes to Web Browsers, howe
 
 * gRPC offers four categories of request: unary, server-streaming, client-streaming and bi-directional. Due to limitations of the Browser HTTP primitives (`fetch` and `XMLHttpRequest`), the HTTP/2-based transports provided by `@improbable-eng/grpc-web` can only support unary and server-streaming requests. Attempts to invoke either client-streaming or bi-directional endpoints will result in failure.
 * Older versions of Safari (<7) and all versions of Internet Explorer do not provide an efficient way to stream data from a server; this will result in the entire response of a gRPC client-stream being buffered into memory which can cause performance and stability issues for end-users. 
-* Microsoft Edge does not propagate the cancellation of requests to the server; which can result in memory/process leaks on your server. Track this issue for status.
+* Microsoft Edge (<16) does not propagate the cancellation of requests to the server; which can result in memory/process leaks on your server. Track [this issue](https://github.com/improbable-eng/grpc-web/issues/125) for status.
 
 Note that the [Socket-based Transports](#socket-based-transports) alleviate the above issues.
 

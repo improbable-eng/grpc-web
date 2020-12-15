@@ -37,7 +37,10 @@ class Fetch implements Transport {
     if (this.cancelled) {
       // If the request was cancelled before the first pump then cancel it here
       this.options.debug && debug("Fetch.pump.cancel at first pump");
-      this.reader.cancel();
+      this.reader.cancel().catch(e => {
+        // This can be ignored. It will likely throw an exception due to the request being aborted
+        this.options.debug && debug("Fetch.pump.reader.cancel exception", e);
+      });
       return;
     }
     this.reader.read()
@@ -67,7 +70,7 @@ class Fetch implements Transport {
       headers: this.metadata.toHeaders(),
       method: "POST",
       body: msgBytes,
-      signal: this.controller && this.controller.signal
+      signal: this.controller && this.controller.signal,
     }).then((res: Response) => {
       this.options.debug && debug("Fetch.response", res);
       this.options.onHeaders(new Metadata(res.headers as any), res.status);
@@ -101,19 +104,27 @@ class Fetch implements Transport {
 
   cancel() {
     if (this.cancelled) {
-      this.options.debug && debug("Fetch.abort.cancel already cancelled");
+      this.options.debug && debug("Fetch.cancel already cancelled");
       return;
     }
     this.cancelled = true;
+
+    if (this.controller) {
+      this.options.debug && debug("Fetch.cancel.controller.abort");
+      this.controller.abort();
+    } else {
+      this.options.debug && debug("Fetch.cancel.missing abort controller");
+    }
+
     if (this.reader) {
       // If the reader has already been received in the pump then it can be cancelled immediately
-      this.options.debug && debug("Fetch.abort.cancel");
-      this.reader.cancel();
+      this.options.debug && debug("Fetch.cancel.reader.cancel");
+      this.reader.cancel().catch(e => {
+        // This can be ignored. It will likely throw an exception due to the request being aborted
+        this.options.debug && debug("Fetch.cancel.reader.cancel exception", e);
+      });
     } else {
-      this.options.debug && debug("Fetch.abort.cancel before reader");
-    }
-    if (this.controller) {
-      this.controller.abort();
+      this.options.debug && debug("Fetch.cancel before reader");
     }
   }
 }
