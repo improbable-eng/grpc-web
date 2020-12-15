@@ -4,7 +4,5 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 (global as any).DISABLE_CORS_TESTS = true;
 // Disable the WebSocket-based tests as they don't apply for Node environments
 (global as any).DISABLE_WEBSOCKET_TESTS = true;
-// Although this will be set by Travis CI; it won't be set locally.
-process.env.BROWSER = "nodejs";
 
 import "../src/spec";

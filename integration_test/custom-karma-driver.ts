@@ -3,7 +3,7 @@ import { corsHost, testHost } from "./hosts-config";
 
 const username = process.env.SAUCELABS_USERNAME;
 const accessKey = process.env.SAUCELABS_ACCESS_KEY;
-const buildName = process.env.TRAVIS_BUILD_NUMBER ? `travis_${process.env.TRAVIS_BUILD_NUMBER}` : `local_${new Date().getTime()}`;
+const buildName = process.env.CIRCLE_JOB ? `circleci_${process.env.CIRCLE_JOB}` : `local_${new Date().getTime()}`;
 const sauceLabsTunnelWithSSLBumping = process.env.SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP;
 const sauceLabsTunnelNoSSLBumping = process.env.SAUCELABS_TUNNEL_ID_NO_SSL_BUMP;
 
@@ -37,6 +37,7 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
     let browser = new Builder()
       .withCapabilities({
         ...(caps.custom || {}),
+        'name': `${caps.browserName} - Integration Test`,
         'browserName': caps.browserName,
         'platform': caps.os,
         'version': caps.browserVersion,

@@ -11,7 +11,6 @@ executors:
       PROTOTOOL_VER: 1.7.0
     working_directory: /go/src/github.com/improbable-eng/grpc-web
 
-
 jobs:
   initial-unit-test-lint-prebuild:
     executor: test-executor
@@ -25,7 +24,7 @@ jobs:
       - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - run: dep ensure
       - run: go install ./vendor/github.com/golang/protobuf/protoc-gen-go
-      - run: export PATH=/home/travis/gopath/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
+      - run: export PATH=/go/src/github.com/improbable-eng/grpc-web/protobuf/bin:$PATH
       - run:
           command: |
             set +e
@@ -59,6 +58,7 @@ jobs:
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
       - run: sudo apt-get install moreutils
+      # The two following hosts must match those in integration_test/hosts-config.ts
       - run: echo 127.0.0.1 testhost | sudo tee -a /etc/hosts
       - run: echo 127.0.0.1 corshost | sudo tee -a /etc/hosts
       - run:
@@ -90,6 +90,7 @@ workflows:
                 - BROWSER=chrome_52
                 - BROWSER=chrome_43
                 - BROWSER=chrome_42
+                - BROWSER=chrome_41
                 - BROWSER=edge85_win
                 - BROWSER=edge16_win
                 - SC_SSL_BUMPING=true BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
