@@ -3,7 +3,7 @@ import { corsHost, testHost } from "./hosts-config";
 
 const username = process.env.SAUCELABS_USERNAME;
 const accessKey = process.env.SAUCELABS_ACCESS_KEY;
-const buildName = process.env.CIRCLE_JOB ? `circleci_${process.env.CIRCLE_JOB}` : `local_${new Date().getTime()}`;
+const buildName = process.env.CIRCLE_WORKFLOW_ID ? `circleci_${process.env.CIRCLE_WORKFLOW_ID}` : `local_${new Date().getTime()}`;
 const sauceLabsTunnelWithSSLBumping = process.env.SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP;
 const sauceLabsTunnelNoSSLBumping = process.env.SAUCELABS_TUNNEL_ID_NO_SSL_BUMP;
 
@@ -55,25 +55,25 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       .usingServer("https://" + username + ":" + accessKey + "@ondemand.saucelabs.com:443/wd/hub")
       .build();
 
-    console.log("Built webdriver");
+    self.log.debug("Built webdriver");
 
     self.browser = browser;
     if (caps.certOverrideJSElement) {
       const next = (i) => {
         const via = viaUrls[i];
         if (!via) {
-          console.log("Navigating to ", testUrlWithSuite);
+          self.log.debug("Navigating to ", testUrlWithSuite);
           browser.get(testUrlWithSuite).then(() => {
-            console.log("Did capture");
+            self.log.debug("Did capture");
             self.captured = true;
 
-            console.log("Attempting to bypass cert issue on final")
+            self.log.debug("Attempting to bypass cert issue on final")
             browser.executeScript(`var el = document.getElementById('${caps.certOverrideJSElement}'); if (el) {el.click()}`);
             // This will wait on the page until the browser is killed
           });
         } else {
           browser.get(via).then(() => {
-            console.log("Attempting to bypass cert issue")
+            self.log.debug("Attempting to bypass cert issue")
             browser.executeScript(`var el = document.getElementById('${caps.certOverrideJSElement}'); if (el) {el.click()}`).then(() => {
               setTimeout(() => {
                 next(i + 1);
@@ -86,20 +86,20 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
       };
       next(0);
     } else {
-      console.log("Navigating to ", testUrlWithSuite);
+      self.log.debug("Navigating to ", testUrlWithSuite);
       browser.get(testUrlWithSuite).then(() => {
-        console.log("Did capture");
+        self.log.debug("Did capture");
         self.captured = true;
       });
     }
   };
 
   this.on('kill', function (done) {
-    console.log("KarmaDriver.kill")
+    self.log.debug("KarmaDriver.kill")
     self.ended = true;
-    console.log("KarmaDriver.quit()")
+    self.log.debug("KarmaDriver.quit()")
     self.browser.quit().finally(() => {
-      console.log("KarmaDriver.quit.finally")
+      self.log.debug("KarmaDriver.quit.finally")
       self._done();
       done();
     });
