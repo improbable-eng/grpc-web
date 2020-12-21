@@ -37,7 +37,8 @@ class Fetch implements Transport {
     if (this.cancelled) {
       // If the request was cancelled before the first pump then cancel it here
       this.options.debug && debug("Fetch.pump.cancel at first pump");
-      this.reader.cancel();
+      this.reader.cancel().catch((e) =>
+          this.options.debug && debug("Fetch.pump.cancel caught", e));
       return;
     }
     this.reader.read()
