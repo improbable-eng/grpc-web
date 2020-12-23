@@ -49,6 +49,7 @@ function browser(browserName, browserVersion, os, osVersion) {
 // Browser versions that should not have any Fetch/XHR differences in functionality to other (tested) versions are
 // commented out.
 const browsers = {
+  edge16_win: browser("edge", "16", "Windows", "10"),
   edge15_win: browser("edge", "15", "Windows", "10"),
   edge14_win: browser("edge", "14", "Windows", "10"),
   edge13_win: browser('edge', "13", 'Windows', "10"),
