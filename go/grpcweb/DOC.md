@@ -175,6 +175,54 @@ bidirectional requests.
 
 The default behaviour is false, i.e. to disallow websockets
 
+#### type WebSocketWrapped
+
+```go
+type WebSocketWrapped struct {
+	*WrappedGrpcServer
+}
+```
+
+
+#### func  WrapHandlerWithOnlyWebsocket
+
+```go
+func WrapHandlerWithOnlyWebsocket(handler http.Handler, options ...Option) *WebSocketWrapped
+```
+WrapHandlerWithOnlyWebsocket takes a http.Handler (such as a http.Mux) and
+returns a *WebSocketWrapped that provides gRPC-Web Compatibility.
+
+This behaves nearly identically to WrapHandler, but return *WebSocketWrapped and
+the enableWebsockets setting is true.
+
+#### func (*WebSocketWrapped) HandleGrpcWebsocketRequest
+
+```go
+func (w *WebSocketWrapped) HandleGrpcWebsocketRequest(resp http.ResponseWriter, req *http.Request)
+```
+HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a
+gRPC-Websocket request and wraps it with a compatibility layer to transform it
+to a standard gRPC request for the wrapped gRPC server and transforms the
+response to comply with the gRPC-Web protocol.
+
+#### func (*WebSocketWrapped) IsGrpcWebSocketRequest
+
+```go
+func (w *WebSocketWrapped) IsGrpcWebSocketRequest(req *http.Request) bool
+```
+IsGrpcWebSocketRequest determines if a request is a gRPC-Websocket request by
+checking that the "Sec-Websocket-Protocol" header value is "grpc-websockets"
+
+#### func (*WebSocketWrapped) ServeHTTP
+
+```go
+func (w *WebSocketWrapped) ServeHTTP(resp http.ResponseWriter, req *http.Request)
+```
+ServeHTTP takes a HTTP request and if it is a gRPC-Websocket request wraps it
+with compatibility layer to transform it to a standard gRPC request for the
+wrapped gRPC server and transforms the response to comply with the gRPC-Web
+protocol.
+
 #### type WrappedGrpcServer
 
 ```go
@@ -220,16 +268,6 @@ request and wraps it with a compatibility layer to transform it to a standard
 gRPC request for the wrapped gRPC server and transforms the response to comply
 with the gRPC-Web protocol.
 
-#### func (*WrappedGrpcServer) HandleGrpcWebsocketRequest
-
-```go
-func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter, req *http.Request)
-```
-HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a
-gRPC-Websocket request and wraps it with a compatibility layer to transform it
-to a standard gRPC request for the wrapped gRPC server and transforms the
-response to comply with the gRPC-Web protocol.
-
 #### func (*WrappedGrpcServer) IsAcceptableGrpcCorsRequest
 
 ```go
@@ -248,14 +286,6 @@ func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool
 ```
 IsGrpcWebRequest determines if a request is a gRPC-Web request by checking that
 the "content-type" is "application/grpc-web" and that the method is POST.
-
-#### func (*WrappedGrpcServer) IsGrpcWebSocketRequest
-
-```go
-func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool
-```
-IsGrpcWebSocketRequest determines if a request is a gRPC-Web request by checking
-that the "Sec-Websocket-Protocol" header value is "grpc-websockets"
 
 #### func (*WrappedGrpcServer) ServeHTTP
 

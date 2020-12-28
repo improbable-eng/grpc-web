@@ -15,7 +15,102 @@ import (
 	"github.com/desertbit/timer"
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/http2"
+	"google.golang.org/grpc/grpclog"
 )
+
+type WebSocketWrapped struct {
+	*WrappedGrpcServer
+}
+
+var websocketUpgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin:     func(r *http.Request) bool { return true },
+	Subprotocols:    []string{"grpc-websockets"},
+}
+
+// IsGrpcWebSocketRequest determines if a request is a gRPC-Websocket request by checking that the "Sec-Websocket-Protocol"
+// header value is "grpc-websockets"
+func (w *WebSocketWrapped) IsGrpcWebSocketRequest(req *http.Request) bool {
+	return req.Header.Get("Upgrade") == "websocket" && req.Header.Get("Sec-Websocket-Protocol") == "grpc-websockets"
+}
+
+// HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a gRPC-Websocket request and wraps it with a
+// compatibility layer to transform it to a standard gRPC request for the wrapped gRPC server and transforms the
+// response to comply with the gRPC-Web protocol.
+func (w *WebSocketWrapped) HandleGrpcWebsocketRequest(resp http.ResponseWriter, req *http.Request) {
+	wsConn, err := websocketUpgrader.Upgrade(resp, req, nil)
+	if err != nil {
+		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
+		return
+	}
+	headers := make(http.Header)
+	for _, name := range w.allowedHeaders {
+		if values, exist := req.Header[name]; exist {
+			headers[name] = values
+		}
+	}
+
+	messageType, readBytes, err := wsConn.ReadMessage()
+	if err != nil {
+		grpclog.Errorf("Unable to read first websocket message: %v", err)
+		return
+	}
+
+	if messageType != websocket.BinaryMessage {
+		grpclog.Errorf("First websocket message is non-binary")
+		return
+	}
+
+	wsHeaders, err := parseHeaders(string(readBytes))
+	if err != nil {
+		grpclog.Errorf("Unable to parse websocket headers: %v", err)
+		return
+	}
+
+	ctx, cancelFunc := context.WithCancel(req.Context())
+	defer cancelFunc()
+
+	respWriter := newWebSocketResponseWriter(wsConn)
+	if w.opts.websocketPingInterval >= time.Second {
+		respWriter.enablePing(w.opts.websocketPingInterval)
+	}
+	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter, cancelFunc)
+
+	for name, values := range wsHeaders {
+		headers[name] = values
+	}
+	req.Body = wrappedReader
+	req.Method = http.MethodPost
+	req.Header = headers
+
+	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
+	if isTextFormat {
+		grpclog.Errorf("web socket text format requests not yet supported")
+	}
+	req.URL.Path = w.endpointFunc(req)
+	w.handler.ServeHTTP(respWriter, interceptedRequest)
+}
+
+func (w *WebSocketWrapped) serveHTTP(resp http.ResponseWriter, req *http.Request) {
+	if w.websocketOriginFunc(req) {
+		if !w.opts.corsForRegisteredEndpointsOnly || w.isRequestForRegisteredEndpoint(req) {
+			w.HandleGrpcWebsocketRequest(resp, req)
+			return
+		}
+	}
+	resp.WriteHeader(403)
+	_, _ = resp.Write(make([]byte, 0))
+}
+
+// ServeHTTP takes a HTTP request and if it is a gRPC-Websocket request wraps it with compatibility layer to transform
+// it to a standard gRPC request for the wrapped gRPC server and transforms the response to comply with the gRPC-Web protocol.
+func (w *WebSocketWrapped) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	if w.IsGrpcWebSocketRequest(req) {
+		w.serveHTTP(resp, req)
+	}
+	w.handler.ServeHTTP(resp, req)
+}
 
 type webSocketResponseWriter struct {
 	writtenHeaders  bool
