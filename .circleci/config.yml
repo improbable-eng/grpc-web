@@ -62,6 +62,7 @@ jobs:
     executor: test-executor
     steps:
       - checkout
+      # Attaches the workspace from the previous step to retrieve the built assets for the tests
       - attach_workspace:
           at: /go/src/github.com/improbable-eng/grpc-web
       - run: sudo apt-get install moreutils
@@ -100,15 +101,14 @@ workflows:
                 - BROWSER=chrome_41
                 - BROWSER=edge85_win
                 - BROWSER=edge16_win
-                - BROWSER=edge15_win
                 - BROWSER=edge14_win
                 - BROWSER=edge13_win
-                - SC_SSL_BUMPING=true BROWSER=safari13_1 DISABLE_WEBSOCKET_TESTS=true
-                - SC_SSL_BUMPING=true BROWSER=safari12_1 DISABLE_WEBSOCKET_TESTS=true
-                - SC_SSL_BUMPING=true BROWSER=safari11_1 DISABLE_WEBSOCKET_TESTS=true
-                - SC_SSL_BUMPING=true BROWSER=safari10_1 DISABLE_WEBSOCKET_TESTS=true
-                - SC_SSL_BUMPING=true BROWSER=safari9_1 DISABLE_WEBSOCKET_TESTS=true
-                - SC_SSL_BUMPING=true BROWSER=safari8 DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari13_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari12_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari11_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari10_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari9_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+                - BROWSER=safari8 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=nodejs DISABLE_CORS_TESTS=true
           requires:

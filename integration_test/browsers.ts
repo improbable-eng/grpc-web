@@ -33,7 +33,6 @@ const browsers = {
   // Edge
   edge85_win: browser('MicrosoftEdge', '85', 'Windows 10', {certOverrideJSElement: 'proceed-link'}),
   edge16_win: browser('MicrosoftEdge', '16', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
-  edge15_win: browser('MicrosoftEdge', '15', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
   edge14_win: browser('MicrosoftEdge', '14', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
   edge13_win: browser('MicrosoftEdge', '13', 'Windows 10', {certOverrideJSElement: 'invalidcert_continue'}),
 
