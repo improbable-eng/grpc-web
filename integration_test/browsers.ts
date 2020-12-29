@@ -1,6 +1,5 @@
  function browser(browserName, browserVersion, os, options?: {}) {
-  const browsers = [];
-  browsers.push({
+  return {
     configName: `${os}_${browserName}_${browserVersion}`,
     base: 'CustomWebDriver',
     capabilities: {
@@ -10,12 +9,9 @@
       browserVersion: browserVersion,
       os: os,
     }
-  })
-  return browsers;
+  }
 }
 
-// Browser versions that should not have any Fetch/XHR differences in functionality to other (tested) versions are
-// commented out.
 const browsers = {
   // Firefox
   firefox80_win: browser('firefox', '80', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
@@ -57,16 +53,13 @@ export default () => {
     if (!foundBrowser) {
       throw new Error(`BROWSER env var set to "${browserEnv}", but there is no browser with that identifier`);
     }
-    foundBrowser.forEach(browserConfig => {
-      filteredBrowsers[browserConfig.configName] = browserConfig;
-    });
+    filteredBrowsers[foundBrowser.configName] = foundBrowser;
     return filteredBrowsers;
   }
 
   for(let i in browsers) {
-    browsers[i].forEach(browserConfig => {
-      filteredBrowsers[browserConfig.configName] = browserConfig;
-    });
+    const browserConfig = browsers[i]
+    filteredBrowsers[browserConfig.configName] = browserConfig;
   }
   return filteredBrowsers
 };
