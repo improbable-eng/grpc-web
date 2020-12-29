@@ -18,6 +18,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:c28a369c8fec7124b081d49b9097ac3349e0bf73555f05a8b384632b5278c80c"
+  name = "github.com/desertbit/timer"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c41aec40b27f0eeb2b94300fffcd624c69b02990"
+
+[[projects]]
   digest = "1:529d738b7976c3848cae5cf3a8036440166835e389c1f617af701eeb12a0518d"
   name = "github.com/golang/protobuf"
   packages = [
@@ -41,14 +49,6 @@
   version = "v1.3.1"
 
 [[projects]]
-  digest = "1:09aa5dd1332b93c96bde671bafb053249dc813febf7d5ca84e8f382ba255d67d"
-  name = "github.com/gorilla/websocket"
-  packages = ["."]
-  pruneopts = ""
-  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
-  version = "v1.4.0"
-
-[[projects]]
   branch = "master"
   digest = "1:ef152d412a8e4fa5d997f3db288beafc591b5c1e619b47584af420d970ebf1ef"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -70,6 +70,14 @@
   pruneopts = ""
   revision = "c225b8c3b01faf2899099b768856a9e916e5087b"
   version = "v1.2.0"
+
+[[projects]]
+  digest = "1:13c741134c7da17734277a83d1312be4572751b64aa87189322b8f6a50cb9547"
+  name = "github.com/klauspost/compress"
+  packages = ["flate"]
+  pruneopts = ""
+  revision = "156c8d0eb96e404e0870865fc7b102b1cccde45a"
+  version = "v1.11.4"
 
 [[projects]]
   digest = "1:0f51cee70b0d254dbc93c22666ea2abf211af81c1701a96d04e2284b408621db"
@@ -285,14 +293,28 @@
   revision = "25c4f928eaa6d96443009bd842389fb4fa48664e"
   version = "v1.20.1"
 
+[[projects]]
+  digest = "1:fe18a04a5fae08be6a3c0090d92f24c110f50eb0229c1da5303e270dbb7c5155"
+  name = "nhooyr.io/websocket"
+  packages = [
+    ".",
+    "internal/bpool",
+    "internal/errd",
+    "internal/wsjs",
+    "internal/xsync",
+  ]
+  pruneopts = ""
+  revision = "02861b474d9c29660eff53a3c424d589aaf46d1e"
+  version = "v1.8.6"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/desertbit/timer",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/protoc-gen-go",
     "github.com/golang/protobuf/ptypes/empty",
-    "github.com/gorilla/websocket",
     "github.com/grpc-ecosystem/go-grpc-middleware",
     "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus",
     "github.com/grpc-ecosystem/go-grpc-prometheus",
@@ -314,6 +336,7 @@
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
+    "nhooyr.io/websocket",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

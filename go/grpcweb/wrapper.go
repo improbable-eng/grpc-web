@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
+	"nhooyr.io/websocket"
 )
 
 var (
@@ -147,18 +147,15 @@ func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *
 	intResp.finishRequest(req)
 }
 
-var websocketUpgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin:     func(r *http.Request) bool { return true },
-	Subprotocols:    []string{"grpc-websockets"},
-}
-
 // HandleGrpcWebsocketRequest takes a HTTP request that is assumed to be a gRPC-Websocket request and wraps it with a
 // compatibility layer to transform it to a standard gRPC request for the wrapped gRPC server and transforms the
 // response to comply with the gRPC-Web protocol.
 func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter, req *http.Request) {
-	wsConn, err := websocketUpgrader.Upgrade(resp, req, nil)
+
+	wsConn, err := websocket.Accept(resp, req, &websocket.AcceptOptions{
+		InsecureSkipVerify: true, // managed by ServeHTTP
+		Subprotocols:       []string{"grpc-websockets"},
+	})
 	if err != nil {
 		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
 		return
@@ -170,13 +167,16 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 		}
 	}
 
-	messageType, readBytes, err := wsConn.ReadMessage()
+	ctx, cancelFunc := context.WithCancel(req.Context())
+	defer cancelFunc()
+
+	messageType, readBytes, err := wsConn.Read(ctx)
 	if err != nil {
-		grpclog.Errorf("Unable to read first websocket message: %v", err)
+		grpclog.Errorf("Unable to read first websocket message: %v %v %v", messageType, readBytes, err)
 		return
 	}
 
-	if messageType != websocket.BinaryMessage {
+	if messageType != websocket.MessageBinary {
 		grpclog.Errorf("First websocket message is non-binary")
 		return
 	}
@@ -187,14 +187,11 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 		return
 	}
 
-	ctx, cancelFunc := context.WithCancel(req.Context())
-	defer cancelFunc()
-
-	respWriter := newWebSocketResponseWriter(wsConn)
+	respWriter := newWebSocketResponseWriter(ctx, wsConn)
 	if w.opts.websocketPingInterval >= time.Second {
 		respWriter.enablePing(w.opts.websocketPingInterval)
 	}
-	wrappedReader := newWebsocketWrappedReader(wsConn, respWriter, cancelFunc)
+	wrappedReader := newWebsocketWrappedReader(ctx, wsConn, respWriter, cancelFunc)
 
 	for name, values := range wsHeaders {
 		headers[name] = values
