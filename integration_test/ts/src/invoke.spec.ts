@@ -15,7 +15,7 @@ import {
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
-import { DEBUG, continueStream, UncaughtExceptionListener } from "./util";
+import { DEBUG, continueStream, UncaughtExceptionListener, DISABLE_CORS_TESTS } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
@@ -316,7 +316,7 @@ describe("invoke", () => {
         });
       });
 
-      if (!process.env.DISABLE_CORS_TESTS) {
+      if (!DISABLE_CORS_TESTS) {
         it("should report failure for a CORS failure", (done) => {
           let didGetOnHeaders = false;
           let didGetOnMessage = false;
