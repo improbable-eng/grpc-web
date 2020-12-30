@@ -23,7 +23,7 @@ module.exports = {
       },
       {
         test: /\.ts$/,
-        include: [/src/, /_proto/, /suiteUtils/],
+        include: [/src/, /_proto/],
         exclude: /node_modules/,
         loader: "ts-loader"
       }
