@@ -7,13 +7,12 @@ import { assert } from "chai";
 import { Empty, } from "google-protobuf/google/protobuf/empty_pb";
 import { PingRequest, PingResponse, } from "../_proto/improbable/grpcweb/test/test_pb";
 import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
-import { continueStream, DEBUG, UncaughtExceptionListener } from "./util";
+import { continueStream, DEBUG, UncaughtExceptionListener, DISABLE_CORS_TESTS } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
-import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-conditionallyRunTestSuite(SuiteEnum.client, () => {
+describe("Client", () => {
   runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
     runWithSupportedTransports(transport => {
       it(`should throw an error if close is called before start`, () => {
@@ -185,7 +184,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
 
           const ping = new PingRequest();
           ping.setValue("hello world");
-          ping.setResponseCount(3000);
+          ping.setResponseCount(300);
           ping.setSendHeaders(withHeaders);
           ping.setSendTrailers(withTrailers);
 
@@ -215,7 +214,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
               assert.deepEqual(trailers.get("TrailerTestKey2"), ["ServerValue2"]);
             }
             assert.ok(didGetOnHeaders);
-            assert.strictEqual(onMessageId, 3000);
+            assert.strictEqual(onMessageId, 300);
             done();
           });
           client.start();
@@ -395,7 +394,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
         });
       });
 
-      if (!process.env.DISABLE_CORS_TESTS) {
+      if (!DISABLE_CORS_TESTS) {
         it(`should report failure for a CORS failure`, (done) => {
           let didGetOnHeaders = false;
           let didGetOnMessage = false;
@@ -529,7 +528,7 @@ conditionallyRunTestSuite(SuiteEnum.client, () => {
               assert.include(exceptionsCaught[1], "onMessage exception");
               assert.include(exceptionsCaught[2], "onEnd exception");
               done();
-            }, 100);
+            }, 1000);
             throw new Error("onEnd exception");
           });
           client.start();

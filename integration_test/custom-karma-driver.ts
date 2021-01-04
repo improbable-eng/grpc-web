@@ -1,12 +1,11 @@
-const wd = require('wd');
-const browserstack = require('browserstack-local');
-import * as _ from "lodash";
-import {testHost, corsHost} from "./hosts-config";
-const username = process.env.BROWSERSTACK_USERNAME;
-const accessKey = process.env.BROWSERSTACK_ACCESS_KEY;
-const seleniumHost = 'hub-cloud.browserstack.com';
-const seleniumPort = 80;
-const buildName = process.env.TRAVIS_BUILD_NUMBER ? `travis_${process.env.TRAVIS_BUILD_NUMBER}` : `local_${new Date().getTime()}`;
+import { Builder } from 'selenium-webdriver';
+import { corsHost, testHost } from "./hosts-config";
+
+const username = process.env.SAUCELABS_USERNAME;
+const accessKey = process.env.SAUCELABS_ACCESS_KEY;
+const buildName = process.env.CIRCLE_WORKFLOW_ID ? `circleci_${process.env.CIRCLE_WORKFLOW_ID}` : `local_${new Date().getTime()}`;
+const sauceLabsTunnelWithSSLBumping = process.env.SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP;
+const sauceLabsTunnelNoSSLBumping = process.env.SAUCELABS_TUNNEL_ID_NO_SSL_BUMP;
 
 const viaUrls = [
   // HTTP 1.1
@@ -21,46 +20,6 @@ const viaUrls = [
   "https://" + corsHost + ":9105"
 ];
 
-let tunnelId = null;
-let bs_local = null;
-let localCallbacks = [];
-const localTunnels = [];
-function LocalTunnel(logger, cb) {
-  localTunnels.push(this);
-
-  if (tunnelId !== null) {
-    cb(null, tunnelId);
-  } else {
-    localCallbacks.push(cb);
-    const tunnelIdentifier = `tunnel-${Math.random()}`;
-    if (localCallbacks.length === 1) {
-      bs_local = new browserstack.Local();
-      bs_local.start({
-        'key': accessKey,
-        'localIdentifier': tunnelIdentifier
-      }, function (error) {
-        tunnelId = tunnelIdentifier;
-        localCallbacks.forEach(cb => {
-          cb(error, tunnelIdentifier)
-        });
-        localCallbacks = [];
-      });
-    }
-  }
-
-  this.dispose = function(cb){
-    localTunnels.splice(localTunnels.indexOf(this), 1);
-    if (localTunnels.length === 0) {
-      tunnelId = null;
-      bs_local.stop(function(){
-        cb(null);
-      });
-    } else {
-      cb(null);
-    }
-  }
-}
-
 function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   baseBrowserDecorator(this);
   const self = this;
@@ -71,84 +30,81 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   self.id = id;
   const caps = args.capabilities;
   self._start = (testUrl) => {
-    const testUrlWithSuite = `${testUrl}#${caps.testSuite ? caps.testSuite : ''}`;
-    self.localTunnel = new LocalTunnel(self.log, (err, tunnelIdentifier) => {
-      if (err) {
-        return self.log.error("Could not create local testing", err);
-      }
+    const testUrlWithSuite = `${testUrl}#${caps.disableWebsocketTests ? 'disableWebsocketTests' : ''}`;
+    const tunnelIdentifier = caps.useSslBumping ? sauceLabsTunnelWithSSLBumping : sauceLabsTunnelNoSSLBumping;
+    self.log.debug('Local Tunnel Connected. Now testing...');
+    let browser = new Builder()
+      .withCapabilities({
+        ...(caps.custom || {}),
+        'name': `${caps.browserName} - Integration Test`,
+        'browserName': caps.browserName,
+        'platform': caps.os,
+        'version': caps.browserVersion,
+        'build': buildName,
+        'username': username,
+        'accessKey': accessKey,
+        'tunnelIdentifier': tunnelIdentifier,
+        'recordScreenshots': false,
+        'acceptSslCerts': true,
+        'javascriptEnabled': true,
+        'commandTimeout': 600,
+        'idleTimeout': 600,
+        'maxDuration': 600,
+      })
+      .usingServer("https://" + username + ":" + accessKey + "@ondemand.saucelabs.com:443/wd/hub")
+      .build();
 
-      self.log.debug('Local Tunnel Connected. Now testing...');
-      const browser = wd.remote(seleniumHost, seleniumPort, username, accessKey);
-      self.browser = browser;
-      browser.on('status', function(info) {
-        self.log.debug(info);
-      });
-      browser.on('command', function(eventType, command, response) {
-        self.log.debug(' > ' + eventType, command, (response || ''));
-      });
-      browser.on('http', function(meth, path, data) {
-        self.log.debug(' > ' + meth, path, (data || ''));
-      });
-      const bsCaps = _.assign({
-        "project": process.env.TRAVIS_BRANCH || "dev",
-        "build": buildName,
-        "acceptSslCerts": true,
-        "defaultVideo": true,
-        "browserstack.local": true,
-        "browserstack.tunnel": true,
-        "browserstack.debug": true,
-        "tunnelIdentifier": tunnelIdentifier,
-        "browserstack.localIdentifier": tunnelIdentifier
-      }, caps);
-      browser.init(bsCaps, function(err) {
-        if (err) {
-          self.log.error("browser.init", err);
-          throw err;
+    self.log.debug("Built webdriver");
+
+    self.browser = browser;
+    if (caps.certOverrideJSElement) {
+      const next = (i) => {
+        const via = viaUrls[i];
+        if (!via) {
+          self.log.debug("Navigating to ", testUrlWithSuite);
+          browser.get(testUrlWithSuite).then(() => {
+            self.log.debug("Did capture");
+            self.captured = true;
+
+            self.log.debug("Attempting to bypass cert issue on final")
+            browser.executeScript(`var el = document.getElementById('${caps.certOverrideJSElement}'); if (el) {el.click()}`);
+            // This will wait on the page until the browser is killed
+          });
+        } else {
+          browser.get(via).then(() => {
+            self.log.debug("Attempting to bypass cert issue")
+            browser.executeScript(`var el = document.getElementById('${caps.certOverrideJSElement}'); if (el) {el.click()}`).then(() => {
+              setTimeout(() => {
+                next(i + 1);
+              }, 5000);
+            });
+          }).catch(err => {
+            console.error("Failed to navigate via page", err);
+          });
         }
-        const next = (i) => {
-          const via = viaUrls[i];
-          if (!via) {
-            browser.get(testUrlWithSuite, function() {
-              self.captured = true;
-              // This will wait on the page until the browser is killed
-
-              // To avoid BrowserStack killing the session because there is no interaction with the page
-              // poll the title of the page to keep the session alive.
-              const interval = setInterval(function() {
-                if (self.ended) {
-                  clearInterval(interval);
-                  return;
-                }
-                browser.title(function (err) {
-                  if (err) {
-                    console.error("Failed to get page title: ", err);
-                    clearInterval(interval);
-                  }
-                })
-              }, 10000);
-            });
-          } else {
-            browser.get(via, function () {
-              next(i + 1);
-            });
-          }
-        };
-        next(0);
+      };
+      next(0);
+    } else {
+      self.log.debug("Navigating to ", testUrlWithSuite);
+      browser.get(testUrlWithSuite).then(() => {
+        self.log.debug("Did capture");
+        self.captured = true;
       });
-    });
+    }
   };
 
-  this.on('kill', function(done){
+  this.on('kill', function (done) {
+    self.log.debug("KarmaDriver.kill")
     self.ended = true;
-    self.localTunnel.dispose(function(){
-      self.browser.quit(function(err) {
-        self._done();
-        done();
-      });
+    self.log.debug("KarmaDriver.quit()")
+    self.browser.quit().finally(() => {
+      self.log.debug("KarmaDriver.quit.finally")
+      self._done();
+      done();
     });
   });
 
-  self.isCaptured = function() {
+  self.isCaptured = function () {
     return self.captured;
   };
 }

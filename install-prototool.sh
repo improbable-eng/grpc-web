@@ -1,6 +1,6 @@
 #!/bin/bash
 # Installs prototool; used for managing protoc the installation and compilation flags.
-# This script is intended to be run by Travis CI
+# This script is intended to be run by CI
 
 set -ex
 
@@ -14,4 +14,4 @@ curl -sSL \
   -o ./prototool && \
   chmod +x ./prototool
 
-export PATH=$PATH:$PWD
+echo 'export PATH=$PATH:$PWD' >> $BASH_ENV

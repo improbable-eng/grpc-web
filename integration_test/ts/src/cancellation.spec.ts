@@ -15,138 +15,128 @@ import {
 import {TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {DEBUG, continueStream} from "./util";
 import { runWithHttp1AndHttp2 } from "./testRpcCombinations";
-import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-if (process.env.DISABLE_ABORT_TESTS) {
-  console.log(`Skipping "cancellation" suite as "DISABLE_ABORT_TESTS" is set`);
-  describe("skipping abort", () => {
-    it("should skip abort tests", (done) => {
-      done();
-    });
-  });
-} else {
-  conditionallyRunTestSuite(SuiteEnum.cancellation, () => {
-    runWithHttp1AndHttp2(({testHostUrl}) => {
-      it("should allow the caller to abort an rpc before it completes", () => {
-        let transportCancelFuncInvoked = false;
+describe("Cancellation", () => {
+  runWithHttp1AndHttp2(({testHostUrl}) => {
+    it("should allow the caller to abort an rpc before it completes", () => {
+      let transportCancelFuncInvoked = false;
 
-        const cancellationSpyTransport = () => {
-          return {
-            sendMessage: () => {
-            },
-            finishSend() {
-            },
-            start: () => {
-            },
-            cancel: () => {
-              transportCancelFuncInvoked = true;
-            },
-          }
-        };
-
-        const ping = new PingRequest();
-        ping.setValue("hello world");
-
-        const reqObj = grpc.invoke(TestService.Ping, {
-          debug: DEBUG,
-          request: ping,
-          host: testHostUrl,
-          transport: cancellationSpyTransport,
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
+      const cancellationSpyTransport = () => {
+        return {
+          sendMessage: () => {
           },
-        });
+          finishSend() {
+          },
+          start: () => {
+          },
+          cancel: () => {
+            transportCancelFuncInvoked = true;
+          },
+        }
+      };
 
-        reqObj.close();
+      const ping = new PingRequest();
+      ping.setValue("hello world");
 
-        assert.equal(transportCancelFuncInvoked, true, "transport's cancel func must be invoked");
+      const reqObj = grpc.invoke(TestService.Ping, {
+        debug: DEBUG,
+        request: ping,
+        host: testHostUrl,
+        transport: cancellationSpyTransport,
+        onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
+        },
       });
 
-      it("should handle aborting a streaming response mid-stream with propagation of the disconnection to the server", (done) => {
-        let onMessageId = 0;
+      reqObj.close();
 
-        const streamIdentifier = `rpc-${Math.random()}`;
+      assert.equal(transportCancelFuncInvoked, true, "transport's cancel func must be invoked");
+    });
 
-        const ping = new PingRequest();
-        ping.setValue("hello world");
-        ping.setResponseCount(100); // Request more messages than the client will accept before cancelling
-        ping.setStreamIdentifier(streamIdentifier);
+    it("should handle aborting a streaming response mid-stream with propagation of the disconnection to the server", (done) => {
+      let onMessageId = 0;
 
-        let reqObj: grpc.Request;
+      const streamIdentifier = `rpc-${Math.random()}`;
 
-        // Checks are performed every 1s = 15s total wait
-        const maxAbortChecks = 15;
+      const ping = new PingRequest();
+      ping.setValue("hello world");
+      ping.setResponseCount(100); // Request more messages than the client will accept before cancelling
+      ping.setStreamIdentifier(streamIdentifier);
 
-        const numMessagesBeforeAbort = 5;
+      let reqObj: grpc.Request;
 
-        const doAbort = () => {
-          DEBUG && debug("doAbort");
-          reqObj.close();
+      // Checks are performed every 1s = 15s total wait
+      const maxAbortChecks = 15;
 
-          // To ensure that the transport is successfully closing the connection, poll the server every 1s until
-          // it confirms the connection was closed. Connection closure is immediate in some browser/transport combinations,
-          // but can take several seconds in others.
-          function checkAbort(attempt: number) {
-            DEBUG && debug("checkAbort", attempt);
-            continueStream(testHostUrl, streamIdentifier, (status) => {
-              DEBUG && debug("checkAbort.continueStream.status", status);
+      const numMessagesBeforeAbort = 5;
 
-              const checkStreamClosedRequest = new CheckStreamClosedRequest();
-              checkStreamClosedRequest.setStreamIdentifier(streamIdentifier);
-              grpc.unary(TestUtilService.CheckStreamClosed, {
-                debug: DEBUG,
-                request: checkStreamClosedRequest,
-                host: testHostUrl,
-                onEnd: ({message}) => {
-                  const closed = ( message as CheckStreamClosedResponse ).getClosed();
-                  DEBUG && debug("closed", closed);
-                  if (closed) {
+      const doAbort = () => {
+        DEBUG && debug("doAbort");
+        reqObj.close();
+
+        // To ensure that the transport is successfully closing the connection, poll the server every 1s until
+        // it confirms the connection was closed. Connection closure is immediate in some browser/transport combinations,
+        // but can take several seconds in others.
+        function checkAbort(attempt: number) {
+          DEBUG && debug("checkAbort", attempt);
+          continueStream(testHostUrl, streamIdentifier, (status) => {
+            DEBUG && debug("checkAbort.continueStream.status", status);
+
+            const checkStreamClosedRequest = new CheckStreamClosedRequest();
+            checkStreamClosedRequest.setStreamIdentifier(streamIdentifier);
+            grpc.unary(TestUtilService.CheckStreamClosed, {
+              debug: DEBUG,
+              request: checkStreamClosedRequest,
+              host: testHostUrl,
+              onEnd: ({message}) => {
+                const closed = ( message as CheckStreamClosedResponse ).getClosed();
+                DEBUG && debug("closed", closed);
+                if (closed) {
+                  done();
+                } else {
+                  if (attempt >= maxAbortChecks) {
+                    assert.ok(closed, `server did not observe connection closure within ${maxAbortChecks} seconds`);
                     done();
                   } else {
-                    if (attempt >= maxAbortChecks) {
-                      assert.ok(closed, `server did not observe connection closure within ${maxAbortChecks} seconds`);
-                      done();
-                    } else {
-                      setTimeout(() => {
-                        checkAbort(attempt + 1);
-                      }, 1000);
-                    }
+                    setTimeout(() => {
+                      checkAbort(attempt + 1);
+                    }, 1000);
                   }
-                },
-              })
+                }
+              },
+            })
+          });
+        }
+
+        checkAbort(0);
+      };
+
+      reqObj = grpc.invoke(TestService.PingList, {
+        debug: DEBUG,
+        request: ping,
+        host: testHostUrl,
+        onHeaders: (headers: grpc.Metadata) => {
+          DEBUG && debug("headers", headers);
+        },
+        onMessage: (message: PingResponse) => {
+          assert.ok(message instanceof PingResponse);
+          DEBUG && debug("onMessage.message.getCounter()", message.getCounter());
+          assert.strictEqual(message.getCounter(), onMessageId++);
+          if (message.getCounter() === numMessagesBeforeAbort) {
+            // Abort after receiving numMessagesBeforeAbort messages
+            doAbort();
+          } else if (message.getCounter() < numMessagesBeforeAbort) {
+            // Only request the next message if not yet aborted
+            continueStream(testHostUrl, streamIdentifier, (status) => {
+              DEBUG && debug("onMessage.continueStream.status", status);
             });
           }
-
-          checkAbort(0);
-        };
-
-        reqObj = grpc.invoke(TestService.PingList, {
-          debug: DEBUG,
-          request: ping,
-          host: testHostUrl,
-          onHeaders: (headers: grpc.Metadata) => {
-            DEBUG && debug("headers", headers);
-          },
-          onMessage: (message: PingResponse) => {
-            assert.ok(message instanceof PingResponse);
-            DEBUG && debug("onMessage.message.getCounter()", message.getCounter());
-            assert.strictEqual(message.getCounter(), onMessageId++);
-            if (message.getCounter() === numMessagesBeforeAbort) {
-              // Abort after receiving numMessagesBeforeAbort messages
-              doAbort();
-            } else if (message.getCounter() < numMessagesBeforeAbort) {
-              // Only request the next message if not yet aborted
-              continueStream(testHostUrl, streamIdentifier, (status) => {
-                DEBUG && debug("onMessage.continueStream.status", status);
-              });
-            }
-          },
-          onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
-            DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
-            // onEnd shouldn't be called if abort is called prior to the response ending
-            assert.fail();
-          }
-        });
-      }, 20000);
-    });
+        },
+        onEnd: (status: grpc.Code, statusMessage: string, trailers: grpc.Metadata) => {
+          DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+          // onEnd shouldn't be called if abort is called prior to the response ending
+          assert.fail();
+        }
+      });
+    }, 20000);
   });
-}
+});

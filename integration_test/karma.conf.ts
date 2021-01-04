@@ -3,17 +3,20 @@ import customLaunchersGenerator from './browsers';
 import customKarmaDriver from './custom-karma-driver';
 import {testHost} from './hosts-config';
 
+const junitReportDirectory = process.env.JUNIT_REPORT_PATH || './test-results';
+
 export default (config) => {
   const customLaunchers = customLaunchersGenerator();
   const DEBUG = process.env.DEBUG !== undefined;
-  const useBrowserStack = process.env.BROWSERSTACK_USERNAME !== undefined;
-  const browsers = useBrowserStack ? Object.keys(customLaunchers) : [];
+  const DISABLE_WEBSOCKET_TESTS = process.env.DISABLE_WEBSOCKET_TESTS !== undefined;
+  const useSauceLabs = process.env.SAUCELABS_USERNAME !== undefined;
+  const browsers = useSauceLabs ? Object.keys(customLaunchers) : [];
 
   config.set({
     basePath: '',
     frameworks: ['jasmine'],
-    browserStack: {
-      forcelocal: true
+    jasmine: {
+      random: false,
     },
     files: [
       'ts/build/integration-tests.js'
@@ -21,38 +24,44 @@ export default (config) => {
     preprocessors: {
       '**/*.js': ['sourcemap', 'config-inject']
     },
-    reporters: ['mocha'],
+    reporters: ['mocha', 'junit'],
+    junitReporter: {
+      outputDir: junitReportDirectory,
+    },
     protocol: 'https',
     hostname: testHost,
     port: 9876,
     httpsServerOptions: {
-      key: fs.readFileSync('..//misc/localhost.key', 'utf8'),
-      cert: fs.readFileSync('..//misc/localhost.crt', 'utf8')
+      key: fs.readFileSync('../misc/localhost.key', 'utf8'),
+      cert: fs.readFileSync('../misc/localhost.crt', 'utf8')
     },
     colors: true,
     logLevel: DEBUG ? 'DEBUG' : 'INFO',
     client: {
       captureConsole: true,
-      runInParent: true,
-      useIframe: false
+      runInParent: false,
+      useIframe: true,
     },
     plugins: [
       customKarmaDriver,
       {'preprocessor:config-inject': [
-        'factory', () =>
-          (content, file, done) =>
-            done(`window.DEBUG = ${DEBUG};\n${content}`)
-      ]},
+          'factory', () =>
+            (content, file, done) =>
+              done(`window.DEBUG = ${DEBUG};window.DISABLE_WEBSOCKET_TESTS = ${DISABLE_WEBSOCKET_TESTS};\n${content}`)
+        ]},
       'karma-sourcemap-loader',
       'karma-mocha-reporter',
+      'karma-junit-reporter',
       'karma-jasmine'
     ],
+    transports: ['polling'],
     autoWatch: true,
-    captureTimeout: 120000,
-    browserDisconnectTimeout: 120000,
-    browserNoActivityTimeout: 120000,
-    singlerun: useBrowserStack,
-    concurrency: 1,
+    disconnectTolerance: 5,
+    captureTimeout: 300000,
+    browserDisconnectTimeout: 300000,
+    browserNoActivityTimeout: 300000,
+    singlerun: useSauceLabs,
+    concurrency: 4,
     customLaunchers: customLaunchers,
     browsers: browsers
   });

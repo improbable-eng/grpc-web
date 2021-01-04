@@ -12,13 +12,12 @@ import {
   PingResponse, TextMessage,
 } from "../_proto/improbable/grpcweb/test/test_pb";
 import { FailService, TestService } from "../_proto/improbable/grpcweb/test/test_pb_service";
-import { DEBUG, UncaughtExceptionListener } from "./util";
+import { DEBUG, DISABLE_CORS_TESTS, UncaughtExceptionListener } from "./util";
 import {
   headerTrailerCombos, runWithHttp1AndHttp2, runWithSupportedTransports
 } from "./testRpcCombinations";
-import { conditionallyRunTestSuite, SuiteEnum } from "../suiteUtils";
 
-conditionallyRunTestSuite(SuiteEnum.unary, () => {
+describe("unary", () => {
   runWithHttp1AndHttp2(({ testHostUrl, corsHostUrl, unavailableHost, emptyHost }) => {
     runWithSupportedTransports(transport => {
       it(`should reject a server-streaming method`, () => {
@@ -126,7 +125,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
               done();
             }
           });
-        });
+        }, 20000); // 20s timeout
       });
 
       headerTrailerCombos((withHeaders, withTrailers) => {
@@ -202,7 +201,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
         });
       });
 
-      if (!process.env.DISABLE_CORS_TESTS) {
+      if (!DISABLE_CORS_TESTS) {
         it(`should report failure for a CORS failure`, (done) => {
           const ping = new PingRequest();
 
@@ -294,7 +293,7 @@ conditionallyRunTestSuite(SuiteEnum.unary, () => {
                 assert.lengthOf(exceptionsCaught, 1);
                 assert.include(exceptionsCaught[0], "onEnd exception");
                 done();
-              }, 100);
+              }, 1000);
               throw new Error("onEnd exception");
             }
           });

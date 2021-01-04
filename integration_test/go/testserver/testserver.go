@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -136,7 +137,7 @@ func (s *testSrv) Ping(ctx context.Context, ping *testproto.PingRequest) (*testp
 	if ping.GetCheckMetadata() {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok || md["headertestkey1"][0] != "ClientValue1" || md["headertestkey2"][0] != "ClientValue2" {
-			return nil, grpc.Errorf(codes.InvalidArgument, "Metadata was invalid")
+			return nil, status.Errorf(codes.InvalidArgument, "Metadata was invalid")
 		}
 	}
 	if ping.GetSendHeaders() {
@@ -169,15 +170,15 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 	if ping.FailureType == testproto.PingRequest_CODE {
 		msg = "Intentionally returning error for PingError"
 	}
-	return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), msg)
+	return nil, status.Errorf(codes.Code(ping.ErrorCodeReturned), msg)
 }
 
 func (s *testSrv) ContinueStream(ctx context.Context, req *testproto.ContinueStreamRequest) (*google_protobuf.Empty, error) {
 	s.streamsMutex.Lock()
-	defer s.streamsMutex.Unlock()
 	channel, ok := s.streams[req.GetStreamIdentifier()]
+	s.streamsMutex.Unlock()
 	if !ok {
-		return nil, grpc.Errorf(codes.NotFound, "stream identifier not found")
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("stream identifier not found: %s", req.GetStreamIdentifier()))
 	}
 	channel <- true
 	return &google_protobuf.Empty{}, nil
@@ -208,7 +209,7 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 	var channel chan bool
 	useChannel := ping.GetStreamIdentifier() != ""
 	if useChannel {
-		channel = make(chan bool)
+		channel = make(chan bool, 10000)
 		s.streamsMutex.Lock()
 		s.streams[ping.GetStreamIdentifier()] = channel
 		s.streamsMutex.Unlock()
@@ -224,16 +225,25 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 
 	for i := int32(0); i < ping.ResponseCount; i++ {
 		if i != 0 && useChannel {
-			shouldContinue := <-channel
-			if !shouldContinue {
-				return grpc.Errorf(codes.OK, "stream was cancelled by side-channel")
+			select {
+			case shouldContinue := <-channel:
+				if !shouldContinue {
+					return status.Errorf(codes.Canceled, "stream was cancelled by side-channel")
+				}
+			case <-stream.Context().Done():
+				return status.Errorf(codes.Canceled, "stream context ended")
 			}
 		}
 		err := stream.Context().Err()
 		if err != nil {
-			return grpc.Errorf(codes.Canceled, "client cancelled stream")
+			return status.Errorf(codes.Canceled, "client cancelled stream")
 		}
-		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
+		sendErr := stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
+		if sendErr != nil {
+			// If there was a send error then stop the test server non-gracefully to ensure tests fail in an
+			// identifiable way
+			panic(sendErr)
+		}
 	}
 	return nil
 }
@@ -263,7 +273,7 @@ func (s *testSrv) PingStream(stream testproto.TestService_PingStreamServer) erro
 			allValues = allValues + "," + in.GetValue()
 		}
 		if in.FailureType == testproto.PingRequest_CODE {
-			return grpc.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
+			return status.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
 		}
 	}
 }
@@ -287,10 +297,15 @@ func (s *testSrv) PingPongBidi(stream testproto.TestService_PingPongBidiServer) 
 			if in.ErrorCodeReturned == 0 {
 				return nil
 			}
-			return grpc.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
+			return status.Errorf(codes.Code(in.ErrorCodeReturned), "Intentionally returning status code: %d", in.ErrorCodeReturned)
 		}
-		stream.Send(&testproto.PingResponse{
+		sendErr := stream.Send(&testproto.PingResponse{
 			Value: in.Value,
 		})
+		if sendErr != nil {
+			// If there was a send error then stop the test server non-gracefully to ensure tests fail in an
+			// identifiable way
+			panic(sendErr)
+		}
 	}
 }

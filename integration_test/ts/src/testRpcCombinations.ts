@@ -4,6 +4,7 @@ import {
 } from "../../hosts-config";
 import {grpc} from "@improbable-eng/grpc-web";
 import {NodeHttpTransport} from "@improbable-eng/grpc-web-node-http-transport";
+import { DISABLE_WEBSOCKET_TESTS } from "./util";
 
 type TestConfig = {
   testHostUrl: string,
@@ -62,7 +63,7 @@ export function runWithSupportedTransports(cb: (transport: grpc.TransportFactory
     grpc.setDefaultTransport(NodeHttpTransport());
   }
 
-  if (!process.env.DISABLE_WEBSOCKET_TESTS) {
+  if (!DISABLE_WEBSOCKET_TESTS) {
     transports["websocketTransport"] = grpc.WebsocketTransport();
   }
 
