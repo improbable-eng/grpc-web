@@ -4,7 +4,7 @@ set -x
 
 cd "$(dirname "$0")"
 
-mkdir -p sauce-connect-proxy
+mkdir -p sauce-connect-proxy/logs
 pushd sauce-connect-proxy
 
 wait_file() {
@@ -43,7 +43,7 @@ if [[ -z "${SC_SSL_BUMPING}" ]]; then
   $SAUCELABS_TUNNEL_PATH \
     -u $SAUCELABS_USERNAME \
     -k $SAUCELABS_ACCESS_KEY \
-    --logfile ./saucelabs-no-ssl-bump-logs \
+    --logfile ./logs/saucelabs-no-ssl-bump-logs \
     --pidfile ./saucelabs-no-ssl-bump-pid \
     --no-ssl-bump-domains testhost,corshost \
     --tunnel-identifier $SAUCELABS_TUNNEL_ID_NO_SSL_BUMP \
@@ -58,7 +58,7 @@ if [[ ! -z "${SC_SSL_BUMPING}" ]]; then
   $SAUCELABS_TUNNEL_PATH \
     -u $SAUCELABS_USERNAME \
     -k $SAUCELABS_ACCESS_KEY \
-    --logfile ./saucelabs-with-ssl-bump-logs \
+    --logfile ./logs/saucelabs-with-ssl-bump-logs \
     --pidfile ./saucelabs-with-ssl-bump-pid \
     --tunnel-identifier $SAUCELABS_TUNNEL_ID_WITH_SSL_BUMP \
     --readyfile $SAUCELABS_READY_FILE_WITH_SSL_BUMP \
@@ -104,12 +104,3 @@ popd
 
 # Run the specified commands
 $@
-
-# Output the logs from the Sauce Connect proxy
-cd "$(dirname "$0")"
-pushd sauce-connect-proxy
-echo "Printing SauceConnect no-ssl bump logs:"
-cat ./saucelabs-no-ssl-bump-logs || true
-echo "Printing SauceConnect with-ssl bump logs:"
-cat ./saucelabs-with-ssl-bump-logs || true
-popd

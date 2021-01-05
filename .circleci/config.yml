@@ -81,6 +81,8 @@ jobs:
       - run: << parameters.browser-params >> npm run test:integration-browsers:ci
       - store_test_results:
           path: ./integration_test/test-results
+      - store_artifacts:
+          path: ./integration_test/sauce-connect-proxy/logs
 workflows:
   version: 2
   test-workflow:
