@@ -18,12 +18,12 @@
   "author": "Improbable",
   "license": "Apache-2.0",
   "peerDependencies": {
-    "@improbable-eng/grpc-web": ">=0.7.0"
+    "@improbable-eng/grpc-web": ">=0.13.0"
   },
   "devDependencies": {
     "@improbable-eng/grpc-web": "^0.13.0",
-    "@types/node": "^10.12.0",
-    "google-protobuf": "^3.2.0",
-    "typescript": "^3.1.3"
+    "@types/node": "^14.14.22",
+    "google-protobuf": "^3.14.0",
+    "typescript": "^4.1.3"
   }
 }
