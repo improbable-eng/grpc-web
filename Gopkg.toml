@@ -52,4 +52,4 @@ required = [
 
 [[constraint]]
   name = "google.golang.org/grpc"
-  version = "1.35.0"
+  version = "~1.32.0"

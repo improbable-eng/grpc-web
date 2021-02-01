@@ -257,7 +257,7 @@
   revision = "44e461bb6506e1f454f092a809a64f303b6c8e33"
 
 [[projects]]
-  digest = "1:bfc1f45de56800d9352c71024e72f98a3b77c009aa8d274f27b9539970f0d17d"
+  digest = "1:9dbe66e5227cd9d3d9fee0931311704782d38a2e4a284d153e7422d7e7db8c73"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -286,16 +286,12 @@
     "internal/grpcrand",
     "internal/grpcsync",
     "internal/grpcutil",
-    "internal/metadata",
-    "internal/resolver",
     "internal/resolver/dns",
     "internal/resolver/passthrough",
-    "internal/resolver/unix",
     "internal/serviceconfig",
     "internal/status",
     "internal/syscall",
     "internal/transport",
-    "internal/transport/networktype",
     "keepalive",
     "metadata",
     "peer",
@@ -306,8 +302,8 @@
     "tap",
   ]
   pruneopts = ""
-  revision = "577eb696279ea85069a02c9a4c2defafdab858c5"
-  version = "v1.35.0"
+  revision = "5e8f83304c0563d1ba74db05fee83d9c18ab9a58"
+  version = "v1.32.0"
 
 [[projects]]
   digest = "1:0d049ff01749ce1d6092c85cb90a02dfdb3b401939b13415b7e608f36bc8ecee"
