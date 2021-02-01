@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package improbable.grpcweb.test;
+option go_package = "improbable/grpcweb/test";
 
 import "google/protobuf/empty.proto";
 
