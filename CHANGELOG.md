@@ -1,6 +1,16 @@
-## 0.13.0
+## 0.14.0
+### Breaking Changes
+* Server: Change websocket lib to nhooyr.io/websocket [@Hellysonrp](https://github.com/Hellysonrp) in [#815](https://github.com/improbable-eng/grpc-web/pull/815)
 ### Other Changes
+* Client & Server: Update TS/JS & Go dependencies [@MarcusLongmuir](https://github.com/MarcusLongmuir) in [#841](https://github.com/improbable-eng/grpc-web/pull/841)
+* Client: Fixed fetch abort behaviour for Edge 16+ [@MarcusLongmuir](https://github.com/MarcusLongmuir) in [#819](https://github.com/improbable-eng/grpc-web/pull/819)
+* Server: Check flusher before flush [@kostyay](https://github.com/@kostyay) in [#817](https://github.com/improbable-eng/grpc-web/pull/817)
+* Server: Websockets test should use case-insensitive header compare [@mgkeeley](https://github.com/@mgkeeley) in [#760](https://github.com/improbable-eng/grpc-web/pull/760)
+
+## 0.13.0
+### Breaking Changes
 * Client: No longer invoking callbacks within timeouts - this may affect the temporal ordering of some usage. [@marcuslongmuir](https://github.com/marcuslongmuir) in [#576](https://github.com/improbable-eng/grpc-web/pull/576)
+### Other Changes
 * Server: grpcwebproxy uses `backend_max_call_recv_msg_size` flag value for client call to backend (in addition to its usage as its own receive limit). [@itwalton](https://github.com/itwalton) in [#654](https://github.com/improbable-eng/grpc-web/pull/654)
 
 ## 0.12.0
