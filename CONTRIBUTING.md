@@ -19,7 +19,7 @@ nvm use
 npm install
 ```
 
-Note you will also need to [install prototool](https://github.com/uber/prototool/blob/dev/docs/install.md) and add it to your `PATH` environment variable if you wish to re-generate the integration test proto files.
+Note you will also need to [install buf](https://github.com/bufbuild/buf) and add it to your `PATH` environment variable if you wish to re-generate the integration test proto files.
 
 ## Testing Prerequisites
 Before you run the tests for the first time, please follow these steps:

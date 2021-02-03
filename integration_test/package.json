@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rm -rf ts/build && rm -rf ts/build-node",
     "build:testserver": "cd go && go build -o ./build/testserver ./testserver/testserver.go",
-    "build:proto": "cd proto && prototool generate",
+    "build:proto": "cd proto && buf generate",
     "build:ts": "cd ts && rm -rf build && webpack-cli",
     "build:dev": "cd ts && rm -rf build && webpack-cli --watch",
     "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp -R _proto build-node/integration_test/ts)",

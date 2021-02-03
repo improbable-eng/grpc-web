@@ -1,0 +1,25 @@
+version: v1beta1
+build:
+  roots:
+    - integration_test/proto
+lint:
+  use:
+    - DEFAULT
+  ignore_only:
+    ENUM_VALUE_PREFIX:
+      - improbable/grpcweb/test/test.proto
+    ENUM_ZERO_VALUE_SUFFIX:
+      - improbable/grpcweb/test/test.proto
+    FIELD_LOWER_SNAKE_CASE:
+      - improbable/grpcweb/test/test.proto
+    PACKAGE_VERSION_SUFFIX:
+      - improbable/grpcweb/test/test.proto
+    RPC_REQUEST_RESPONSE_UNIQUE:
+      - improbable/grpcweb/test/test.proto
+    RPC_REQUEST_STANDARD_NAME:
+      - improbable/grpcweb/test/test.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - improbable/grpcweb/test/test.proto
+breaking:
+  use:
+    - FILE

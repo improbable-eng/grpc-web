@@ -8,7 +8,8 @@ executors:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
     environment:
-      PROTOTOOL_VER: 1.10.0
+      BUF_VER: 0.36.0
+      PROTOC_VER: 3.14.0
     working_directory: /go/src/github.com/improbable-eng/grpc-web
 
 jobs:
@@ -23,7 +24,8 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get install unzip
-      - run: . ./install-prototool.sh
+      - run: . ./install-buf.sh
+      - run: . ./install-protoc.sh
       - run: echo 'export GOBIN=/go/bin' >> $BASH_ENV
       - run: go get golang.org/x/tools/cmd/goimports
       - run: go get github.com/robertkrimen/godocdown/godocdown
