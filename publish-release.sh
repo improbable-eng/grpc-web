@@ -33,6 +33,8 @@ echo "Generating client binaries"
 npm run clean
 npm install
 
+npm install @babel/runtime@7.0.0
+
 echo "Publishing $TAG"
 
 # Create github release and attach server binaries
@@ -40,7 +42,7 @@ echo "Publishing $TAG"
   --owner improbable-eng \
   --repo grpc-web \
   --tag "$TAG" \
-  --name "$TAG" \
+  --release-name "$TAG" \
   --body "See [CHANGELOG](https://github.com/improbable-eng/grpc-web/blob/master/CHANGELOG.md) for details" \
   go/dist/*.zip
 
