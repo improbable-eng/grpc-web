@@ -166,7 +166,7 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 			headers[name] = values
 		}
 	}
-
+    cookies := req.Cookies()
 	ctx, cancelFunc := context.WithCancel(req.Context())
 	defer cancelFunc()
 
@@ -197,8 +197,11 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 		headers[name] = values
 	}
 	req.Body = wrappedReader
-	req.Method = http.MethodPost
-	req.Header = headers
+    req.Method = http.MethodPost
+    req.Header = headers
+    for _, cookie := range cookies {
+	    req.AddCookie( cookie )
+    }
 
 	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
 	if isTextFormat {
