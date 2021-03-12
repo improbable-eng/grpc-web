@@ -11,7 +11,6 @@
     "build:node": "cd ts && rm -rf build-node && (cd node-src && tsc) && (cp -R _proto build-node/integration_test/ts)",
     "build": "npm run build:proto && npm run build:ts && npm run build:node && npm run build:testserver",
     "start:ci": "./test-ci.sh",
-    "start": "./test.sh",
     "test:browsers": "./run-with-tunnel.sh ./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
     "test:node": "./run-with-testserver.sh jasmine ts/build-node/integration_test/ts/node-src/node.spec.js",
     "test:dev": "npm run build && ./run-with-testserver.sh karma start ./karma.conf.ts"

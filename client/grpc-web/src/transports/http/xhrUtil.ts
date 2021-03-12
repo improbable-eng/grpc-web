@@ -29,5 +29,8 @@ export function detectMozXHRSupport(): boolean {
 }
 
 export function detectXHROverrideMimeTypeSupport(): boolean {
+  console.trace();
+  console.log("XMLHttpRequest", typeof XMLHttpRequest !== "undefined");
+  console.log("XMLHttpRequest.prototype.hasOwnProperty('overrideMimeType')", XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType"));
   return typeof XMLHttpRequest !== "undefined" && XMLHttpRequest.prototype.hasOwnProperty("overrideMimeType")
 }

@@ -130,5 +130,9 @@ class Fetch implements Transport {
 }
 
 export function detectFetchSupport(): boolean {
+  console.trace();
+  console.log("Response", typeof Response !== "undefined");
+  console.log("Response.prototype.hasOwnProperty(\"body\")", Response.prototype.hasOwnProperty("body"));
+  console.log("typeof Headers === \"function\"", typeof Headers === "function");
   return typeof Response !== "undefined" && Response.prototype.hasOwnProperty("body") && typeof Headers === "function";
 }
