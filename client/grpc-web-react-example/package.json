@@ -5,8 +5,6 @@
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
     "build:proto": "./protogen.sh",
-    "get_go_deps": "./get_go_deps.sh",
-    "postinstall": "npm run get_go_deps",
     "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack serve --watch --hot --inline --port 8082 --host 0.0.0.0 --output-public-path=https://localhost:8082/build/ --https --cert=../../../misc/localhost.crt --key=../../../misc/localhost.key",
     "webpack-dev": "cd ts && webpack serve --watch --hot --inline --port 8081 --host 0.0.0.0 --output-public-path=http://localhost:8081/build/",
     "start:tls": "npm run build:proto && concurrently --kill-others \"go run go/exampleserver/exampleserver.go --enable_tls=true\" \"npm run webpack-dev:tls\"",
