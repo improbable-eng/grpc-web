@@ -207,7 +207,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       } catch (e) {
         setTimeout(() => {
           throw e;
-        })
+        }, 0);
       }
     });
   }
@@ -221,7 +221,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       } catch (e) {
         setTimeout(() => {
           throw e;
-        })
+        }, 0);
       }
     });
   }
@@ -237,7 +237,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       } catch (e) {
         setTimeout(() => {
           throw e;
-        })
+        }, 0);
       }
     });
   }
@@ -252,7 +252,7 @@ class GrpcClient<TRequest extends ProtobufMessage, TResponse extends ProtobufMes
       } catch (e) {
         setTimeout(() => {
           throw e;
-        })
+        }, 0);
       }
     });
   }
