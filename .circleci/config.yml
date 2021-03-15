@@ -95,7 +95,6 @@ workflows:
                 - BROWSER=firefox80_win
                 - BROWSER=firefox39_win DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=firefox38_win DISABLE_WEBSOCKET_TESTS=true
-                - BROWSER=firefox21_win DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=chrome_85
                 - BROWSER=chrome_52
                 - BROWSER=chrome_43
