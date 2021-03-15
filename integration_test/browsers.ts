@@ -15,9 +15,9 @@
 const browsers = {
   // Firefox
   firefox80_win: browser('firefox', '80', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
-  firefox39_win: browser('firefox', '39', 'Windows 10',{custom: {acceptInsecureCerts: true}}), // Basic fetch added in 39
-  firefox38_win: browser('firefox', '38', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
-  firefox21_win: browser('firefox', '21', 'Windows 10',{custom: {acceptInsecureCerts: true}}),
+  firefox39_win: browser('firefox', '39', 'Windows 10',{custom: {acceptInsecureCerts: true, disableWebsocketTests: true}}), // Basic fetch added in 39
+  firefox38_win: browser('firefox', '38', 'Windows 10',{custom: {acceptInsecureCerts: true, disableWebsocketTests: true}}),
+  firefox21_win: browser('firefox', '21', 'Windows 10',{custom: {acceptInsecureCerts: true, disableWebsocketTests: true}}),
 
   // Chrome
   chrome_85: browser('chrome', '85', 'Windows 10', {certOverrideJSElement: 'proceed-link'}),
