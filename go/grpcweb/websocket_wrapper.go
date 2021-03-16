@@ -176,6 +176,16 @@ func (w *webSocketWrappedReader) Read(p []byte) (int, error) {
 
 	// If the frame consists of only a single byte of value 1 then this indicates the client has finished sending
 	if len(framePayload) == 1 && framePayload[0] == 1 {
+		go func() {
+			for {
+				messageType, _, err := w.wsConn.Read(w.context)
+				if err == io.EOF || messageType == 0 {
+					// The client has closed the connection. Indicate to the response writer that it should close
+					w.cancel()
+					return
+				}
+			}
+		}()
 		return 0, io.EOF
 	}
 
