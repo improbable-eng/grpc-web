@@ -1,6 +1,5 @@
 ## Developer Tool Prerequisites
 * [go](https://golang.org/doc/install) - The Go programming language
-* [dep](https://golang.github.io/dep/docs/installation.html) - Go dependency manager
 * [nvm](https://github.com/creationix/nvm#installation) - Node Version Manager (for installing NodeJS and NPM)
 
 ## Performing a Fresh Checkout
