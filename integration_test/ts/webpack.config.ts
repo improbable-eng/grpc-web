@@ -3,6 +3,7 @@ const webpack = require("webpack");
 module.exports = {
   entry: "./src/spec.ts",
   mode: "development",
+  target: "es5",
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "integration-tests.js"

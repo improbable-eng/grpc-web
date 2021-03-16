@@ -5,6 +5,7 @@
     "declaration": true,
     "declarationDir": "./dist/typings",
     "target": "es5",
+    "lib": ["es6","dom"],
     "removeComments": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,

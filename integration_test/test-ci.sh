@@ -11,4 +11,4 @@ fi
 export PREBUILT_INTEGRATION_TESTS=1
 
 # Run the integration tests with timestamped output
-${COMMAND} | ts -s %.s
+bash -o pipefail -c "${COMMAND} | ts -s %.s"

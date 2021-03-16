@@ -2,6 +2,11 @@
 set -e
 set -x
 
+if [[ -z "${SAUCELABS_USERNAME}" ]]; then
+  echo "No SauceLabs credentials in ENV to use for external browser testing. Use 'npm run test:dev' to do local browser testing."
+  exit 1
+fi
+
 cd "$(dirname "$0")"
 
 mkdir -p sauce-connect-proxy/logs

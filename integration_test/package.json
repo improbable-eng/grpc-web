@@ -13,7 +13,7 @@
     "start:ci": "./test-ci.sh",
     "start": "./test.sh",
     "test:browsers": "./run-with-tunnel.sh ./run-with-testserver.sh karma start ./karma.conf.ts --single-run",
-    "test:node": "./run-with-testserver.sh jasmine ts/build-node/integration_test/ts/node-src/node.spec.js",
+    "test:node": "BROWSER=nodejs ./run-with-testserver.sh jasmine ts/build-node/integration_test/ts/node-src/node.spec.js",
     "test:dev": "npm run build && ./run-with-testserver.sh karma start ./karma.conf.ts"
   },
   "license": "none",
@@ -39,7 +39,7 @@
     "colors": "^1.4.0",
     "jasmine": "3.6.4",
     "jasmine-core": "3.6.0",
-    "karma": "6.0.3",
+    "karma": "6.2.0",
     "karma-jasmine": "4.0.1",
     "karma-junit-reporter": "2.0.1",
     "karma-mocha-reporter": "2.2.5",
