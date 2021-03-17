@@ -1,6 +1,5 @@
 ## Developer Tool Prerequisites
 * [go](https://golang.org/doc/install) - The Go programming language
-* [dep](https://golang.github.io/dep/docs/installation.html) - Go dependency manager
 * [nvm](https://github.com/creationix/nvm#installation) - Node Version Manager (for installing NodeJS and NPM)
 
 ## Performing a Fresh Checkout
@@ -19,7 +18,7 @@ nvm use
 npm install
 ```
 
-Note you will also need to [install prototool](https://github.com/uber/prototool/blob/dev/docs/install.md) and add it to your `PATH` environment variable if you wish to re-generate the integration test proto files.
+Note you will also need to [install buf](https://github.com/bufbuild/buf) and add it to your `PATH` environment variable if you wish to re-generate the integration test proto files.
 
 ## Testing Prerequisites
 Before you run the tests for the first time, please follow these steps:
