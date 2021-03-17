@@ -3,7 +3,7 @@ version: 2.1
 executors:
   test-executor:
     docker:
-      - image: circleci/golang:1.15.2
+      - image: circleci/golang:1.16.2
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
