@@ -8,8 +8,8 @@ executors:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
     environment:
-      BUF_VER: 0.36.0
-      PROTOC_VER: 3.14.0
+      BUF_VER: 0.40.0
+      PROTOC_VER: 3.15.6
     working_directory: /go/src/github.com/improbable-eng/grpc-web
 
 jobs:
