@@ -29,6 +29,7 @@ jobs:
       - run: echo 'export GOBIN=/go/bin' >> $BASH_ENV
       - run: go get golang.org/x/tools/cmd/goimports
       - run: go get github.com/robertkrimen/godocdown/godocdown
+      - run: go mod tidy # removes dependencies added by tool installations
       - run: go install github.com/golang/protobuf/protoc-gen-go
       - run:
           command: |
