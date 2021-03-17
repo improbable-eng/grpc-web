@@ -40,6 +40,8 @@ jobs:
             echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
             echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
       - run: npm install
+      # Verify test files are correctly generated
+      - run: cd integration_test && npm run build:proto && git diff --exit-code
       # Lint
       - run: ./lint-all.sh
       # Unit Tests
