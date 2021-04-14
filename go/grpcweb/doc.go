@@ -17,6 +17,7 @@ Here's an example of how to use it inside an existing gRPC Go server on a separa
 	tlsHttpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if wrappedGrpc.IsGrpcWebRequest(req) {
 			wrappedGrpc.ServeHTTP(resp, req)
+			return
 		}
 		// Fall back to other servers.
 		http.DefaultServeMux.ServeHTTP(resp, req)
