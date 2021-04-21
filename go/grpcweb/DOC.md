@@ -20,6 +20,7 @@ separate http.Server that serves over TLS:
     tlsHttpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
     	if wrappedGrpc.IsGrpcWebRequest(req) {
     		wrappedGrpc.ServeHTTP(resp, req)
+    		return
     	}
     	// Fall back to other servers.
     	http.DefaultServeMux.ServeHTTP(resp, req)
