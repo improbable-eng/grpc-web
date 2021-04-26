@@ -28,22 +28,22 @@ import (
 )
 
 var (
-	flagBindAddr    = pflag.String("server_bind_address", "0.0.0.0", "address to bind the server to")
-	flagHttpPort    = pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls.")
+	flagBindAddr	= pflag.String("server_bind_address", "0.0.0.0", "address to bind the server to")
+	flagHttpPort	= pflag.Int("server_http_debug_port", 8080, "TCP port to listen on for HTTP1.1 debug calls.")
 	flagHttpTlsPort = pflag.Int("server_http_tls_port", 8443, "TCP port to listen on for HTTPS (gRPC, gRPC-Web).")
 
 	flagAllowAllOrigins = pflag.Bool("allow_all_origins", false, "allow requests from any origin.")
-	flagAllowedOrigins  = pflag.StringSlice("allowed_origins", nil, "comma-separated list of origin URLs which are allowed to make cross-origin requests.")
-	flagAllowedHeaders  = pflag.StringSlice("allowed_headers", []string{}, "comma-separated list of headers which are allowed to propagate to the gRPC backend.")
+	flagAllowedOrigins	= pflag.StringSlice("allowed_origins", nil, "comma-separated list of origin URLs which are allowed to make cross-origin requests.")
+	flagAllowedHeaders	= pflag.StringSlice("allowed_headers", []string{}, "comma-separated list of headers which are allowed to propagate to the gRPC backend.")
 
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
 
-	useWebsockets         = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
+	useWebsockets		  = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
 	websocketPingInterval = pflag.Duration("websocket_ping_interval", 0, "whether to use websocket keepalive pinging. Only used when using websockets. Configured interval must be >= 1s.")
 
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
-	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
+	flagHttpMaxReadTimeout	= pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 
 	enablePrometheusMetrics = pflag.Bool("enable_metrics", false, "whether to serve prometheus metrics on /metrics")
 	enableRequestDebug = pflag.Bool("enable_request_debug", false, "whether to serve request (/debug/requests) and connection(/debug/events) monitoring pages;also controls prometheus monitoring (/monitoring)")
@@ -106,13 +106,12 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		http.Handle("/metrics", promhttp.Handler())
-        var debugServer *http.Server
-        if *enableRequestDebug {
-            debugServer = buildDebugServer(wrappedGrpc, promhttp.Handler())
-        } else {
-            debugServer = buildServer(wrappedGrpc)
-        }
+		var debugServer *http.Server
+		if *enableRequestDebug {
+			debugServer = buildDebugServer(wrappedGrpc, promhttp.Handler())
+		} else {
+			debugServer = buildServer(wrappedGrpc)
+		}
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
@@ -134,15 +133,15 @@ func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler htt
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-            if req.URL.Path == "/metrics" {
-                metricsHandler.ServeHTTP(resp, req)
-            } else if req.URL.Path == "/debug/requests" {
-                trace.Traces(resp, req)
-            } else if req.URL.Path == "/debug/events" {
-                trace.Events(resp, req)
-            } else {
-                wrappedGrpc.ServeHTTP(resp, req)
-            }
+			if req.URL.Path == "/metrics" {
+				metricsHandler.ServeHTTP(resp, req)
+			} else if req.URL.Path == "/debug/requests" {
+				trace.Traces(resp, req)
+			} else if req.URL.Path == "/debug/events" {
+				trace.Events(resp, req)
+			} else {
+				wrappedGrpc.ServeHTTP(resp, req)
+			}
 		}),
 	}
 }
@@ -153,7 +152,7 @@ func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-            wrappedGrpc.ServeHTTP(resp, req)
+			wrappedGrpc.ServeHTTP(resp, req)
 		}),
 	}
 }
