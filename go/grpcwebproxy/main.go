@@ -21,7 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"golang.org/x/net/context"
-	_ "golang.org/x/net/trace" // register in DefaultServerMux
+	"golang.org/x/net/trace" // register in DefaultServerMux
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
@@ -103,8 +103,8 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		debugServer := buildServer(wrappedGrpc)
 		http.Handle("/metrics", promhttp.Handler())
+		debugServer := buildServerAddHandler(wrappedGrpc, promhttp.Handler())
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
@@ -121,12 +121,33 @@ func main() {
 	// TODO(mwitkow): Add graceful shutdown.
 }
 
+func buildServerAddHandler(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler http.Handler) *http.Server {
+	return &http.Server{
+		WriteTimeout: *flagHttpMaxWriteTimeout,
+		ReadTimeout:  *flagHttpMaxReadTimeout,
+		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+            if (req.URL.Path == "/_health") {
+                resp.WriteHeader(http.StatusOK)
+            } else if req.URL.Path == "/metrics" {
+                metricsHandler.ServeHTTP(resp, req)
+            } else if req.URL.Path == "/debug/requests" {
+                trace.Render(resp, req, true)
+            } else if req.URL.Path == "/debug/events" {
+                trace.RenderEvents(resp, req, true)
+            } else {
+                wrappedGrpc.ServeHTTP(resp, req)
+            }
+		}),
+	}
+}
+
+
 func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			wrappedGrpc.ServeHTTP(resp, req)
+            wrappedGrpc.ServeHTTP(resp, req)
 		}),
 	}
 }
