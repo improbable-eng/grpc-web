@@ -45,8 +45,7 @@ var (
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 
-	enablePrometheusMetrics = pflag.Bool("enable_metrics", false, "whether to serve prometheus metrics on /metrics")
-	enableRequestDebug      = pflag.Bool("enable_request_debug", false, "whether to serve request (/debug/requests) and connection(/debug/events) monitoring pages;also controls prometheus monitoring (/monitoring)")
+	enableRequestDebug      = pflag.Bool("enable_request_debug", false, "whether to enable (/debug/requests) and connection(/debug/events) monitoring; also controls prometheus monitoring (/monitoring)")
 )
 
 func main() {
