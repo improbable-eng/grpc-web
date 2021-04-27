@@ -132,13 +132,14 @@ func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler htt
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			if req.URL.Path == "/metrics" {
+			switch req.URL.Path {
+			case "/metrics":
 				metricsHandler.ServeHTTP(resp, req)
-			} else if req.URL.Path == "/debug/requests" {
+			case "/debug/requests":
 				trace.Traces(resp, req)
-			} else if req.URL.Path == "/debug/events" {
+			case "/debug/events":
 				trace.Events(resp, req)
-			} else {
+			default:
 				wrappedGrpc.ServeHTTP(resp, req)
 			}
 		}),
