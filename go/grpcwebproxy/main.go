@@ -21,7 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"golang.org/x/net/context"
-	_ "golang.org/x/net/trace" // register in DefaultServerMux
+	"golang.org/x/net/trace" // register in DefaultServerMux
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
@@ -44,6 +44,8 @@ var (
 
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
+
+	enableRequestDebug = pflag.Bool("enable_request_debug", false, "whether to enable (/debug/requests) and connection(/debug/events) monitoring; also controls prometheus monitoring (/monitoring)")
 )
 
 func main() {
@@ -103,8 +105,12 @@ func main() {
 
 	if *runHttpServer {
 		// Debug server.
-		debugServer := buildServer(wrappedGrpc)
-		http.Handle("/metrics", promhttp.Handler())
+		var debugServer *http.Server
+		if *enableRequestDebug {
+			debugServer = buildDebugServer(wrappedGrpc, promhttp.Handler())
+		} else {
+			debugServer = buildServer(wrappedGrpc)
+		}
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
@@ -119,6 +125,24 @@ func main() {
 
 	<-errChan
 	// TODO(mwitkow): Add graceful shutdown.
+}
+
+func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler http.Handler) *http.Server {
+	return &http.Server{
+		WriteTimeout: *flagHttpMaxWriteTimeout,
+		ReadTimeout:  *flagHttpMaxReadTimeout,
+		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+			if req.URL.Path == "/metrics" {
+				metricsHandler.ServeHTTP(resp, req)
+			} else if req.URL.Path == "/debug/requests" {
+				trace.Traces(resp, req)
+			} else if req.URL.Path == "/debug/events" {
+				trace.Events(resp, req)
+			} else {
+				wrappedGrpc.ServeHTTP(resp, req)
+			}
+		}),
+	}
 }
 
 func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
