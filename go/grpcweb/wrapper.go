@@ -35,6 +35,7 @@ type WrappedGrpcServer struct {
 	originFunc          func(origin string) bool
 	enableWebsockets    bool
 	websocketOriginFunc func(req *http.Request) bool
+	websocketReadLimit  int64
 	allowedHeaders      []string
 	endpointFunc        func(req *http.Request) string
 	endpointsFunc       func() []string
@@ -97,6 +98,7 @@ func wrapGrpc(options []Option, handler http.Handler, endpointsFunc func() []str
 		originFunc:          opts.originFunc,
 		enableWebsockets:    opts.enableWebsockets,
 		websocketOriginFunc: websocketOriginFunc,
+		websocketReadLimit:  opts.websocketReadLimit,
 		allowedHeaders:      allowedHeaders,
 		endpointFunc:        endpointFunc,
 		endpointsFunc:       endpointsFunc,
@@ -160,6 +162,11 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
 		return
 	}
+
+	if w.websocketReadLimit > 0 {
+		wsConn.SetReadLimit(w.websocketReadLimit)
+	}
+
 	headers := make(http.Header)
 	for _, name := range w.allowedHeaders {
 		if values, exist := req.Header[name]; exist {
