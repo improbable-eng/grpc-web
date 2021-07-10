@@ -24,6 +24,7 @@ type options struct {
 	enableWebsockets               bool
 	websocketPingInterval          time.Duration
 	websocketOriginFunc            func(req *http.Request) bool
+	websocketReadLimit             int64
 	allowNonRootResources          bool
 	endpointsFunc                  *func() []string
 }
@@ -129,6 +130,15 @@ func WithWebsocketPingInterval(websocketPingInterval time.Duration) Option {
 func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) Option {
 	return func(o *options) {
 		o.websocketOriginFunc = websocketOriginFunc
+	}
+}
+
+// WithWebsocketsMessageReadLimit sets the maximum message read limit on the underlying websocket.
+//
+// The default message read limit is 32769 bytes
+func WithWebsocketsMessageReadLimit(websocketReadLimit int64) Option {
+	return func(o *options) {
+		o.websocketReadLimit = websocketReadLimit
 	}
 }
 
