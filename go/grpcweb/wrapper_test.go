@@ -85,7 +85,7 @@ func TestNonRootResource(t *testing.T) {
 	resp := httptest.NewRecorder()
 	wrappedServer.ServeHTTP(resp, req)
 
-	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, http.StatusNoContent, resp.Code)
 }
 
 func (s *GrpcWebWrapperTestSuite) SetupTest() {
