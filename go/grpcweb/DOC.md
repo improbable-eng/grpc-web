@@ -1,6 +1,6 @@
 # grpcweb
 --
-    import "github.com/improbable-eng/grpc-web/go/grpcweb"
+    import "."
 
 `grpcweb` implements the gRPC-Web spec as a wrapper around a gRPC-Go Server.
 
@@ -175,6 +175,16 @@ WithWebsockets allows for handling grpc-web requests of websockets - enabling
 bidirectional requests.
 
 The default behaviour is false, i.e. to disallow websockets
+
+#### func  WithWebsocketsMessageReadLimit
+
+```go
+func WithWebsocketsMessageReadLimit(websocketReadLimit int64) Option
+```
+WithWebsocketsMessageReadLimit sets the maximum message read limit on the
+underlying websocket.
+
+The default message read limit is 32769 bytes
 
 #### type WrappedGrpcServer
 
