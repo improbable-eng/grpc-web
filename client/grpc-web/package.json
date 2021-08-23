@@ -1,6 +1,6 @@
 {
   "name": "@improbable-eng/grpc-web",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "gRPC-Web client for browsers (JS/TS)",
   "main": "dist/grpc-web-client.js",
   "browser": "dist/grpc-web-client.umd.js",
