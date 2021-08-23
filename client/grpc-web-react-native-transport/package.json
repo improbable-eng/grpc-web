@@ -1,6 +1,6 @@
 {
   "name": "@improbable-eng/grpc-web-react-native-transport",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Transport for use with @improbable-eng/grpc-web that works with React Native.",
   "main": "lib/index.js",
   "repository": {

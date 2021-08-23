@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-react-example",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "private": true,
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
