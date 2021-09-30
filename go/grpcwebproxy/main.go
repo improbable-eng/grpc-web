@@ -7,10 +7,10 @@ import (
 	"net/http"
 	_ "net/http/pprof" // register in DefaultServerMux
 	"os"
+	"sync/atomic"
 	"time"
 
 	"crypto/tls"
-
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -46,7 +46,11 @@ var (
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 
-	enableRequestDebug = pflag.Bool("enable_request_debug", false, "whether to enable (/debug/requests) and connection(/debug/events) monitoring; also controls prometheus monitoring (/metrics)")
+	enableRequestDebug       = pflag.Bool("enable_request_debug", false, "whether to enable (/debug/requests) and connection(/debug/events) monitoring; also controls prometheus monitoring (/metrics)")
+	enableHealthCheckService = pflag.Bool("enable_health_check_service", false, "whether to enable health checking service on the backend connection")
+	enableHealthEndpoint     = pflag.Bool("enable_health_endpoint", false, "whether to enable health endpoint on the proxy. If enable_health_check_service is set to true the endpoint will serve the status got from backend, otherwise http.StatusOK(200) will be returned")
+	healthEndpointName       = pflag.String("health_endpoint_name", "_health", "health endpoint name to be used (_health by default)")
+	healthServiceName        = pflag.String("health_service_name", "", "health service name to request from backend (\"\" by default, asking for status of all services at once on the backend)")
 )
 
 func main() {
@@ -65,7 +69,7 @@ func main() {
 		logrus.Fatal("Ambiguous --allow_all_origins and --allow_origins configuration. Either set --allow_all_origins=true OR specify one or more origins to whitelist with --allow_origins, not both.")
 	}
 
-	grpcServer := buildGrpcProxyServer(logEntry)
+	grpcServer, getHealthStatus := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
 
 	allowedOrigins := makeAllowedOrigins(*flagAllowedOrigins)
@@ -112,9 +116,9 @@ func main() {
 		// Debug server.
 		var debugServer *http.Server
 		if *enableRequestDebug {
-			debugServer = buildDebugServer(wrappedGrpc, promhttp.Handler())
+			debugServer = buildDebugServer(wrappedGrpc, promhttp.Handler(), getHealthStatus)
 		} else {
-			debugServer = buildServer(wrappedGrpc)
+			debugServer = buildServer(wrappedGrpc, getHealthStatus)
 		}
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
@@ -122,7 +126,7 @@ func main() {
 
 	if *runTlsServer {
 		// Debug server.
-		servingServer := buildServer(wrappedGrpc)
+		servingServer := buildServer(wrappedGrpc, getHealthStatus)
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
 		serveServer(servingServer, servingListener, "http_tls", errChan)
@@ -132,7 +136,7 @@ func main() {
 	// TODO(mwitkow): Add graceful shutdown.
 }
 
-func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler http.Handler) *http.Server {
+func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler http.Handler, getHealthStatus func() int) *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
@@ -144,6 +148,12 @@ func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler htt
 				trace.Traces(resp, req)
 			case "/debug/events":
 				trace.Events(resp, req)
+			case ("/" + *healthEndpointName):
+				if *enableHealthEndpoint {
+					resp.WriteHeader(getHealthStatus())
+					break
+				}
+				fallthrough
 			default:
 				wrappedGrpc.ServeHTTP(resp, req)
 			}
@@ -151,12 +161,21 @@ func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler htt
 	}
 }
 
-func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer) *http.Server {
+func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer, getHealthStatus func() int) *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
 		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			wrappedGrpc.ServeHTTP(resp, req)
+			switch req.URL.Path {
+			case ("/" + *healthEndpointName):
+				if *enableHealthEndpoint {
+					resp.WriteHeader(getHealthStatus())
+					break
+				}
+				fallthrough
+			default:
+				wrappedGrpc.ServeHTTP(resp, req)
+			}
 		}),
 	}
 }
@@ -170,7 +189,7 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 	}()
 }
 
-func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
+func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, func() int) {
 	// gRPC-wide changes.
 	grpc.EnableTracing = true
 	grpc_logrus.ReplaceGrpcLogger(logger)
@@ -189,6 +208,15 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 		outCtx = metadata.NewOutgoingContext(outCtx, mdCopy)
 		return outCtx, backendConn, nil
 	}
+
+	getHealthStatus := func() int {
+		return http.StatusOK
+	}
+
+	if *enableHealthCheckService {
+		getHealthStatus = runHealthCheckService(backendConn, *healthServiceName)
+	}
+
 	// Server with logging and monitoring enabled.
 	return grpc.NewServer(
 		grpc.CustomCodec(proxy.Codec()), // needed for proxy to function.
@@ -202,7 +230,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) *grpc.Server {
 			grpc_logrus.StreamServerInterceptor(logger),
 			grpc_prometheus.StreamServerInterceptor,
 		),
-	)
+	), getHealthStatus
 }
 
 func buildListenerOrFail(name string, port int) net.Listener {
@@ -261,4 +289,32 @@ type allowedOrigins struct {
 func (a *allowedOrigins) IsAllowed(origin string) bool {
 	_, ok := a.origins[origin]
 	return ok
+}
+
+// Runs health check on a backend connection for a given service name
+// returns function to get http.Status StatusOk|StatusServiceUnavailable
+func runHealthCheckService(backendConn *grpc.ClientConn, service string) func() int {
+	atmServingStatus := int32(0)
+	setServingStatus := func(state bool) {
+		if state {
+			atomic.StoreInt32(&atmServingStatus, 1)
+		} else {
+			atomic.StoreInt32(&atmServingStatus, 0)
+		}
+	}
+
+	go func() {
+		healthCtx := context.Background()
+		err := grpcweb.ClientHealthCheck(healthCtx, backendConn, service, setServingStatus)
+		if err != nil {
+			logrus.Errorf("%s health check service error: %v", service, err)
+		}
+	}()
+
+	return func() int {
+		if atomic.LoadInt32(&atmServingStatus) == 0 {
+			return http.StatusServiceUnavailable
+		}
+		return http.StatusOK
+	}
 }
