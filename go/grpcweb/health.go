@@ -74,7 +74,7 @@ func ClientHealthCheck(ctx context.Context, backendConn *grpc.ClientConn, servic
 retryConnection:
 	for {
 		// Backs off if the connection has failed in some way without receiving a message in the previous retry.
-		if tryCnt > 0 && !backoffSrc.ackoffOrStop(ctx, tryCnt-1) {
+		if tryCnt > 0 && !backoffSrc.backoffOrStop(ctx, tryCnt-1) {
 			return nil
 		}
 		tryCnt++
