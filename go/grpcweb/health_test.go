@@ -94,8 +94,8 @@ func (s *ClientHealthTestSuite) setServingStatus(status bool) {
 func (s *ClientHealthTestSuite) checkServingStatus(expStatus bool) {
 	s.cond.L.Lock()
 	s.cond.Wait()
+	defer s.cond.L.Unlock()
 	assert.Equal(s.T(), expStatus, s.serving)
-	s.cond.L.Unlock()
 }
 
 func (s *ClientHealthTestSuite) startClientHealthCheck(ctx context.Context, conn *grpc.ClientConn) {
