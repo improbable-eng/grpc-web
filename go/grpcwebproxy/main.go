@@ -112,21 +112,35 @@ func main() {
 		logrus.Fatalf("Both run_http_server and run_tls_server are set to false. At least one must be enabled for grpcweb proxy to function correctly.")
 	}
 
+	serveMux := http.NewServeMux()
+
+	serveMux.Handle("/", wrappedGrpc)
+
+	if *enableHealthEndpoint {
+		serveMux.HandleFunc("/"+*healthEndpointName, func(resp http.ResponseWriter, req *http.Request) {
+			resp.WriteHeader(getHealthStatus())
+		})
+	}
+
 	if *runHttpServer {
 		// Debug server.
-		var debugServer *http.Server
 		if *enableRequestDebug {
-			debugServer = buildDebugServer(wrappedGrpc, promhttp.Handler(), getHealthStatus)
-		} else {
-			debugServer = buildServer(wrappedGrpc, getHealthStatus)
+			serveMux.Handle("/metrics", promhttp.Handler())
+			serveMux.HandleFunc("/debug/requests", func(resp http.ResponseWriter, req *http.Request) {
+				trace.Traces(resp, req)
+			})
+			serveMux.HandleFunc("/debug/events", func(resp http.ResponseWriter, req *http.Request) {
+				trace.Events(resp, req)
+			})
 		}
+
+		debugServer := buildServer(wrappedGrpc, serveMux)
 		debugListener := buildListenerOrFail("http", *flagHttpPort)
 		serveServer(debugServer, debugListener, "http", errChan)
 	}
 
 	if *runTlsServer {
-		// Debug server.
-		servingServer := buildServer(wrappedGrpc, getHealthStatus)
+		servingServer := buildServer(wrappedGrpc, serveMux)
 		servingListener := buildListenerOrFail("http", *flagHttpTlsPort)
 		servingListener = tls.NewListener(servingListener, buildServerTlsOrFail())
 		serveServer(servingServer, servingListener, "http_tls", errChan)
@@ -136,47 +150,11 @@ func main() {
 	// TODO(mwitkow): Add graceful shutdown.
 }
 
-func buildDebugServer(wrappedGrpc *grpcweb.WrappedGrpcServer, metricsHandler http.Handler, getHealthStatus func() int) *http.Server {
+func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer, handler http.Handler) *http.Server {
 	return &http.Server{
 		WriteTimeout: *flagHttpMaxWriteTimeout,
 		ReadTimeout:  *flagHttpMaxReadTimeout,
-		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			switch req.URL.Path {
-			case "/metrics":
-				metricsHandler.ServeHTTP(resp, req)
-			case "/debug/requests":
-				trace.Traces(resp, req)
-			case "/debug/events":
-				trace.Events(resp, req)
-			case ("/" + *healthEndpointName):
-				if *enableHealthEndpoint {
-					resp.WriteHeader(getHealthStatus())
-					break
-				}
-				fallthrough
-			default:
-				wrappedGrpc.ServeHTTP(resp, req)
-			}
-		}),
-	}
-}
-
-func buildServer(wrappedGrpc *grpcweb.WrappedGrpcServer, getHealthStatus func() int) *http.Server {
-	return &http.Server{
-		WriteTimeout: *flagHttpMaxWriteTimeout,
-		ReadTimeout:  *flagHttpMaxReadTimeout,
-		Handler: http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			switch req.URL.Path {
-			case ("/" + *healthEndpointName):
-				if *enableHealthEndpoint {
-					resp.WriteHeader(getHealthStatus())
-					break
-				}
-				fallthrough
-			default:
-				wrappedGrpc.ServeHTTP(resp, req)
-			}
-		}),
+		Handler:      handler,
 	}
 }
 
@@ -296,6 +274,8 @@ func (a *allowedOrigins) IsAllowed(origin string) bool {
 func runHealthCheckService(backendConn *grpc.ClientConn, service string) func() int {
 	atmServingStatus := int32(0)
 	setServingStatus := func(state bool) {
+		// need to do the operation atomically
+		// since write and read might happen from different threads
 		if state {
 			atomic.StoreInt32(&atmServingStatus, 1)
 		} else {

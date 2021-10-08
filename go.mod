@@ -3,6 +3,7 @@ module github.com/improbable-eng/grpc-web
 go 1.16
 
 require (
+	github.com/cenkalti/backoff/v4 v4.1.1
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f
 	github.com/golang/protobuf v1.4.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
