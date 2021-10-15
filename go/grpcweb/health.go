@@ -13,18 +13,6 @@ import (
 
 const healthCheckMethod = "/grpc.health.v1.Health/Watch"
 
-func backoffFunc(bc backoff.BackOff, ctx context.Context) bool {
-	d := bc.NextBackOff()
-	timer := time.NewTimer(d)
-	select {
-	case <-timer.C:
-		return true
-	case <-ctx.Done():
-		timer.Stop()
-		return false
-	}
-}
-
 // Client health check function is also part of the grpc/internal package
 // The following code is a simplified version of client.go
 // For more details see: https://pkg.go.dev/google.golang.org/grpc/health
@@ -35,17 +23,17 @@ func ClientHealthCheck(ctx context.Context, backendConn *grpc.ClientConn, servic
 
 	for {
 		// Backs off if the connection has failed in some way without receiving a message in the previous retry.
-		if shouldBackoff && !backoffFunc(backoffSrc, ctx) {
-			return nil
+		if shouldBackoff {
+			select {
+			case <-time.After(backoffSrc.NextBackOff()):
+			case <-ctx.Done():
+				return nil
+			}
 		}
 		shouldBackoff = true // we should backoff next time, since we attempt connecting below
 
-		if ctx.Err() != nil {
-			return nil
-		}
 		req := healthpb.HealthCheckRequest{Service: service}
 		s, err := healthClient.Watch(ctx, &req)
-
 		if err != nil {
 			continue
 		}
@@ -54,9 +42,9 @@ func ClientHealthCheck(ctx context.Context, backendConn *grpc.ClientConn, servic
 		for {
 			err = s.RecvMsg(resp)
 
-			// Reports healthy for the LBing purposes if health check is not implemented in the server.
+			// The health check functionality should be disabled if health check service is not implemented on the backend
 			if status.Code(err) == codes.Unimplemented {
-				setServingStatus(true)
+				setServingStatus(false)
 				return err
 			}
 

@@ -3,26 +3,16 @@ package grpcweb_test
 import (
 	"context"
 	"net"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	testproto "github.com/improbable-eng/grpc-web/integration_test/go/_proto/improbable/grpcweb/test"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
-
-type ClientHealthTestSuite struct {
-	suite.Suite
-	listener     net.Listener
-	cond         sync.Cond
-	serving      bool
-	healthServer *health.Server
-}
 
 func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	// Set up and run a server with no health check handler registered
@@ -34,7 +24,6 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	go func() {
 		_ = grpcServer.Serve(listener)
 	}()
-	time.Sleep(10 * time.Millisecond)
 
 	grpcClientConn, dialErr := grpc.Dial(listener.Addr().String(),
 		grpc.WithBlock(),
@@ -45,60 +34,64 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	assert.Equal(t, nil, dialErr)
 
 	clientCtx := context.TODO()
-	expectedErr := grpcweb.ClientHealthCheck(clientCtx, grpcClientConn, "", func(serving bool) {})
+
+	servingStatus := true
+	expectedErr := grpcweb.ClientHealthCheck(clientCtx, grpcClientConn, "", func(serving bool) {
+		servingStatus = serving
+	})
 	assert.NotEqual(t, nil, expectedErr)
+	assert.Equal(t, false, servingStatus)
 }
 
-func TestClientHealthCheckSuite(t *testing.T) {
-	suite.Run(t, &ClientHealthTestSuite{})
+type clientHealthTestData struct {
+	listener     net.Listener
+	serving      bool
+	healthServer *health.Server
 }
 
-func (s *ClientHealthTestSuite) SetupTest() {
+func setupTestData(t *testing.T) clientHealthTestData {
+	s := clientHealthTestData{}
+
 	grpcServer := grpc.NewServer()
 	s.healthServer = health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, s.healthServer)
 
-	s.cond.L = new(sync.Mutex)
 	s.serving = false
 
 	var err error = nil
 	s.listener, err = net.Listen("tcp", "127.0.0.1:0")
 
-	assert.Equal(s.T(), err, nil)
+	assert.Equal(t, err, nil)
 
 	go func() {
 		grpcServer.Serve(s.listener)
 	}()
 
-	// Wait for the grpcServer to start serving requests.
-	time.Sleep(10 * time.Millisecond)
+	t.Cleanup(grpcServer.Stop)
+
+	return s
 }
 
-func (s *ClientHealthTestSuite) dialBackend() *grpc.ClientConn {
+func (s *clientHealthTestData) dialBackend(t *testing.T) *grpc.ClientConn {
 	grpcClientConn, dialErr := grpc.Dial(s.listener.Addr().String(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(100*time.Millisecond),
 		grpc.WithInsecure(),
 	)
-	assert.Equal(s.T(), nil, dialErr)
+	assert.Equal(t, nil, dialErr)
 	return grpcClientConn
 }
 
-func (s *ClientHealthTestSuite) setServingStatus(status bool) {
-	s.cond.L.Lock()
+func (s *clientHealthTestData) setServingStatus(status bool) {
 	s.serving = status
-	s.cond.L.Unlock()
-	s.cond.Signal()
 }
 
-func (s *ClientHealthTestSuite) checkServingStatus(expStatus bool) {
-	s.cond.L.Lock()
-	s.cond.Wait()
-	defer s.cond.L.Unlock()
-	assert.Equal(s.T(), expStatus, s.serving)
+func (s *clientHealthTestData) checkServingStatus(t *testing.T, expStatus bool) {
+	time.Sleep(100 * time.Millisecond) // arbitrary timeout, but should be enough
+	assert.Equal(t, expStatus, s.serving)
 }
 
-func (s *ClientHealthTestSuite) startClientHealthCheck(ctx context.Context, conn *grpc.ClientConn) {
+func (s *clientHealthTestData) startClientHealthCheck(ctx context.Context, conn *grpc.ClientConn) {
 	go func() {
 		_ = grpcweb.ClientHealthCheck(ctx, conn, "", func(status bool) {
 			s.setServingStatus(status)
@@ -106,41 +99,47 @@ func (s *ClientHealthTestSuite) startClientHealthCheck(ctx context.Context, conn
 	}()
 }
 
-func (s *ClientHealthTestSuite) TestClientHealthCheck_FailsIfNotServing() {
+func TestClientHealthCheck_FailsIfNotServing(t *testing.T) {
+	s := setupTestData(t)
+
 	s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
 
-	backendConn := s.dialBackend()
+	backendConn := s.dialBackend(t)
 	clientCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	s.startClientHealthCheck(clientCtx, backendConn)
-	s.checkServingStatus(false)
+	s.checkServingStatus(t, false)
 }
 
-func (s *ClientHealthTestSuite) TestClientHealthCheck_SucceedsIfServing() {
+func TestClientHealthCheck_SucceedsIfServing(t *testing.T) {
+	s := setupTestData(t)
+
 	s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 
-	backendConn := s.dialBackend()
+	backendConn := s.dialBackend(t)
 	clientCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	s.startClientHealthCheck(clientCtx, backendConn)
-	s.checkServingStatus(true)
+	s.checkServingStatus(t, true)
 }
 
-func (s *ClientHealthTestSuite) TestClientHealthCheck_ReactsToStatusChange() {
+func TestClientHealthCheck_ReactsToStatusChange(t *testing.T) {
+	s := setupTestData(t)
+
 	s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
 
-	backendConn := s.dialBackend()
+	backendConn := s.dialBackend(t)
 	clientCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	s.startClientHealthCheck(clientCtx, backendConn)
-	s.checkServingStatus(false)
+	s.checkServingStatus(t, false)
 
 	s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
-	s.checkServingStatus(true)
+	s.checkServingStatus(t, true)
 
 	s.healthServer.SetServingStatus("", healthpb.HealthCheckResponse_NOT_SERVING)
-	s.checkServingStatus(false)
+	s.checkServingStatus(t, false)
 }

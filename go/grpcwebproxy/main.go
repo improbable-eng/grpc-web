@@ -7,7 +7,7 @@ import (
 	"net/http"
 	_ "net/http/pprof" // register in DefaultServerMux
 	"os"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"crypto/tls"
@@ -69,7 +69,7 @@ func main() {
 		logrus.Fatal("Ambiguous --allow_all_origins and --allow_origins configuration. Either set --allow_all_origins=true OR specify one or more origins to whitelist with --allow_origins, not both.")
 	}
 
-	grpcServer, getHealthStatus := buildGrpcProxyServer(logEntry)
+	grpcServer, healthChecker := buildGrpcProxyServer(logEntry)
 	errChan := make(chan error)
 
 	allowedOrigins := makeAllowedOrigins(*flagAllowedOrigins)
@@ -118,7 +118,7 @@ func main() {
 
 	if *enableHealthEndpoint {
 		serveMux.HandleFunc("/"+*healthEndpointName, func(resp http.ResponseWriter, req *http.Request) {
-			resp.WriteHeader(getHealthStatus())
+			resp.WriteHeader(healthChecker.GetStatus())
 		})
 	}
 
@@ -167,7 +167,7 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 	}()
 }
 
-func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, func() int) {
+func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, healthChecker) {
 	// gRPC-wide changes.
 	grpc.EnableTracing = true
 	grpc_logrus.ReplaceGrpcLogger(logger)
@@ -187,12 +187,9 @@ func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, func() int) {
 		return outCtx, backendConn, nil
 	}
 
-	getHealthStatus := func() int {
-		return http.StatusOK
-	}
-
+	hc := healthChecker{status: http.StatusOK, mutex: nil}
 	if *enableHealthCheckService {
-		getHealthStatus = runHealthCheckService(backendConn, *healthServiceName)
+		hc = runHealthChecker(backendConn, *healthServiceName)
 	}
 
 	// Server with logging and monitoring enabled.
@@ -208,7 +205,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, func() int) {
 			grpc_logrus.StreamServerInterceptor(logger),
 			grpc_prometheus.StreamServerInterceptor,
 		),
-	), getHealthStatus
+	), hc
 }
 
 func buildListenerOrFail(name string, port int) net.Listener {
@@ -269,32 +266,43 @@ func (a *allowedOrigins) IsAllowed(origin string) bool {
 	return ok
 }
 
-// Runs health check on a backend connection for a given service name
-// returns function to get http.Status StatusOk|StatusServiceUnavailable
-func runHealthCheckService(backendConn *grpc.ClientConn, service string) func() int {
-	atmServingStatus := int32(0)
-	setServingStatus := func(state bool) {
-		// need to do the operation atomically
-		// since write and read might happen from different threads
-		if state {
-			atomic.StoreInt32(&atmServingStatus, 1)
-		} else {
-			atomic.StoreInt32(&atmServingStatus, 0)
-		}
+type healthChecker struct {
+	status int
+	mutex  *sync.Mutex
+}
+
+func (h *healthChecker) GetStatus() int {
+	if h.mutex != nil {
+		h.mutex.Lock()
+		defer h.mutex.Unlock()
 	}
+	return h.status
+}
+
+func (h *healthChecker) setServing(serving bool) {
+	if h.mutex != nil {
+		h.mutex.Lock()
+		defer h.mutex.Unlock()
+	}
+	if serving {
+		h.status = http.StatusOK
+	} else {
+		h.status = http.StatusServiceUnavailable
+	}
+}
+
+// Runs health check on a backend connection for a given service name
+// returns healthChecker to get status from
+func runHealthChecker(backendConn *grpc.ClientConn, service string) healthChecker {
+	h := healthChecker{status: http.StatusServiceUnavailable, mutex: new(sync.Mutex)}
 
 	go func() {
 		healthCtx := context.Background()
-		err := grpcweb.ClientHealthCheck(healthCtx, backendConn, service, setServingStatus)
+		err := grpcweb.ClientHealthCheck(healthCtx, backendConn, service, h.setServing)
 		if err != nil {
 			logrus.Errorf("%s health check service error: %v", service, err)
 		}
 	}()
 
-	return func() int {
-		if atomic.LoadInt32(&atmServingStatus) == 0 {
-			return http.StatusServiceUnavailable
-		}
-		return http.StatusOK
-	}
+	return h
 }
