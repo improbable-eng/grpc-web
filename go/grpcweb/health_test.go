@@ -9,6 +9,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	testproto "github.com/improbable-eng/grpc-web/integration_test/go/_proto/improbable/grpcweb/test"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -19,7 +20,7 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	grpcServer := grpc.NewServer()
 	testproto.RegisterTestServiceServer(grpcServer, &testServiceImpl{})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	assert.Equal(t, err, nil)
+	require.NoError(t, err)
 
 	go func() {
 		_ = grpcServer.Serve(listener)
@@ -33,7 +34,7 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 
 	assert.Equal(t, nil, dialErr)
 
-	clientCtx := context.TODO()
+	clientCtx := context.Background()
 
 	servingStatus := true
 	expectedErr := grpcweb.ClientHealthCheck(clientCtx, grpcClientConn, "", func(serving bool) {
@@ -61,7 +62,7 @@ func setupTestData(t *testing.T) clientHealthTestData {
 	var err error = nil
 	s.listener, err = net.Listen("tcp", "127.0.0.1:0")
 
-	assert.Equal(t, err, nil)
+	require.NoError(t, err)
 
 	go func() {
 		grpcServer.Serve(s.listener)

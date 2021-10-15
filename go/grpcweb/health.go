@@ -41,16 +41,13 @@ func ClientHealthCheck(ctx context.Context, backendConn *grpc.ClientConn, servic
 		resp := new(healthpb.HealthCheckResponse)
 		for {
 			err = s.RecvMsg(resp)
-
-			// The health check functionality should be disabled if health check service is not implemented on the backend
-			if status.Code(err) == codes.Unimplemented {
-				setServingStatus(false)
-				return err
-			}
-
-			// Reports unhealthy if server's Watch method gives an error other than UNIMPLEMENTED.
 			if err != nil {
 				setServingStatus(false)
+				// The health check functionality should be disabled if health check service is not implemented on the backend
+				if status.Code(err) == codes.Unimplemented {
+					return err
+				}
+				// breaking out of the loop, since we got an error from Recv, triggering reconnect
 				break
 			}
 
