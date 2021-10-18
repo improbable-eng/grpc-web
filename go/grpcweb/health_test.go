@@ -32,8 +32,7 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 		grpc.WithTimeout(100*time.Millisecond),
 		grpc.WithInsecure(),
 	)
-
-	assert.Equal(t, nil, dialErr)
+	require.NoError(t, dialErr)
 
 	clientCtx := context.Background()
 
@@ -41,7 +40,7 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	expectedErr := grpcweb.ClientHealthCheck(clientCtx, grpcClientConn, "", func(serving bool) {
 		servingStatus = serving
 	})
-	assert.NotEqual(t, nil, expectedErr)
+	assert.Error(t, expectedErr)
 	assert.Equal(t, false, servingStatus)
 }
 
@@ -64,7 +63,9 @@ func setupTestData(t *testing.T) clientHealthTestData {
 	s.listener, err = net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 
-	go grpcServer.Serve(s.listener)
+	go func() {
+		grpcServer.Serve(s.listener)
+	}()
 	t.Cleanup(grpcServer.Stop)
 
 	return s
