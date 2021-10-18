@@ -25,6 +25,7 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	go func() {
 		_ = grpcServer.Serve(listener)
 	}()
+	t.Cleanup(grpcServer.Stop)
 
 	grpcClientConn, dialErr := grpc.Dial(listener.Addr().String(),
 		grpc.WithBlock(),
@@ -59,27 +60,23 @@ func setupTestData(t *testing.T) clientHealthTestData {
 
 	s.serving = false
 
-	var err error = nil
+	var err error
 	s.listener, err = net.Listen("tcp", "127.0.0.1:0")
-
 	require.NoError(t, err)
 
-	go func() {
-		grpcServer.Serve(s.listener)
-	}()
-
+	go grpcServer.Serve(s.listener)
 	t.Cleanup(grpcServer.Stop)
 
 	return s
 }
 
 func (s *clientHealthTestData) dialBackend(t *testing.T) *grpc.ClientConn {
-	grpcClientConn, dialErr := grpc.Dial(s.listener.Addr().String(),
+	grpcClientConn, err := grpc.Dial(s.listener.Addr().String(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(100*time.Millisecond),
 		grpc.WithInsecure(),
 	)
-	assert.Equal(t, nil, dialErr)
+	require.NoError(t, err)
 	return grpcClientConn
 }
 

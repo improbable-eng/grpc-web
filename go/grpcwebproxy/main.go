@@ -69,7 +69,9 @@ func main() {
 		logrus.Fatal("Ambiguous --allow_all_origins and --allow_origins configuration. Either set --allow_all_origins=true OR specify one or more origins to whitelist with --allow_origins, not both.")
 	}
 
-	grpcServer, healthChecker := buildGrpcProxyServer(logEntry)
+	backendConn := dialBackendOrFail()
+
+	grpcServer := buildGrpcProxyServer(backendConn, logEntry)
 	errChan := make(chan error)
 
 	allowedOrigins := makeAllowedOrigins(*flagAllowedOrigins)
@@ -113,13 +115,26 @@ func main() {
 	}
 
 	serveMux := http.NewServeMux()
-
 	serveMux.Handle("/", wrappedGrpc)
 
 	if *enableHealthEndpoint {
-		serveMux.HandleFunc("/"+*healthEndpointName, func(resp http.ResponseWriter, req *http.Request) {
-			resp.WriteHeader(healthChecker.GetStatus())
-		})
+		logrus.Printf("health endpoint enabled on /%v", *healthEndpointName)
+		if *enableHealthCheckService {
+			logrus.Printf("health checking enabled for service '%v'", *healthServiceName)
+			// Health checking endpoint set up
+			healthCtx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			healthChecker := runHealthChecker(healthCtx, backendConn, *healthServiceName)
+			serveMux.HandleFunc("/"+*healthEndpointName, func(resp http.ResponseWriter, req *http.Request) {
+				status := healthChecker.GetStatus()
+				resp.WriteHeader(status)
+			})
+		} else {
+			// Health endpoint always returns HTTP status 200 if service is disabled
+			serveMux.HandleFunc("/"+*healthEndpointName, func(resp http.ResponseWriter, req *http.Request) {
+				resp.WriteHeader(http.StatusOK)
+			})
+		}
 	}
 
 	if *runHttpServer {
@@ -167,13 +182,12 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 	}()
 }
 
-func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, healthChecker) {
+func buildGrpcProxyServer(backendConn *grpc.ClientConn, logger *logrus.Entry) *grpc.Server {
 	// gRPC-wide changes.
 	grpc.EnableTracing = true
 	grpc_logrus.ReplaceGrpcLogger(logger)
 
 	// gRPC proxy logic.
-	backendConn := dialBackendOrFail()
 	director := func(ctx context.Context, fullMethodName string) (context.Context, *grpc.ClientConn, error) {
 		md, _ := metadata.FromIncomingContext(ctx)
 		outCtx, _ := context.WithCancel(ctx)
@@ -185,11 +199,6 @@ func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, healthChecker) {
 		delete(mdCopy, "connection")
 		outCtx = metadata.NewOutgoingContext(outCtx, mdCopy)
 		return outCtx, backendConn, nil
-	}
-
-	hc := healthChecker{status: http.StatusOK, mutex: nil}
-	if *enableHealthCheckService {
-		hc = runHealthChecker(backendConn, *healthServiceName)
 	}
 
 	// Server with logging and monitoring enabled.
@@ -205,7 +214,7 @@ func buildGrpcProxyServer(logger *logrus.Entry) (*grpc.Server, healthChecker) {
 			grpc_logrus.StreamServerInterceptor(logger),
 			grpc_prometheus.StreamServerInterceptor,
 		),
-	), hc
+	)
 }
 
 func buildListenerOrFail(name string, port int) net.Listener {
@@ -268,22 +277,18 @@ func (a *allowedOrigins) IsAllowed(origin string) bool {
 
 type healthChecker struct {
 	status int
-	mutex  *sync.Mutex
+	mutex  sync.Mutex
 }
 
 func (h *healthChecker) GetStatus() int {
-	if h.mutex != nil {
-		h.mutex.Lock()
-		defer h.mutex.Unlock()
-	}
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	return h.status
 }
 
 func (h *healthChecker) setServing(serving bool) {
-	if h.mutex != nil {
-		h.mutex.Lock()
-		defer h.mutex.Unlock()
-	}
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	if serving {
 		h.status = http.StatusOK
 	} else {
@@ -292,13 +297,13 @@ func (h *healthChecker) setServing(serving bool) {
 }
 
 // Runs health check on a backend connection for a given service name
-// returns healthChecker to get status from
-func runHealthChecker(backendConn *grpc.ClientConn, service string) healthChecker {
-	h := healthChecker{status: http.StatusServiceUnavailable, mutex: new(sync.Mutex)}
+// returns *healthChecker to get status from
+func runHealthChecker(ctx context.Context, backendConn *grpc.ClientConn, service string) *healthChecker {
+	h := new(healthChecker)
+	h.status = http.StatusServiceUnavailable
 
 	go func() {
-		healthCtx := context.Background()
-		err := grpcweb.ClientHealthCheck(healthCtx, backendConn, service, h.setServing)
+		err := grpcweb.ClientHealthCheck(ctx, backendConn, service, h.setServing)
 		if err != nil {
 			logrus.Errorf("%s health check service error: %v", service, err)
 		}
