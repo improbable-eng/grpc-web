@@ -27,12 +27,12 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	}()
 	t.Cleanup(grpcServer.Stop)
 
-	grpcClientConn, dialErr := grpc.Dial(listener.Addr().String(),
+	grpcClientConn, err := grpc.Dial(listener.Addr().String(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(100*time.Millisecond),
 		grpc.WithInsecure(),
 	)
-	require.NoError(t, dialErr)
+	require.NoError(t, err)
 
 	ctx := context.Background()
 
