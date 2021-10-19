@@ -37,10 +37,10 @@ func TestClientWithNoHealthServiceOnServer(t *testing.T) {
 	ctx := context.Background()
 
 	servingStatus := true
-	healthErr := grpcweb.ClientHealthCheck(ctx, grpcClientConn, "", func(serving bool) {
+	err = grpcweb.ClientHealthCheck(ctx, grpcClientConn, "", func(serving bool) {
 		servingStatus = serving
 	})
-	assert.Error(t, healthErr)
+	assert.Error(t, err)
 	assert.False(t, servingStatus)
 }
 
