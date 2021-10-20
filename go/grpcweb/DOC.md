@@ -30,6 +30,15 @@ If you'd like to have a standalone binary, please take a look at `grpcwebproxy`.
 
 ## Usage
 
+#### func  ClientHealthCheck
+
+```go
+func ClientHealthCheck(ctx context.Context, backendConn *grpc.ClientConn, service string, setServingStatus func(serving bool)) error
+```
+Client health check function is also part of the grpc/internal package The
+following code is a simplified version of client.go For more details see:
+https://pkg.go.dev/google.golang.org/grpc/health
+
 #### func  ListGRPCResources
 
 ```go
