@@ -1,6 +1,6 @@
 # grpcweb
 --
-    import "github.com/improbable-eng/grpc-web/go/grpcweb"
+    import "github.com/zolkin/grpc-web/go/grpcweb"
 
 `grpcweb` implements the gRPC-Web spec as a wrapper around a gRPC-Go Server.
 
@@ -29,6 +29,15 @@ separate http.Server that serves over TLS:
 If you'd like to have a standalone binary, please take a look at `grpcwebproxy`.
 
 ## Usage
+
+#### func  ClientHealthCheck
+
+```go
+func ClientHealthCheck(ctx context.Context, backendConn *grpc.ClientConn, service string, setServingStatus func(serving bool)) error
+```
+Client health check function is also part of the grpc/internal package The
+following code is a simplified version of client.go For more details see:
+https://pkg.go.dev/google.golang.org/grpc/health
 
 #### func  ListGRPCResources
 
