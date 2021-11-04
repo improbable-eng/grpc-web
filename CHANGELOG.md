@@ -1,3 +1,8 @@
+## 0.15.0
+
+### Other changes
+* (Optional) Health check [@zolkin](https://github.com/zolkin) in [#1056](https://github.com/improbable-eng/grpc-web/pull/1056)
+
 ## 0.14.1
 
 ### Other changes
