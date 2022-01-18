@@ -45,11 +45,11 @@ grpc.unary(BookService.GetBook, {
 });
 ```
 
-* Requests can be aborted/cancelled before they complete:
+* Requests can be aborted/closed before they complete:
 
 ```javascript
 const request = grpc.unary(BookService.GetBook, { ... });
-request.cancel();
+request.close();
 ```
 
 ## Available Request Functions
