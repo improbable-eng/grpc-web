@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@improbable-eng/grpc-web": "^0.13.0",
-    "google-protobuf": "^3.14.0",
     "typescript": "^4.1.3"
   }
 }

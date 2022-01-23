@@ -11,9 +11,9 @@ Please see the full [gRPC-Web README](https://github.com/improbable-eng/grpc-web
 
 ## Installation
 
-`@improbable-eng/grpc-web` has peer dependencies of `google-protobuf` and `@types/google-protobuf`.
-
-`npm install google-protobuf @types/google-protobuf @improbable-eng/grpc-web --save`
+```sh
+npm install @improbable-eng/grpc-web --save
+```
 
 ## Example Project
 
