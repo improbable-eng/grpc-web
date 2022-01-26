@@ -449,6 +449,33 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_AllowedByOriginFunc() {
 	assert.Equal(s.T(), 500, corsResp.StatusCode, "cors should return 500 as grpc server does not understand that endpoint")
 }
 
+func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_CorsMaxAge() {
+	/**
+	OPTIONS /improbable.grpcweb.test.TestService/Ping
+	Access-Control-Request-Method: POST
+	Access-Control-Request-Headers: origin, x-requested-with, accept
+	Origin: http://foo.client.com
+	*/
+	headers := http.Header{}
+	headers.Add("Access-Control-Request-Method", "POST")
+	headers.Add("Access-Control-Request-Headers", "origin, x-something-custom, x-grpc-web, accept")
+	headers.Add("Origin", "https://foo.client.com")
+
+	// Create a new server which customizes a cache time of the preflight request to a Cross-Origin Resource.
+	s.wrappedServer = grpcweb.WrapServer(s.grpcServer,
+		grpcweb.WithOriginFunc(func(string) bool {
+			return true
+		}),
+		grpcweb.WithCorsMaxAge(time.Hour),
+	)
+
+	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil, false)
+	assert.NoError(s.T(), err, "cors preflight should not return errors")
+
+	preflight := corsResp.Header
+	assert.Equal(s.T(), "3600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
+}
+
 func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_EndpointsOnlyTrueWithHandlerFunc() {
 	/**
 	OPTIONS /improbable.grpcweb.test.TestService/Ping

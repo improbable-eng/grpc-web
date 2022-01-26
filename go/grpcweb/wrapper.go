@@ -70,9 +70,9 @@ func wrapGrpc(options []Option, handler http.Handler, endpointsFunc func() []str
 	corsWrapper := cors.New(cors.Options{
 		AllowOriginFunc:  opts.originFunc,
 		AllowedHeaders:   allowedHeaders,
-		ExposedHeaders:   nil,                                 // make sure that this is *nil*, otherwise the WebResponse overwrite will not work.
-		AllowCredentials: true,                                // always allow credentials, otherwise :authorization headers won't work
-		MaxAge:           int(10 * time.Minute / time.Second), // make sure pre-flights don't happen too often (every 5s for Chromium :( )
+		ExposedHeaders:   nil,  // make sure that this is *nil*, otherwise the WebResponse overwrite will not work.
+		AllowCredentials: true, // always allow credentials, otherwise :authorization headers won't work
+		MaxAge:           int(opts.corsMaxAge.Seconds()),
 	})
 	websocketOriginFunc := opts.websocketOriginFunc
 	if websocketOriginFunc == nil {
@@ -120,7 +120,7 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 				return
 			}
 		}
-		resp.WriteHeader(403)
+		resp.WriteHeader(http.StatusForbidden)
 		_, _ = resp.Write(make([]byte, 0))
 		return
 	}

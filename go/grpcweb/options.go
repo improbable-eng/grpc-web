@@ -14,12 +14,14 @@ var (
 		corsForRegisteredEndpointsOnly: true,
 		originFunc:                     func(origin string) bool { return false },
 		allowNonRootResources:          false,
+		corsMaxAge:                     10 * time.Minute,
 	}
 )
 
 type options struct {
 	allowedRequestHeaders          []string
 	corsForRegisteredEndpointsOnly bool
+	corsMaxAge                     time.Duration
 	originFunc                     func(origin string) bool
 	enableWebsockets               bool
 	websocketPingInterval          time.Duration
@@ -65,6 +67,16 @@ func WithOriginFunc(originFunc func(origin string) bool) Option {
 func WithCorsForRegisteredEndpointsOnly(onlyRegistered bool) Option {
 	return func(o *options) {
 		o.corsForRegisteredEndpointsOnly = onlyRegistered
+	}
+}
+
+// WithCorsMaxAge customize the `Access-Control-Max-Age: <delta-seconds>` header which controls the cache age for a CORS preflight
+// request that checks to see if the CORS protocol is understood.
+//
+// The default age is 10 minutes.
+func WithCorsMaxAge(maxAge time.Duration) Option {
+	return func(o *options) {
+		o.corsMaxAge = maxAge
 	}
 }
 
