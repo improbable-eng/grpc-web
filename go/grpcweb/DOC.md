@@ -118,6 +118,17 @@ endpoints (e.g. for proxying).
 The default behaviour is `true`, i.e. only allows CORS requests for registered
 endpoints.
 
+#### func  WithCorsMaxAge
+
+```go
+func WithCorsMaxAge(maxAge time.Duration) Option
+```
+WithCorsMaxAge customize the `Access-Control-Max-Age: <delta-seconds>` header
+which controls the cache age for a CORS preflight request that checks to see if
+the CORS protocol is understood.
+
+The default age is 10 minutes.
+
 #### func  WithEndpointsFunc
 
 ```go
