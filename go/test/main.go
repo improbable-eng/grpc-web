@@ -226,7 +226,7 @@ func (stream *GrpcStream) WriteHeader(statusCode int){
 		stream.hasWrittenHeaders = true
 		stream.outputFrames <- &GrpcFrame{
 			StreamId: stream.id,
-			Payload: &GrpcFrame_H{} stream.Header,
+			Payload: &GrpcFrame_Start{} stream.Header,
 		}
 	}
 }
