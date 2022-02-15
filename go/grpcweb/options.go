@@ -29,6 +29,7 @@ type options struct {
 	websocketReadLimit             int64
 	allowNonRootResources          bool
 	endpointsFunc                  *func() []string
+	enableWebsocketChannels		   bool
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -123,6 +124,16 @@ func WithAllowedRequestHeaders(headers []string) Option {
 func WithWebsockets(enableWebsockets bool) Option {
 	return func(o *options) {
 		o.enableWebsockets = enableWebsockets
+	}
+}
+
+// WithWebsocketsChannel allows for handling grpc-web requests of websockets charing a single websocket between requests
+// - enabling bidirectional requests.
+//
+// The default behaviour is false, i.e. to disallow websockets channels
+func WithWebsocketsChannel(enableWebsocketsChannel bool) Option {
+	return func(o *options) {
+		o.enableWebsocketChannels = enableWebsocketChannels
 	}
 }
 

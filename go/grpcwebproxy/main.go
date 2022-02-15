@@ -44,6 +44,8 @@ var (
 	websocketPingInterval = pflag.Duration("websocket_ping_interval", 0, "whether to use websocket keepalive pinging. Only used when using websockets. Configured interval must be >= 1s.")
 	websocketReadLimit    = pflag.Int64("websocket_read_limit", 0, "sets the maximum message read limit on the underlying websocket. The default message read limit is 32769 bytes.")
 
+	useWebsocketsChannel  = pflag.Bool("use_websockets_channels", false, "whether to use a chanllel over websocket transport layer (alpha)")
+
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
 
@@ -87,6 +89,26 @@ func main() {
 		options = append(
 			options,
 			grpcweb.WithWebsockets(true),
+			grpcweb.WithWebsocketOriginFunc(makeWebsocketOriginFunc(allowedOrigins)),
+		)
+		if *websocketPingInterval >= time.Second {
+			logrus.Infof("websocket keepalive pinging enabled, the timeout interval is %s", websocketPingInterval.String())
+		}
+		if *websocketReadLimit > 0 {
+			options = append(options, grpcweb.WithWebsocketsMessageReadLimit(*websocketReadLimit))
+		}
+
+		options = append(
+			options,
+			grpcweb.WithWebsocketPingInterval(*websocketPingInterval),
+		)
+	}
+
+	if *useWebsocketsChannel {
+		logrus.Println("using websockets based channels")
+		options = append(
+			options,
+			grpcweb.WithWebsocketsChannel(true),
 			grpcweb.WithWebsocketOriginFunc(makeWebsocketOriginFunc(allowedOrigins)),
 		)
 		if *websocketPingInterval >= time.Second {

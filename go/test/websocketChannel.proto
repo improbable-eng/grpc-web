@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option go_package = "./main";
+
+message GrpcFrame{
+    uint32 streamId = 1;
+
+    oneof payload {
+        Header start = 3;
+        Body body = 4;
+        Complete complete = 5;
+        Error error = 6;
+        Cancel cancel = 7;
+    } 
+}
+
+message Header {
+    string operation = 1;
+    map<string, string> headers = 2;
+}
+
+message Body {
+    bytes data = 1;
+}
+
+message Complete {
+}
+
+message Error {
+}
+
+
+message Cancel {
+}

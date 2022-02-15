@@ -123,6 +123,15 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 		resp.WriteHeader(http.StatusForbidden)
 		_, _ = resp.Write(make([]byte, 0))
 		return
+	} else if w.opts.enableWebsocketChannels && w.IsGrpcWebSocketChannelRequest(req) {
+		if w.websocketOriginFunc(req) {
+			if !w.opts.corsForRegisteredEndpointsOnly || w.isRequestForRegisteredEndpoint(req) {
+				w.HandleGrpcWebsocketRequest(resp, req)
+				return
+			}
+		}
+		resp.WriteHeader(http.StatusForbidden)
+		_, _ = resp.Write(make([]byte, 0))
 	}
 
 	if w.IsAcceptableGrpcCorsRequest(req) || w.IsGrpcWebRequest(req) {
@@ -136,6 +145,12 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 // header value is "grpc-websockets"
 func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 	return strings.ToLower(req.Header.Get("Upgrade")) == "websocket" && strings.ToLower(req.Header.Get("Sec-Websocket-Protocol")) == "grpc-websockets"
+}
+
+// IsGrpcWebSocketRequest determines if a request is a gRPC-Web request by checking that the "Sec-Websocket-Protocol"
+// header value is "grpc-websocket-channel"
+func (w *WrappedGrpcServer) IsGrpcWebSocketChannelRequest(req *http.Request) bool {
+	return strings.ToLower(req.Header.Get("Upgrade")) == "websocket" && strings.ToLower(req.Header.Get("Sec-Websocket-Protocol")) == "grpc-websocket-channel"
 }
 
 // HandleGrpcWebRequest takes a HTTP request that is assumed to be a gRPC-Web request and wraps it with a compatibility
@@ -219,6 +234,74 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 // "application/grpc-web" and that the method is POST.
 func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool {
 	return req.Method == http.MethodPost && strings.HasPrefix(req.Header.Get("content-type"), grpcWebContentType)
+}
+
+// HandleGrpcWebsocketChannelRequest takes a HTTP request that is assumed to be a gRPC-Websocket-channel request and starts a
+// duplexed grpc-websocket-channel which will create multiple virtual streams over a single websocket.
+func (w *WrappedGrpcServer) HandleGrpcWebsocketChannelRequest(resp http.ResponseWriter, req *http.Request) {
+
+	wsConn, err := websocket.Accept(resp, req, &websocket.AcceptOptions{
+		InsecureSkipVerify: true, // managed by ServeHTTP
+		Subprotocols:       []string{"grpc-websocket-channel"},
+	})
+	if err != nil {
+		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
+		return
+	}
+
+	if w.websocketReadLimit > 0 {
+
+	} else {
+		//set max size to 1MB to avoid all these framing issues
+		wsConn.SetReadLimit(1024 * 1024)
+	}
+
+	headers := make(http.Header)
+	for _, name := range w.allowedHeaders {
+		if values, exist := req.Header[name]; exist {
+			headers[name] = values
+		}
+	}
+
+	ctx, cancelFunc := context.WithCancel(req.Context())
+	defer cancelFunc()
+
+	messageType, readBytes, err := wsConn.Read(ctx)
+	if err != nil {
+		grpclog.Errorf("Unable to read first websocket message: %v %v %v", messageType, readBytes, err)
+		return
+	}
+
+	if messageType != websocket.MessageBinary {
+		grpclog.Errorf("Message is non-binary")
+		return
+	}
+
+	wsHeaders, err := parseHeaders(string(readBytes))
+	if err != nil {
+		grpclog.Errorf("Unable to parse websocket headers: %v", err)
+		return
+	}
+
+	respWriter := newWebSocketResponseWriter(ctx, wsConn)
+	if w.opts.websocketPingInterval >= time.Second {
+		respWriter.enablePing(w.opts.websocketPingInterval)
+	}
+	wrappedReader := newWebsocketWrappedReader(ctx, wsConn, respWriter, cancelFunc)
+
+	for name, values := range wsHeaders {
+		headers[name] = values
+	}
+	req.Body = wrappedReader
+	req.Method = http.MethodPost
+	req.Header = headers
+
+	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
+	if isTextFormat {
+		grpclog.Errorf("web socket text format requests not yet supported")
+	}
+	req.URL.Path = w.endpointFunc(req)
+	w.handler.ServeHTTP(respWriter, interceptedRequest)
 }
 
 // IsAcceptableGrpcCorsRequest determines if a request is a CORS pre-flight request for a gRPC-Web request and that this
