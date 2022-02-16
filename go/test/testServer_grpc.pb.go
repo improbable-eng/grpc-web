@@ -4,6 +4,8 @@ package main
 
 import (
 	context "context"
+	"fmt"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -33,6 +35,7 @@ func NewGreeterClient(cc grpc.ClientConnInterface) GreeterClient {
 
 func (c *greeterClient) UnaryHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
 	out := new(HelloReply)
+	fmt.Printf("blae %v", c.cc)
 	err := c.cc.Invoke(ctx, "/main.Greeter/UnaryHello", in, out, opts...)
 	if err != nil {
 		return nil, err

@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mwitkow/grpc-proxy/proxy"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"nhooyr.io/websocket"
@@ -18,54 +20,78 @@ import (
 // Test_echoServer tests the echoServer by sending it 5 different messages
 // and ensuring the responses all match.
 func Test_echoServer(t *testing.T) {
+	log := logrus.New()
 	t.Parallel()
-	startGrpcServer()
-	s := httptest.NewServer(EchoServer{
-		logf: t.Logf,
-	})
+	go startGrpcServer()
+	server, err := NewEchoServer(logrus.NewEntry(log), "localhost:50051")
+	s := httptest.NewServer(server)
+
+	opt := []grpc.DialOption{}
+	opt = append(opt, grpc.WithCodec(proxy.Codec()))
+	opt = append(opt, grpc.WithInsecure())
+	cc, err := grpc.Dial("localhost:50051", opt...)
+
+	log.Info("started server")
 	defer s.Close()
 
+	response, _ := NewGreeterClient(cc).UnaryHello(context.Background(), &HelloRequest{Name: "boris"})
+	log.Info(response)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	c, _, err := websocket.Dial(ctx, s.URL, &websocket.DialOptions{
 		Subprotocols: []string{"grpc-websocket"},
 	})
+	log.Info("got websocket")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer c.Close(websocket.StatusInternalError, "the sky is falling")
 
-	request, _ := proto.Marshal(&HelloRequest{
-		Name: "boris",
+	binarymessage, err := proto.Marshal(&GrpcFrame{
+		StreamId: 1,
+		Payload: &GrpcFrame_Header{
+			Header: &Header{
+				Operation: "main.Greeter/UnaryHello",
+				Headers:   make(map[string]string),
+			},
+		},
 	})
 
-	binarymessage, err := proto.Marshal(&Message{
+	log.Info("writing message")
+	c.Write(ctx, websocket.MessageBinary, binarymessage)
+	data, err := proto.Marshal(&HelloRequest{
+		Name: "boris 2",
+	})
+
+	binarymessage, err = proto.Marshal(&GrpcFrame{
 		StreamId: 1,
-		Payload: &Message_Start{
-			Start: &Start{
-				Url:     "operation",
-				Request: request,
+		Payload: &GrpcFrame_Body{
+			&Body{
+				Data: data,
 			},
 		},
 	})
 
 	c.Write(ctx, websocket.MessageBinary, binarymessage)
-
+	log.Info("Reading response")
 	_, r, err := c.Reader(ctx)
 
-	response := &Message{}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	response2 := &GrpcFrame{}
 	bytesValue, err := ioutil.ReadAll(r)
-	if err := proto.Unmarshal(bytesValue, response); err != nil {
+	if err := proto.Unmarshal(bytesValue, response2); err != nil {
 		fmt.Errorf("error %v", err)
 	}
 
 	serverResponse := &HelloReply{}
-
-	if err := proto.Unmarshal(bytesValue, serverResponse); err != nil {
+	if err := proto.Unmarshal(response2.GetBody().GetData(), serverResponse); err != nil {
 		fmt.Errorf("error %v", err)
 	}
-	println(serverResponse.Reply)
+	log.Info(response2)
 	c.Close(websocket.StatusNormalClosure, "")
 }
 
