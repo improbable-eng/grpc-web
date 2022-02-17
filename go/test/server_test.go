@@ -48,32 +48,13 @@ func Test_echoServer(t *testing.T) {
 	}
 	defer c.Close(websocket.StatusInternalError, "the sky is falling")
 
-	binarymessage, err := proto.Marshal(&GrpcFrame{
-		StreamId: 1,
-		Payload: &GrpcFrame_Header{
-			Header: &Header{
-				Operation: "main.Greeter/UnaryHello",
-				Headers:   make(map[string]string),
-			},
-		},
-	})
-
-	log.Info("writing message")
-	c.Write(ctx, websocket.MessageBinary, binarymessage)
+	StartGrpc(c, 1, "main.Greeter/UnaryHello", make(map[string]string), ctx)
 	data, err := proto.Marshal(&HelloRequest{
 		Name: "boris 2",
 	})
-
-	binarymessage, err = proto.Marshal(&GrpcFrame{
-		StreamId: 1,
-		Payload: &GrpcFrame_Body{
-			&Body{
-				Data: data,
-			},
-		},
-	})
-
-	c.Write(ctx, websocket.MessageBinary, binarymessage)
+	//todo make this a class for easier tests
+	MessageGrpc(c, 1, data, ctx)
+	CompleteGrpc(c, 1, ctx)
 	log.Info("Reading response")
 	_, r, err := c.Reader(ctx)
 
@@ -91,8 +72,46 @@ func Test_echoServer(t *testing.T) {
 	if err := proto.Unmarshal(response2.GetBody().GetData(), serverResponse); err != nil {
 		fmt.Errorf("error %v", err)
 	}
-	log.Info(response2)
+	log.Infof("got server response %v", response2)
 	c.Close(websocket.StatusNormalClosure, "")
+}
+
+func CompleteGrpc(ws *websocket.Conn, streamId uint32, ctx context.Context) error {
+	binarymessage, _ := proto.Marshal(&GrpcFrame{
+		StreamId: streamId,
+		Payload: &GrpcFrame_Complete{
+			Complete: &Complete{},
+		},
+	})
+
+	return ws.Write(ctx, websocket.MessageBinary, binarymessage)
+}
+
+func StartGrpc(ws *websocket.Conn, streamId uint32, op string, headers map[string]string, ctx context.Context) error {
+	binarymessage, _ := proto.Marshal(&GrpcFrame{
+		StreamId: streamId,
+		Payload: &GrpcFrame_Header{
+			Header: &Header{
+				Operation: op,
+				Headers:   headers,
+			},
+		},
+	})
+
+	return ws.Write(ctx, websocket.MessageBinary, binarymessage)
+}
+
+func MessageGrpc(ws *websocket.Conn, streamId uint32, data []byte, ctx context.Context) error {
+	binarymessage, _ := proto.Marshal(&GrpcFrame{
+		StreamId: streamId,
+		Payload: &GrpcFrame_Body{
+			&Body{
+				Data: data,
+			},
+		},
+	})
+
+	return ws.Write(ctx, websocket.MessageBinary, binarymessage)
 }
 
 type server struct {

@@ -90,7 +90,7 @@ func NewEchoServer(logf *logrus.Entry, backendHostPort string) (*EchoServer, err
 		return nil, err
 	}
 	server := buildGrpcProxyServer(cc, logf)
-	logf.Infof("log info %v", server)
+
 	return &EchoServer{
 		logf:   logf,
 		client: server,
@@ -175,6 +175,7 @@ func (ws *WebsocketChannel) Close() {
 }
 
 func (ws *WebsocketChannel) poll() error {
+	ws.logf.Infof("polling websocket channel")
 	frame, err := ws.read()
 	if err == io.EOF {
 		ws.Close()
@@ -223,13 +224,14 @@ func (ws *WebsocketChannel) poll() error {
 		//todo add handler to the websocket channel and then forward it to this.
 		interceptedRequest, _ := hackIntoNormalGrpcRequest(req.WithContext(stream.ctx))
 		ws.logf.Infof("starting call to http server %v", interceptedRequest)
-		ws.handler.ServeHTTP(stream, interceptedRequest)
+		go ws.handler.ServeHTTP(stream, interceptedRequest)
 
 	case *GrpcFrame_Body:
 		if stream == nil {
 			//todo return this as an error frame to the socket
 			return fmt.Errorf("stream %v does not exist", frame.StreamId)
 		} else {
+			ws.logf.Infof("received body %v", frame)
 			stream.inputFrames <- frame
 		}
 
@@ -276,7 +278,7 @@ func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	// contentType := req.Header.Get("content-type")
 	// incomingContentType := grpcWebContentType
 	req.Header.Set("content-type", "application/grpc+proto")
-	req.Header.Set("grpc-encoding", "gzip")
+	req.Header.Set("grpc-encoding", "identity")
 
 	// Remove content-length header since it represents http1.1 payload size, not the sum of the h2
 	// DATA frame payload lengths. https://http2.github.io/http2-spec/#malformed This effectively
@@ -298,6 +300,8 @@ type GrpcStream struct {
 	remainingError    error
 	//todo add a context to return to close the connection
 }
+
+func (stream *GrpcStream) Flush() {}
 
 func (stream *GrpcStream) Header() http.Header {
 	return stream.responseHeaders
@@ -332,7 +336,7 @@ func (stream *GrpcStream) Read(p []byte) (int, error) {
 	}
 
 	frame, more := <-stream.inputFrames
-
+	stream.channel.logf.Infof("received message %v more: %v", frame, more)
 	if more {
 		switch op := frame.Payload.(type) {
 		case *GrpcFrame_Body:
