@@ -112,7 +112,7 @@ func Test_streamCall(t *testing.T) {
 
 	response2 := &GrpcFrame{}
 	bytesValue, err := ioutil.ReadAll(r)
-	if err := proto.Unmarshal(bytesValue, response2); err != nil {
+	if err := proto.Unmarshal(bytesValue[5:], response2); err != nil {
 		fmt.Errorf("error %v", err)
 	}
 
@@ -120,7 +120,29 @@ func Test_streamCall(t *testing.T) {
 	if err := proto.Unmarshal(response2.GetBody().GetData(), serverResponse); err != nil {
 		fmt.Errorf("error %v", err)
 	}
+
 	log.Infof("got server response %v", serverResponse)
+
+	log.Info("Reading response2")
+	_, r, err = c.Reader(ctx)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	response2 = &GrpcFrame{}
+	bytesValue, err = ioutil.ReadAll(r)
+
+	log.Infof("response size %v", len(bytesValue))
+	if err := proto.Unmarshal(bytesValue[5:], response2); err != nil {
+		fmt.Errorf("error %v", err)
+	}
+
+	serverResponse = &HelloReply{}
+	if err := proto.Unmarshal(response2.GetBody().GetData(), serverResponse); err != nil {
+		fmt.Errorf("error %v", err)
+	}
+	log.Infof("got server response2 %v", serverResponse)
 	c.Close(websocket.StatusNormalClosure, "")
 }
 
