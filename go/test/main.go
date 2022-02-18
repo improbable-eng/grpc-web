@@ -197,7 +197,7 @@ func (ws *WebsocketChannel) poll() error {
 		ctx, cancel := context.WithCancel(ws.context)
 		stream := &GrpcStream{
 			id:              frame.StreamId,
-			inputFrames:     make(chan *GrpcFrame, 2), // how many frames should we allow to buffer
+			inputFrames:     make(chan *GrpcFrame, 1000), // how many frames should we allow to buffer
 			channel:         ws,
 			ctx:             ctx,
 			cancel:          cancel,
