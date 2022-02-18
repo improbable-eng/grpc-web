@@ -20,7 +20,7 @@ import (
 
 // Test_echoServer tests the echoServer by sending it 5 different messages
 // and ensuring the responses all match.
-func Test_echoUnaryCall(t *testing.T) {
+func xTest_echoUnaryCall(t *testing.T) {
 	log := logrus.New()
 	t.Parallel()
 	go startGrpcServer()
@@ -70,7 +70,7 @@ func Test_echoUnaryCall(t *testing.T) {
 	c.Close(websocket.StatusNormalClosure, "")
 }
 
-func xTest_streamCall(t *testing.T) {
+func Test_streamCall(t *testing.T) {
 	log := logrus.New()
 	t.Parallel()
 	go startGrpcServer()
