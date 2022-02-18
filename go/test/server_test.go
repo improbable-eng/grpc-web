@@ -119,6 +119,7 @@ type server struct {
 }
 
 func (*server) UnaryHello(ctx context.Context, req *HelloRequest) (*HelloReply, error) {
+	fmt.Printf("UnaryHello got %v", req)
 	return &HelloReply{
 		Reply: "hello: " + req.Name,
 	}, nil

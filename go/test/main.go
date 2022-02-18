@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -341,8 +342,10 @@ func (stream *GrpcStream) Read(p []byte) (int, error) {
 		switch op := frame.Payload.(type) {
 		case *GrpcFrame_Body:
 			//set this in the remaining buffer
-			stream.remainingBuffer = op.Body.Data
-			stream.Read(p)
+			a := make([]byte, 4)
+			binary.BigEndian.PutUint32(a, uint32(len(op.Body.Data)))
+			stream.remainingBuffer = append(a, op.Body.Data...)
+			return stream.Read(p)
 		case *GrpcFrame_Error:
 			return 0, errors.New("Grpc Client Error")
 		}
