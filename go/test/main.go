@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -302,7 +301,9 @@ type GrpcStream struct {
 	//todo add a context to return to close the connection
 }
 
-func (stream *GrpcStream) Flush() {}
+func (stream *GrpcStream) Flush() {
+	stream.channel.logf.Info("flushing")
+}
 
 func (stream *GrpcStream) Header() http.Header {
 	return stream.responseHeaders
@@ -329,11 +330,11 @@ func (stream *GrpcStream) Read(p []byte) (int, error) {
 
 		// The remaining buffer doesn't fit inside the argument slice, so copy the bytes that will fit and retain the
 		// bytes that don't fit - don't return the remainingError as there are still bytes to be read from the frame
-		copy(p, stream.remainingBuffer[:len(p)])
-		stream.remainingBuffer = stream.remainingBuffer[len(p):]
+		copied := copy(p, stream.remainingBuffer[:len(p)])
+		stream.remainingBuffer = stream.remainingBuffer[copied:]
 
 		// Return the length of the argument slice as that was the length of the written bytes
-		return len(p), nil
+		return copied, nil
 	}
 
 	frame, more := <-stream.inputFrames
@@ -342,9 +343,7 @@ func (stream *GrpcStream) Read(p []byte) (int, error) {
 		switch op := frame.Payload.(type) {
 		case *GrpcFrame_Body:
 			//set this in the remaining buffer
-			a := make([]byte, 4)
-			binary.BigEndian.PutUint32(a, uint32(len(op.Body.Data)))
-			stream.remainingBuffer = append(a, op.Body.Data...)
+			stream.remainingBuffer = op.Body.Data
 			return stream.Read(p)
 		case *GrpcFrame_Error:
 			return 0, errors.New("Grpc Client Error")
