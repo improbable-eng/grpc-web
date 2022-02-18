@@ -29,7 +29,7 @@ type options struct {
 	websocketReadLimit             int64
 	allowNonRootResources          bool
 	endpointsFunc                  *func() []string
-	enableWebsocketChannels		   bool
+	enableWebsocketChannels        bool
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -131,9 +131,9 @@ func WithWebsockets(enableWebsockets bool) Option {
 // - enabling bidirectional requests.
 //
 // The default behaviour is false, i.e. to disallow websockets channels
-func WithWebsocketsChannel(enableWebsocketsChannel bool) Option {
+func WithWebsocketsChannel(enableWebsocketsChannels bool) Option {
 	return func(o *options) {
-		o.enableWebsocketChannels = enableWebsocketChannels
+		o.enableWebsocketChannels = enableWebsocketsChannels
 	}
 }
 

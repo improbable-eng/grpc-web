@@ -249,12 +249,8 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketChannelRequest(resp http.Response
 		return
 	}
 
-	if w.websocketReadLimit > 0 {
-
-	} else {
-		//set max size to 1MB to avoid all these framing issues
-		wsConn.SetReadLimit(1024 * 1024)
-	}
+	//todo make this configureable to equal it to the biggest possible grpc message.
+	wsConn.SetReadLimit(4 * 1024 * 1024)
 
 	headers := make(http.Header)
 	for _, name := range w.allowedHeaders {
@@ -265,43 +261,13 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketChannelRequest(resp http.Response
 
 	ctx, cancelFunc := context.WithCancel(req.Context())
 	defer cancelFunc()
-
-	messageType, readBytes, err := wsConn.Read(ctx)
-	if err != nil {
-		grpclog.Errorf("Unable to read first websocket message: %v %v %v", messageType, readBytes, err)
-		return
-	}
-
-	if messageType != websocket.MessageBinary {
-		grpclog.Errorf("Message is non-binary")
-		return
-	}
-
-	wsHeaders, err := parseHeaders(string(readBytes))
-	if err != nil {
-		grpclog.Errorf("Unable to parse websocket headers: %v", err)
-		return
-	}
-
-	respWriter := newWebSocketResponseWriter(ctx, wsConn)
-	if w.opts.websocketPingInterval >= time.Second {
-		respWriter.enablePing(w.opts.websocketPingInterval)
-	}
-	wrappedReader := newWebsocketWrappedReader(ctx, wsConn, respWriter, cancelFunc)
-
-	for name, values := range wsHeaders {
-		headers[name] = values
-	}
-	req.Body = wrappedReader
-	req.Method = http.MethodPost
-	req.Header = headers
-
-	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
-	if isTextFormat {
-		grpclog.Errorf("web socket text format requests not yet supported")
-	}
-	req.URL.Path = w.endpointFunc(req)
-	w.handler.ServeHTTP(respWriter, interceptedRequest)
+	NewWebsocketChannel(wsConn, w.handler, ctx)
+	websocketChannel := NewWebsocketChannel(wsConn, w.handler, ctx)
+	//todo add support for ping
+	// if w.opts.websocketPingInterval >= time.Second {
+	// 	websokcetChannel.enablePing(w.opts.websocketPingInterval)
+	// }
+	websocketChannel.Start()
 }
 
 // IsAcceptableGrpcCorsRequest determines if a request is a CORS pre-flight request for a gRPC-Web request and that this
