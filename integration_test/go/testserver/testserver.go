@@ -54,6 +54,7 @@ func main() {
 		grpcweb.WithWebsockets(true),
 		httpOriginFunc,
 		websocketOriginFunc,
+		grpcweb.WithWebsocketsChannel(true),
 	)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)

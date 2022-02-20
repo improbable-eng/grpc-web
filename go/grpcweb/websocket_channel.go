@@ -143,7 +143,7 @@ func (ws *WebsocketChannel) poll() error {
 		return err
 	}
 
-	// grpclog.Debugf("reveived frame for websocket channel %v", frame.StreamId)
+	grpclog.Infof("reveived frame for websocket channel %v", frame.StreamId)
 	stream := ws.activeStreams[frame.StreamId]
 
 	switch op := frame.Payload; op.(type) {
@@ -176,7 +176,7 @@ func (ws *WebsocketChannel) poll() error {
 
 			//todo add handler to the websocket channel and then forward it to this.
 			interceptedRequest := makeGrpcRequest(req.WithContext(stream.ctx))
-			// grpclog.Debugf("starting call to http server %v", interceptedRequest)
+			grpclog.Infof("starting call to http server %v", interceptedRequest)
 			go ws.handler.ServeHTTP(stream, interceptedRequest)
 		} else {
 			if err != nil {
@@ -189,7 +189,7 @@ func (ws *WebsocketChannel) poll() error {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
 		} else {
-			// grpclog.Debugf("received body %v", frame)
+			grpclog.Infof("received body %v", frame)
 			stream.inputFrames <- frame
 		}
 	case *GrpcFrame_Cancel:
@@ -197,7 +197,7 @@ func (ws *WebsocketChannel) poll() error {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
 		} else {
-			// grpclog.Debugf("stream %v is canceled", frame.StreamId)
+			grpclog.Infof("stream %v is canceled", frame.StreamId)
 			stream.cancel()
 			close(stream.inputFrames)
 			delete(ws.activeStreams, frame.StreamId)
@@ -207,7 +207,7 @@ func (ws *WebsocketChannel) poll() error {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
 		} else {
-			// grpclog.Debugf("completing stream %v", frame.StreamId)
+			grpclog.Infof("completing stream %v", frame.StreamId)
 			close(stream.inputFrames)
 			delete(ws.activeStreams, frame.StreamId)
 		}
@@ -216,7 +216,8 @@ func (ws *WebsocketChannel) poll() error {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
 		} else {
-			// grpclog.Debugf("error on stream %v: %v", frame.StreamId, frame.GetFailure().ErrorMessage)
+
+			grpclog.Infof("error on stream %v: %v", frame.StreamId, frame.GetFailure().ErrorMessage)
 			stream.inputFrames <- frame
 			close(stream.inputFrames)
 			delete(ws.activeStreams, frame.StreamId)
