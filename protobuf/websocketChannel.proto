@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package grpcweb;
+option go_package = "./grpcweb";
+
+message GrpcFrame{
+    uint32 streamId = 1;
+
+    oneof payload {
+        Header header = 3;
+        Body body = 4;
+        Complete complete = 5;
+        Failure failure = 6;
+        Cancel cancel = 7;
+    } 
+}
+
+message Header {
+    string operation = 1;
+    map<string, HeaderValue> headers = 2;
+    int32 status = 3;
+}
+
+message HeaderValue {
+    repeated string value = 1;
+}
+
+message Body {
+    bytes data = 1;
+}
+
+message Complete {
+}
+
+message Failure {
+    //todo use enum errors to properly define the protocol
+    string errorMessage = 1;
+}
+
+
+message Cancel {
+}
