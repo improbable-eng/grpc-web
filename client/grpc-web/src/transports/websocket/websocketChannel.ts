@@ -38,7 +38,7 @@ interface WebsocketChannel {
 
 class WebsocketChannelImpl implements WebsocketChannel {
   readonly wsUrl: string;
-  readonly activeStreams = new Map<number, TransportOptions>();
+  readonly activeStreams = new Map<number, [TransportOptions, GrpcStream]>();
   ws: WebSocket;
   streamId = 0
   closed = false
@@ -47,14 +47,23 @@ class WebsocketChannelImpl implements WebsocketChannel {
     this.wsUrl = ws;
   }
 
+  flush(event: Event) {
+    this.activeStreams.forEach((opts, streamId, _map) => {
+      opts[0].debug && debug("channel opened", streamId, event);
+      opts[1].flush()
+    })
+    this.activeStreams
+  }
+
   recover(event: Event) {
     if(!closed){
       this.activeStreams.forEach((opts, streamId, _map) => {
-        opts.debug && debug("channel error", streamId, event);
-        opts.onEnd(new Error(event.toString()))
+        opts[0].debug && debug("channel error", streamId, event);
+        opts[0].onEnd(new Error(event.toString()))
       })
       this.activeStreams.clear()
       this.ws = new WebSocket(this.wsUrl, ["grpc-websocket-channel"]);
+      this.ws.binaryType = "arraybuffer"
     } 
   }
 
@@ -71,39 +80,39 @@ class WebsocketChannelImpl implements WebsocketChannel {
     if (stream != null) {
       switch (frame.getPayloadCase()) {
         case GrpcFrame.PayloadCase.HEADER:
-          stream.debug && debug(`received header for ${streamId}`)
+          stream[0].debug && debug(`received header for ${streamId}`)
           const header = frame.getHeader()
           if (header != null) {
             const headerMap = header.getHeadersMap()
             const metaData = new Metadata()
             headerMap.forEach((entry, key) => metaData.append(key, entry.getValueList()))
-            stream.onHeaders(metaData, header.getStatus())
+            stream[0].onHeaders(metaData, header.getStatus())
           }
           break
         case GrpcFrame.PayloadCase.BODY:
-          stream.debug && debug(`received body for ${streamId}`)
+          stream[0].debug && debug(`received body for ${streamId}`)
           const body = frame.getBody()
           if (body != null) {
-            stream.onChunk(body.getData_asU8())
+            stream[0].onChunk(body.getData_asU8())
           }
           break
         case GrpcFrame.PayloadCase.COMPLETE: 
-          stream.debug && debug(`completing ${streamId}`)
-          stream.onEnd()
+        stream[0].debug && debug(`completing ${streamId}`)
+          stream[0].onEnd()
           break
         case GrpcFrame.PayloadCase.FAILURE: 
 
           const failure = frame.getFailure()
           if (failure != null) {
             const message = failure.getErrormessage()
-            stream.debug && debug(`failing ${streamId} ${message}`)
-            stream.onEnd(new Error(message))
+            stream[0].debug && debug(`failing ${streamId} ${message}`)
+            stream[0].onEnd(new Error(message))
           } else {
-            stream.onEnd(new Error("unknown error"))
+            stream[0].onEnd(new Error("unknown error"))
           }
           break
         case GrpcFrame.PayloadCase.CANCEL: 
-          stream.onEnd(new Error("stream was canceled"))
+        stream[0].onEnd(new Error("stream was canceled"))
           break
         default: break
       }
@@ -117,6 +126,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
     if (this.ws == null) {
       this.ws = new WebSocket(this.wsUrl, ["grpc-websocket-channel"])
       this.ws.binaryType = "arraybuffer"
+      this.ws.onopen = (event) => this.flush(event)
       this.ws.onclose = (event) => this.recover(event)
       this.ws.onerror = (event) => this.recover(event)
       this.ws.onmessage = (event) => this.onMessage(event)
@@ -155,7 +165,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
     }
 
     //question: can this structure be reused or is it one time use?
-    return {
+    const stream =  {
       streamId: currentStreamId,
       sendMessage: (msgBytes: Uint8Array) => {
         opts.debug && debug(`stream.sendMessage ${currentStreamId}`)
@@ -174,8 +184,8 @@ class WebsocketChannelImpl implements WebsocketChannel {
         sendToWebsocket(frame)
       },
       start: (metadata: Metadata) => {
-        opts.debug && debug(`stream.start ${currentStreamId}`)
-        self.activeStreams.set(currentStreamId, opts)
+        opts.debug && debug(`stream.start ${currentStreamId} ${opts.methodDefinition.service.serviceName}/${opts.methodDefinition.methodName}`)
+        self.activeStreams.set(currentStreamId, [opts, stream])
         const header = new Header()
         header.setOperation(`${opts.methodDefinition.service.serviceName}/${opts.methodDefinition.methodName}`)
         //todo add all meta data.
@@ -209,6 +219,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
         }
       }
     }
+    return stream;
   }
 }
 
