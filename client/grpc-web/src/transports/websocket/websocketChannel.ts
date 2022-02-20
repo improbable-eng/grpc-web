@@ -50,7 +50,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
   recover(event: Event) {
     if(!closed){
       this.activeStreams.forEach((opts, streamId, _map) => {
-        opts.debug && debug("channel error", streamId, opts);
+        opts.debug && debug("channel error", streamId, event);
         opts.onEnd(new Error(event.toString()))
       })
       this.activeStreams.clear()
@@ -66,6 +66,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
   onMessage(event: MessageEvent) {
     const frame = GrpcFrame.deserializeBinary(new Uint8Array(event.data))
     const streamId = frame.getStreamid()
+    console.log("active streams accesed for ", streamId)
     const stream = this.activeStreams.get(streamId)
     if (stream != null) {
       switch (frame.getPayloadCase()) {
@@ -116,23 +117,22 @@ class WebsocketChannelImpl implements WebsocketChannel {
     if (this.ws == null) {
       this.ws = new WebSocket(this.wsUrl, ["grpc-websocket-channel"])
       this.ws.binaryType = "arraybuffer"
-      this.ws.onclose = this.recover
-      this.ws.onerror = this.recover
-      this.ws.onmessage = this.onMessage
+      this.ws.onclose = (event) => this.recover(event)
+      this.ws.onerror = (event) => this.recover(event)
+      this.ws.onmessage = (event) => this.onMessage(event)
     }
     return this.ws
   }
 
   websocketChannelRequest(opts: TransportOptions): GrpcStream {
-    opts.debug && debug("websocket channel request", opts)
     let currentStreamId = this.streamId++
     const sendQueue: Array<GrpcFrame> = []
     const self = this
-
     function sendToWebsocket(toSend: GrpcFrame) {
       if (self.activeStreams.get(toSend.getStreamid()) != null) {
         const ws = self.getWebsocket()
         if (ws.readyState === ws.CONNECTING) {
+          opts.debug && debug(`stream.webscocket queued ${currentStreamId}`)
           sendQueue.push(toSend)
         } else {
           while (sendQueue.length > 0) {
@@ -158,7 +158,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
     return {
       streamId: currentStreamId,
       sendMessage: (msgBytes: Uint8Array) => {
-        opts.debug && debug(`stream.message ${currentStreamId}`)
+        opts.debug && debug(`stream.sendMessage ${currentStreamId}`)
         const body = new Body()
         body.setData(msgBytes)
 
