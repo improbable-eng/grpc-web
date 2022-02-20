@@ -39,7 +39,7 @@ interface WebsocketChannel {
 class WebsocketChannelImpl implements WebsocketChannel {
   readonly wsUrl: string;
   readonly activeStreams = new Map<number, TransportOptions>();
-  ws: WebSocket | undefined;
+  ws: WebSocket;
   streamId = 0
   closed = false
 
@@ -127,11 +127,11 @@ class WebsocketChannelImpl implements WebsocketChannel {
     opts.debug && debug("websocket channel request", opts)
     let currentStreamId = this.streamId++
     const sendQueue: Array<GrpcFrame> = []
-
+    const self = this
 
     function sendToWebsocket(toSend: GrpcFrame) {
-      if (this.activeStreams.get(toSend.getStreamid) != null) {
-        const ws = this.getWebsocket()
+      if (self.activeStreams.get(toSend.getStreamid()) != null) {
+        const ws = self.getWebsocket()
         if (ws.readyState === ws.CONNECTING) {
           sendQueue.push(toSend)
         } else {
@@ -144,7 +144,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
           ws.send(toSend.serializeBinary())
         }
       } else {
-        debug(`stream does not exist ${toSend.getStreamid}`)
+        debug(`stream does not exist ${toSend.getStreamid()}`)
       }
     }
 
@@ -175,7 +175,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
       },
       start: (metadata: Metadata) => {
         opts.debug && debug(`stream.start ${currentStreamId}`)
-        this.activeStreams.set(currentStreamId, opts)
+        self.activeStreams.set(currentStreamId, opts)
         const header = new Header()
         header.setOperation(`${opts.methodDefinition.service.serviceName}/${opts.methodDefinition.methodName}`)
         //todo add all meta data.
@@ -198,7 +198,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
       },
       flush: () => {
         opts.debug && debug(`stream.flushed ${currentStreamId}`)
-        const ws = this.getWebsocket()
+        const ws = self.getWebsocket()
         if (ws.readyState === ws.OPEN) {
           while (sendQueue.length > 0) {
             const msg = sendQueue.pop()

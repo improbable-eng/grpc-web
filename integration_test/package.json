@@ -23,7 +23,8 @@
     "browser-headers": "^0.4.1",
     "event-stream": "^4.0.1",
     "google-protobuf": "3.14.0",
-    "typedarray": "0.0.6"
+    "typedarray": "0.0.6",
+    "ws": "^7.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
