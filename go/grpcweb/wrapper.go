@@ -126,7 +126,7 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 	} else if w.opts.enableWebsocketChannels && w.IsGrpcWebSocketChannelRequest(req) {
 		if w.websocketOriginFunc(req) {
 			if !w.opts.corsForRegisteredEndpointsOnly || w.isRequestForRegisteredEndpoint(req) {
-				w.HandleGrpcWebsocketRequest(resp, req)
+				w.HandleGrpcWebsocketChannelRequest(resp, req)
 				return
 			}
 		}
@@ -261,7 +261,7 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketChannelRequest(resp http.Response
 
 	ctx, cancelFunc := context.WithCancel(req.Context())
 	defer cancelFunc()
-	NewWebsocketChannel(wsConn, w.handler, ctx)
+
 	websocketChannel := NewWebsocketChannel(wsConn, w.handler, ctx)
 	//todo add support for ping
 	// if w.opts.websocketPingInterval >= time.Second {

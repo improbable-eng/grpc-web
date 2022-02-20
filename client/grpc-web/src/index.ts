@@ -2,6 +2,7 @@ import {BrowserHeaders} from "browser-headers";
 import * as impTransport from "./transports/Transport";
 import * as impTransportFetch from "./transports/http/fetch";
 import * as impTransportWebSocket from "./transports/websocket/websocket";
+import * as impTransportWebSocketChannel from "./transports/websocket/websocketChannel";
 import * as impTransportXhr from "./transports/http/xhr";
 import * as impTransportHttp from "./transports/http/http";
 import * as impCode from "./Code";
@@ -30,6 +31,7 @@ export namespace grpc {
   export interface XhrTransportInit extends impTransportXhr.XhrTransportInit {}
 
   export const WebsocketTransport = impTransportWebSocket.WebsocketTransport;
+  export const WebsocketChannelTransport = impTransportWebSocketChannel.WebsocketChannelTransport;
 
   export interface UnaryMethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.UnaryMethodDefinition<TRequest, TResponse> {}
   export interface MethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.MethodDefinition<TRequest, TResponse> {}
