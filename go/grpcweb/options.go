@@ -30,6 +30,7 @@ type options struct {
 	allowNonRootResources          bool
 	endpointsFunc                  *func() []string
 	enableWebsocketChannels        bool
+	websocketChannelMaxStreamCount int32
 }
 
 func evaluateOptions(opts []Option) *options {
@@ -134,6 +135,13 @@ func WithWebsockets(enableWebsockets bool) Option {
 func WithWebsocketsChannel(enableWebsocketsChannels bool) Option {
 	return func(o *options) {
 		o.enableWebsocketChannels = enableWebsocketsChannels
+	}
+}
+
+// WithWebsocketsChannel the amount of concurrent channels a websocket channel is allowed to handle
+func WithWebsocketChannelMaxStreamCount(websocketChannelMaxStreamCount int32) Option {
+	return func(o *options) {
+		o.websocketChannelMaxStreamCount = websocketChannelMaxStreamCount
 	}
 }
 
