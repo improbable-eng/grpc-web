@@ -11,4 +11,4 @@ else
   echo "Skipping test server build because PREBUILT_INTEGRATION_TESTS is set"
 fi
 
-./go/build/testserver --tls_cert_file=../misc/localhost.crt --tls_key_file=../misc/localhost.key
+./go/build/testserver --tls_cert_file=../misc/localhost.crt --tls_key_file=../misc/localhost.key &
