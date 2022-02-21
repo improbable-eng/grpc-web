@@ -264,7 +264,7 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketChannelRequest(resp http.Response
 	ctx, cancelFunc := context.WithCancel(req.Context())
 	defer cancelFunc()
 
-	websocketChannel := NewWebsocketChannel(wsConn, w.handler, ctx, w.opts.websocketChannelMaxStreamCount)
+	websocketChannel := NewWebsocketChannel(wsConn, w.handler, ctx, w.opts.websocketChannelMaxStreamCount, req)
 	//todo add support for ping
 	// if w.opts.websocketPingInterval >= time.Second {
 	// 	websokcetChannel.enablePing(w.opts.websocketPingInterval)

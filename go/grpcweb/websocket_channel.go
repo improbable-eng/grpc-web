@@ -23,6 +23,7 @@ type WebsocketChannel struct {
 	context         context.Context
 	handler         http.Handler
 	maxStreamCount  int
+	req             *http.Request
 }
 
 type GrpcStream struct {
@@ -38,7 +39,7 @@ type GrpcStream struct {
 	//todo add a context to return to close the connection
 }
 
-func NewWebsocketChannel(websocket *websocket.Conn, handler http.Handler, ctx context.Context, maxStreamCount int) *WebsocketChannel {
+func NewWebsocketChannel(websocket *websocket.Conn, handler http.Handler, ctx context.Context, maxStreamCount int, req *http.Request) *WebsocketChannel {
 	return &WebsocketChannel{
 		socket:          websocket,
 		activeStreams:   make(map[uint32]*GrpcStream),
@@ -47,6 +48,7 @@ func NewWebsocketChannel(websocket *websocket.Conn, handler http.Handler, ctx co
 		context:         ctx,
 		handler:         handler,
 		maxStreamCount:  maxStreamCount,
+		req:             req,
 	}
 }
 
@@ -154,34 +156,38 @@ func (ws *WebsocketChannel) poll() error {
 
 		// todo make this configurable how many frames should we allow to buffer to avoid blocking the websocket
 
-		if ws.maxStreamCount > 0 && ws.maxStreamCount > len(ws.activeStreams) {
-			stream := newGrpcStream(frame.StreamId, ws, 1000)
-			ws.activeStreams[frame.StreamId] = stream
+		// if ws.maxStreamCount > 0 && ws.maxStreamCount > len(ws.activeStreams) {
+		stream := newGrpcStream(frame.StreamId, ws, 1000)
+		ws.activeStreams[frame.StreamId] = stream
 
-			url, err := url.Parse("http://localhost:9100/" + frame.GetHeader().Operation)
-			if err != nil {
-				return ws.writeError(frame.StreamId, err.Error())
-			}
+		url, err := url.Parse("http://localhost/")
+		url.Scheme = ws.req.URL.Scheme
+		url.Host = ws.req.URL.Host
+		url.Path = frame.GetHeader().Operation
 
-			req := &http.Request{
-				Method: http.MethodPost,
-				URL:    url,
-				Header: make(map[string][]string),
-				Body:   stream,
-			}
-			for key, element := range frame.GetHeader().Headers {
-				req.Header[key] = element.Value
-			}
-
-			//todo add handler to the websocket channel and then forward it to this.
-			interceptedRequest := makeGrpcRequest(req.WithContext(stream.ctx))
-			grpclog.Infof("starting call to http server %v", interceptedRequest)
-			go ws.handler.ServeHTTP(stream, interceptedRequest)
-		} else {
-			if err != nil {
-				return ws.writeError(frame.StreamId, "rejecting max number of streams reached for this channel")
-			}
+		if err != nil {
+			return ws.writeError(frame.StreamId, err.Error())
 		}
+
+		req := &http.Request{
+			Method: http.MethodPost,
+			URL:    url,
+			Header: make(map[string][]string),
+			Body:   stream,
+		}
+		for key, element := range frame.GetHeader().Headers {
+			req.Header[key] = element.Value
+		}
+		grpclog.Infof("starting grpc request to %v %v", url, req)
+		//todo add handler to the websocket channel and then forward it to this.
+		interceptedRequest := makeGrpcRequest(req.WithContext(stream.ctx))
+		grpclog.Infof("starting call to http server %v", interceptedRequest)
+		go ws.handler.ServeHTTP(stream, interceptedRequest)
+		// } else {
+		// 	if err != nil {
+		// 		return ws.writeError(frame.StreamId, "rejecting max number of streams reached for this channel")
+		// 	}
+		// }
 
 	case *GrpcFrame_Body:
 		grpclog.Infof("reveived Body for stream %v", frame.StreamId)
@@ -289,14 +295,10 @@ func (w *WebsocketChannel) ping() {
 }
 
 func (ws *WebsocketChannel) Close() {
-	for _, gs := range ws.activeStreams {
-		gs.Close()
-	}
 }
 
 func (stream *GrpcStream) Close() error {
 	stream.cancel()
-	close(stream.inputFrames)
 	return nil
 }
 

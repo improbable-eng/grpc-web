@@ -147,7 +147,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
         } else {
           sendQueue.forEach(toSend => {
             debug(`sending from queue ${toSend}  ${currentStreamId}`)
-            sendToWebsocket(toSend);
+            ws.send(toSend.serializeBinary());
           });
           sendQueue = []
           ws.send(toSend.serializeBinary())
@@ -211,7 +211,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
         if (ws.readyState === ws.OPEN) {
           sendQueue.forEach(toSend => {
             debug(`sending from queue ${toSend} ${currentStreamId}`)
-            sendToWebsocket(toSend);
+            ws.send(toSend.serializeBinary());
           });
           sendQueue = []
         }
