@@ -302,6 +302,7 @@ func (stream *GrpcStream) Close() error {
 
 func (stream *GrpcStream) Write(data []byte) (int, error) {
 	stream.WriteHeader(http.StatusOK)
+	grpclog.Infof("write body %v", len(data))
 	err := stream.channel.write(&GrpcFrame{
 		StreamId: stream.id,
 		Payload: &GrpcFrame_Body{
@@ -314,6 +315,7 @@ func (stream *GrpcStream) Write(data []byte) (int, error) {
 }
 
 func (stream *GrpcStream) WriteHeader(statusCode int) {
+
 	if !stream.hasWrittenHeaders {
 		headerResponse := make(map[string]*HeaderValue)
 		for key, element := range stream.responseHeaders {
@@ -321,7 +323,7 @@ func (stream *GrpcStream) WriteHeader(statusCode int) {
 				Value: element,
 			}
 		}
-
+		grpclog.Infof("write headers %v %v", statusCode, headerResponse)
 		stream.hasWrittenHeaders = true
 		stream.channel.write(
 			&GrpcFrame{
