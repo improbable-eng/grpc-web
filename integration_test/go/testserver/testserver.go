@@ -43,10 +43,10 @@ func main() {
 	grpclog.SetLogger(log.New(os.Stdout, "testserver: ", log.LstdFlags))
 
 	websocketOriginFunc := grpcweb.WithWebsocketOriginFunc(func(req *http.Request) bool {
-		return true
+		return false
 	})
 	httpOriginFunc := grpcweb.WithOriginFunc(func(origin string) bool {
-		return true
+		return false
 	})
 
 	wrappedServer := grpcweb.WrapServer(
@@ -97,14 +97,21 @@ func main() {
 	grpclog.Printf("Starting servers. http1.1 port: %d, http1.1 empty port: %d, http2 port: %d, http2 empty port: %d", *http1Port, *http1EmptyPort, *http2Port, *http2EmptyPort)
 
 	// Start the empty Http1.1 server
+	print("starting without tls")
 	go func() {
 		if err := http1EmptyServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
 			grpclog.Fatalf("failed starting http1.1 empty server: %v", err)
 		}
+		// if err := http1EmptyServer.ListenAndServe(); err != nil {
+		// 	grpclog.Fatalf("failed starting http1.1 empty server: %v", err)
+		// }
 	}()
 
 	// Start the Http1.1 server
 	go func() {
+		// if err := http1Server.ListenAndServe(); err != nil {
+		// 	grpclog.Fatalf("failed starting http1.1 empty server: %v", err)
+		// }
 		if err := http1Server.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath); err != nil {
 			grpclog.Fatalf("failed starting http1.1 server: %v", err)
 		}

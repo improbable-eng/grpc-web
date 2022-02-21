@@ -2,9 +2,9 @@ import {
   testHost,
   corsHost
 } from "../../hosts-config";
-import {grpc} from "@improbable-eng/grpc-web";
-import {NodeHttpTransport} from "@improbable-eng/grpc-web-node-http-transport";
-import { DISABLE_WEBSOCKET_TESTS, DISABLE_WEBSOCKET_CHANNEL_TESTS } from "./util";
+import { grpc } from "@improbable-eng/grpc-web";
+import { NodeHttpTransport } from "@improbable-eng/grpc-web-node-http-transport";
+import { DISABLE_WEBSOCKET_TESTS, DISABLE_WEBSOCKET_CHANNEL_TESTS, DISABLE_HTTP_TESTS } from "./util";
 
 type TestConfig = {
   testHostUrl: string,
@@ -55,7 +55,7 @@ export function runWithHttp1AndHttp2(cb: (config: TestConfig) => void) {
 }
 
 export function runWithSupportedTransports(cb: (transport: grpc.TransportFactory | undefined) => void) {
-  const transports: {[key: string]: grpc.TransportFactory | undefined} = {
+  const transports: { [key: string]: grpc.TransportFactory | undefined } = {
     "httpTransport": undefined
   };
 

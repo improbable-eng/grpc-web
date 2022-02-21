@@ -33,7 +33,8 @@
     "google-protobuf": "^3.14.0"
   },
   "dependencies": {
-    "browser-headers": "^0.4.1"
+    "browser-headers": "^0.4.1",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.7.4",

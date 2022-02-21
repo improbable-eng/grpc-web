@@ -6,3 +6,4 @@ import "./cancellation.spec";
 import "./ChunkParser.spec";
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+

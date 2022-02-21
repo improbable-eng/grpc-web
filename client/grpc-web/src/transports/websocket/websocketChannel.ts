@@ -75,7 +75,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
   onMessage(event: MessageEvent) {
     const frame = GrpcFrame.deserializeBinary(new Uint8Array(event.data))
     const streamId = frame.getStreamid()
-    console.log("active streams accesed for ", streamId)
+    console.log("active streams message  ", streamId)
     const stream = this.activeStreams.get(streamId)
     if (stream != null) {
       switch (frame.getPayloadCase()) {
@@ -105,7 +105,7 @@ class WebsocketChannelImpl implements WebsocketChannel {
           const failure = frame.getFailure()
           if (failure != null) {
             const message = failure.getErrormessage()
-            stream[0].debug && debug(`failing ${streamId} ${message}`)
+            stream[0].debug && debug(`failed ${streamId} ${message}`)
             stream[0].onEnd(new Error(message))
           } else {
             stream[0].onEnd(new Error("unknown error"))
@@ -136,21 +136,20 @@ class WebsocketChannelImpl implements WebsocketChannel {
 
   websocketChannelRequest(opts: TransportOptions): GrpcStream {
     let currentStreamId = this.streamId++
-    const sendQueue: Array<GrpcFrame> = []
+    let sendQueue: Array<GrpcFrame> = []
     const self = this
     function sendToWebsocket(toSend: GrpcFrame) {
       if (self.activeStreams.get(toSend.getStreamid()) != null) {
         const ws = self.getWebsocket()
         if (ws.readyState === ws.CONNECTING) {
-          opts.debug && debug(`stream.webscocket queued ${currentStreamId}`)
+          opts.debug && debug(`stream.webscocket queued ${currentStreamId} ${toSend}`)
           sendQueue.push(toSend)
         } else {
-          while (sendQueue.length > 0) {
-            const msg = sendQueue.pop()
-            if(msg != null){
-              ws.send(msg.serializeBinary())
-            }
-          }
+          sendQueue.forEach(toSend => {
+            debug(`sending from queue ${toSend}  ${currentStreamId}`)
+            sendToWebsocket(toSend);
+          });
+          sendQueue = []
           ws.send(toSend.serializeBinary())
         }
       } else {
@@ -167,22 +166,6 @@ class WebsocketChannelImpl implements WebsocketChannel {
     //question: can this structure be reused or is it one time use?
     const stream =  {
       streamId: currentStreamId,
-      sendMessage: (msgBytes: Uint8Array) => {
-        opts.debug && debug(`stream.sendMessage ${currentStreamId}`)
-        const body = new Body()
-        body.setData(msgBytes)
-
-        const frame = newFrame()
-        frame.setBody(body)
-
-        sendToWebsocket(frame)
-      },
-      finishSend: () => {
-        opts.debug && debug(`stream.finished ${currentStreamId}`)
-        const frame = newFrame()
-        frame.setComplete(new Complete())
-        sendToWebsocket(frame)
-      },
       start: (metadata: Metadata) => {
         opts.debug && debug(`stream.start ${currentStreamId} ${opts.methodDefinition.service.serviceName}/${opts.methodDefinition.methodName}`)
         self.activeStreams.set(currentStreamId, [opts, stream])
@@ -200,6 +183,22 @@ class WebsocketChannelImpl implements WebsocketChannel {
         frame.setHeader(header)
         sendToWebsocket(frame)
       },
+      sendMessage: (msgBytes: Uint8Array) => {
+        opts.debug && debug(`stream.sendMessage ${currentStreamId}`)
+        const body = new Body()
+        body.setData(msgBytes)
+
+        const frame = newFrame()
+        frame.setBody(body)
+
+        sendToWebsocket(frame)
+      },
+      finishSend: () => {
+        opts.debug && debug(`stream.finished ${currentStreamId}`)
+        const frame = newFrame()
+        frame.setComplete(new Complete())
+        sendToWebsocket(frame)
+      },
       cancel: () => {
         opts.debug && debug(`stream.abort ${currentStreamId}`)
         const frame = newFrame()
@@ -210,12 +209,11 @@ class WebsocketChannelImpl implements WebsocketChannel {
         opts.debug && debug(`stream.flushed ${currentStreamId}`)
         const ws = self.getWebsocket()
         if (ws.readyState === ws.OPEN) {
-          while (sendQueue.length > 0) {
-            const msg = sendQueue.pop()
-            if(msg != null){
-              ws.send(msg.serializeBinary())
-            }
-          }
+          sendQueue.forEach(toSend => {
+            debug(`sending from queue ${toSend} ${currentStreamId}`)
+            sendToWebsocket(toSend);
+          });
+          sendQueue = []
         }
       }
     }

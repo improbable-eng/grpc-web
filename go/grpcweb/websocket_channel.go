@@ -143,12 +143,11 @@ func (ws *WebsocketChannel) poll() error {
 		return err
 	}
 
-	grpclog.Infof("reveived frame for websocket channel %v", frame.StreamId)
 	stream := ws.activeStreams[frame.StreamId]
 
 	switch op := frame.Payload; op.(type) {
 	case *GrpcFrame_Header:
-
+		grpclog.Infof("reveived Header for stream %v %v", frame.StreamId, frame.GetHeader().Operation)
 		if stream != nil {
 			ws.writeError(frame.StreamId, "stream already exists")
 		}
@@ -159,7 +158,7 @@ func (ws *WebsocketChannel) poll() error {
 			stream := newGrpcStream(frame.StreamId, ws, 1000)
 			ws.activeStreams[frame.StreamId] = stream
 
-			url, err := url.Parse("http://localhost:50051/" + frame.GetHeader().Operation)
+			url, err := url.Parse("http://localhost:9100/" + frame.GetHeader().Operation)
 			if err != nil {
 				return ws.writeError(frame.StreamId, err.Error())
 			}
@@ -185,6 +184,7 @@ func (ws *WebsocketChannel) poll() error {
 		}
 
 	case *GrpcFrame_Body:
+		grpclog.Infof("reveived Body for stream %v", frame.StreamId)
 		if stream == nil {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
@@ -193,6 +193,7 @@ func (ws *WebsocketChannel) poll() error {
 			stream.inputFrames <- frame
 		}
 	case *GrpcFrame_Cancel:
+		grpclog.Infof("reveived Cancel for stream %v", frame.StreamId)
 		if stream == nil {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
@@ -203,6 +204,7 @@ func (ws *WebsocketChannel) poll() error {
 			delete(ws.activeStreams, frame.StreamId)
 		}
 	case *GrpcFrame_Complete:
+		grpclog.Infof("reveived Complete for stream %v", frame.StreamId)
 		if stream == nil {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")
@@ -212,6 +214,7 @@ func (ws *WebsocketChannel) poll() error {
 			delete(ws.activeStreams, frame.StreamId)
 		}
 	case *GrpcFrame_Failure:
+		grpclog.Infof("reveived Failure for stream %v", frame.StreamId)
 		if stream == nil {
 			//todo return this as an error frame to the socket
 			return ws.writeError(frame.StreamId, "stream does not exist")

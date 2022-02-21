@@ -113,6 +113,7 @@ func wrapGrpc(options []Option, handler http.Handler, endpointsFunc func() []str
 //
 // You can control the CORS behaviour using `With*` options in the WrapServer function.
 func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	grpclog.Infof("Handle request request websocketchannel is %v and is %v", w.opts.enableWebsocketChannels, w.IsGrpcWebSocketChannelRequest(req))
 	if w.enableWebsockets && w.IsGrpcWebSocketRequest(req) {
 		if w.websocketOriginFunc(req) {
 			if !w.opts.corsForRegisteredEndpointsOnly || w.isRequestForRegisteredEndpoint(req) {
@@ -124,14 +125,14 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 		_, _ = resp.Write(make([]byte, 0))
 		return
 	} else if w.opts.enableWebsocketChannels && w.IsGrpcWebSocketChannelRequest(req) {
-		if w.websocketOriginFunc(req) {
-			if !w.opts.corsForRegisteredEndpointsOnly || w.isRequestForRegisteredEndpoint(req) {
-				w.HandleGrpcWebsocketChannelRequest(resp, req)
-				return
-			}
-		}
-		resp.WriteHeader(http.StatusForbidden)
-		_, _ = resp.Write(make([]byte, 0))
+		// if w.websocketOriginFunc(req) {
+		// if !w.opts.corsForRegisteredEndpointsOnly || w.isRequestForRegisteredEndpoint(req) {
+		w.HandleGrpcWebsocketChannelRequest(resp, req)
+		return
+		// }
+		// }
+		// resp.WriteHeader(http.StatusForbidden)
+		// _, _ = resp.Write(make([]byte, 0))
 	}
 
 	if w.IsAcceptableGrpcCorsRequest(req) || w.IsGrpcWebRequest(req) {
@@ -239,6 +240,7 @@ func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool {
 // HandleGrpcWebsocketChannelRequest takes a HTTP request that is assumed to be a gRPC-Websocket-channel request and starts a
 // duplexed grpc-websocket-channel which will create multiple virtual streams over a single websocket.
 func (w *WrappedGrpcServer) HandleGrpcWebsocketChannelRequest(resp http.ResponseWriter, req *http.Request) {
+	grpclog.Info("Handle grpc channel request")
 
 	wsConn, err := websocket.Accept(resp, req, &websocket.AcceptOptions{
 		InsecureSkipVerify: true, // managed by ServeHTTP

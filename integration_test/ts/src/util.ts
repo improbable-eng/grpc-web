@@ -4,9 +4,17 @@ import {
   grpc,
 } from "@improbable-eng/grpc-web";
 
-export const DEBUG: boolean = (global as any).DEBUG;
-export const DISABLE_CORS_TESTS: boolean = (global as any).DISABLE_CORS_TESTS;
-export const DISABLE_WEBSOCKET_TESTS: boolean = (global as any).DISABLE_WEBSOCKET_TESTS;
+// export const DEBUG: boolean = (global as any).DEBUG;
+// export const DISABLE_CORS_TESTS: boolean = (global as any).DISABLE_CORS_TESTS;
+// export const DISABLE_WEBSOCKET_TESTS: boolean = (global as any).DISABLE_WEBSOCKET_TESTS;
+// export const DISABLE_WEBSOCKET_CHANNEL_TESTS: boolean = (global as any).DISABLE_WEBSOCKET_CHANNEL_TESTS;
+
+
+
+export const DEBUG: boolean = true;
+export const DISABLE_CORS_TESTS: boolean = true;
+export const DISABLE_WEBSOCKET_TESTS: boolean = true;
+export const DISABLE_HTTP_TESTS: boolean = true;
 export const DISABLE_WEBSOCKET_CHANNEL_TESTS: boolean = (global as any).DISABLE_WEBSOCKET_CHANNEL_TESTS;
 
 export class UncaughtExceptionListener {

@@ -7,7 +7,7 @@ function killGoTestServer {
   killall testserver
 }
 
-./start-testserver.sh
+./start-testserver.sh &
 
 # Kill the Go Test server when this script exits or is interrupted.
 trap killGoTestServer SIGINT
