@@ -23,13 +23,11 @@ type options struct {
 	corsForRegisteredEndpointsOnly bool
 	corsMaxAge                     time.Duration
 	originFunc                     func(origin string) bool
-	enableWebsockets               bool
 	websocketPingInterval          time.Duration
 	websocketOriginFunc            func(req *http.Request) bool
-	websocketReadLimit             int64
 	allowNonRootResources          bool
 	endpointsFunc                  *func() []string
-	enableWebsocketChannels        bool
+	websocketReadLimit             int64
 	websocketChannelMaxStreamCount int
 }
 
@@ -119,32 +117,6 @@ func WithAllowedRequestHeaders(headers []string) Option {
 	}
 }
 
-// WithWebsockets allows for handling grpc-web requests of websockets - enabling bidirectional requests.
-//
-// The default behaviour is false, i.e. to disallow websockets
-func WithWebsockets(enableWebsockets bool) Option {
-	return func(o *options) {
-		o.enableWebsockets = enableWebsockets
-	}
-}
-
-// WithWebsocketsChannel allows for handling grpc-web requests of websockets charing a single websocket between requests
-// - enabling bidirectional requests.
-//
-// The default behaviour is false, i.e. to disallow websockets channels
-func WithWebsocketsChannel(enableWebsocketsChannels bool) Option {
-	return func(o *options) {
-		o.enableWebsocketChannels = enableWebsocketsChannels
-	}
-}
-
-// WithWebsocketsChannel the amount of concurrent channels a websocket channel is allowed to handle
-func WithWebsocketChannelMaxStreamCount(websocketChannelMaxStreamCount int) Option {
-	return func(o *options) {
-		o.websocketChannelMaxStreamCount = websocketChannelMaxStreamCount
-	}
-}
-
 // WithWebsocketPingInterval enables websocket keepalive pinging with the configured timeout.
 //
 // The default behaviour is to disable websocket pinging.
@@ -166,7 +138,7 @@ func WithWebsocketOriginFunc(websocketOriginFunc func(req *http.Request) bool) O
 
 // WithWebsocketsMessageReadLimit sets the maximum message read limit on the underlying websocket.
 //
-// The default message read limit is 32769 bytes
+// The default message read limit is 4MB
 func WithWebsocketsMessageReadLimit(websocketReadLimit int64) Option {
 	return func(o *options) {
 		o.websocketReadLimit = websocketReadLimit
@@ -183,5 +155,12 @@ func WithWebsocketsMessageReadLimit(websocketReadLimit int64) Option {
 func WithAllowNonRootResource(allowNonRootResources bool) Option {
 	return func(o *options) {
 		o.allowNonRootResources = allowNonRootResources
+	}
+}
+
+// WithWebsocketChannelMaxStreamCount sets the maximum number of streams per connection.
+func WithWebsocketChannelMaxStreamCount(websocketChannelMaxStreamCount int) Option {
+	return func(o *options) {
+		o.websocketChannelMaxStreamCount = websocketChannelMaxStreamCount
 	}
 }

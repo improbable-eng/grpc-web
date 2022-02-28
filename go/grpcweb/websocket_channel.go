@@ -2,6 +2,7 @@ package grpcweb
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -34,8 +35,10 @@ type GrpcStream struct {
 	channel           *WebsocketChannel
 	ctx               context.Context
 	cancel            context.CancelFunc
-	remainingBuffer   []byte
+	readBuffer        []byte
 	remainingError    error
+	bytesToWrite      uint32
+	writeBuffer       []byte
 	//todo add a context to return to close the connection
 }
 
@@ -73,27 +76,27 @@ func (stream *GrpcStream) Header() http.Header {
 
 func (stream *GrpcStream) Read(p []byte) (int, error) {
 	grpclog.Infof("reading from channel %v", stream.id)
-	if stream.remainingBuffer != nil {
+	if stream.readBuffer != nil {
 
 		// If the remaining buffer fits completely inside the argument slice then read all of it and return any error
 		// that was retained from the original call
-		if len(stream.remainingBuffer) <= len(p) {
-			copy(p, stream.remainingBuffer)
+		if len(stream.readBuffer) <= len(p) {
+			copy(p, stream.readBuffer)
 
-			remainingLength := len(stream.remainingBuffer)
+			remainingLength := len(stream.readBuffer)
 			err := stream.remainingError
 
 			// Clear the remaining buffer and error so that the next read will be a read from the websocket frame,
 			// unless the error terminates the stream
-			stream.remainingBuffer = nil
+			stream.readBuffer = nil
 			stream.remainingError = nil
 			return remainingLength, err
 		}
 
 		// The remaining buffer doesn't fit inside the argument slice, so copy the bytes that will fit and retain the
 		// bytes that don't fit - don't return the remainingError as there are still bytes to be read from the frame
-		copied := copy(p, stream.remainingBuffer[:len(p)])
-		stream.remainingBuffer = stream.remainingBuffer[copied:]
+		copied := copy(p, stream.readBuffer[:len(p)])
+		stream.readBuffer = stream.readBuffer[copied:]
 
 		// Return the length of the argument slice as that was the length of the written bytes
 		return copied, nil
@@ -104,7 +107,7 @@ func (stream *GrpcStream) Read(p []byte) (int, error) {
 	if more {
 		switch op := frame.Payload.(type) {
 		case *GrpcFrame_Body:
-			stream.remainingBuffer = op.Body.Data
+			stream.readBuffer = op.Body.Data
 			return stream.Read(p)
 		case *GrpcFrame_Failure:
 			//todo how to propagate this to the server?
@@ -271,7 +274,6 @@ func (ws *WebsocketChannel) write(frame *GrpcFrame) error {
 	if err != nil {
 		return err
 	}
-
 	return ws.socket.Write(ws.context, websocket.MessageBinary, binaryFrame)
 }
 
@@ -299,21 +301,38 @@ func (ws *WebsocketChannel) Close() {
 
 func (stream *GrpcStream) Close() error {
 	stream.cancel()
+	stream.channel.write(&GrpcFrame{StreamId: stream.id, Payload: &GrpcFrame_Complete{Complete: &Complete{}}})
+	delete(stream.channel.activeStreams, stream.id)
 	return nil
 }
 
 func (stream *GrpcStream) Write(data []byte) (int, error) {
 	stream.WriteHeader(http.StatusOK)
 	grpclog.Infof("write body %v", len(data))
-	err := stream.channel.write(&GrpcFrame{
-		StreamId: stream.id,
-		Payload: &GrpcFrame_Body{
-			Body: &Body{
-				Data: data,
+
+	if stream.bytesToWrite == 0 {
+		stream.bytesToWrite = binary.BigEndian.Uint32(data[1:])
+		stream.writeBuffer = data[5:]
+		return len(data), nil
+	} else {
+		stream.bytesToWrite -= uint32(len(data))
+		stream.writeBuffer = append(stream.writeBuffer, data...)
+
+		if stream.bytesToWrite != 0 {
+			return len(data), nil
+		}
+
+		err := stream.channel.write(&GrpcFrame{
+			StreamId: stream.id,
+			Payload: &GrpcFrame_Body{
+				Body: &Body{
+					Data: data,
+				},
 			},
-		},
-	})
-	return len(data), err
+		})
+		return len(data), err
+	}
+
 }
 
 func (stream *GrpcStream) WriteHeader(statusCode int) {

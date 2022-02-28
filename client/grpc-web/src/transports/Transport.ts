@@ -1,7 +1,7 @@
 import {Metadata} from "../metadata";
 import {MethodDefinition} from "../service";
 import {ProtobufMessage} from "../message";
-import {CrossBrowserHttpTransport} from "./http/http";
+import { WebsocketChannelTransport } from "./websocket/websocketChannel";
 
 export interface Transport {
   sendMessage(msgBytes: Uint8Array): void
@@ -10,7 +10,7 @@ export interface Transport {
   start(metadata: Metadata): void
 }
 
-let defaultTransportFactory: TransportFactory = options => CrossBrowserHttpTransport({ withCredentials: false })(options);
+let defaultTransportFactory: TransportFactory = options => WebsocketChannelTransport()(options);
 
 export function setDefaultTransportFactory(t: TransportFactory): void {
   defaultTransportFactory = t;

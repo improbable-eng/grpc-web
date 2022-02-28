@@ -1,17 +1,11 @@
-# gRPC-Web: Typed Frontend Development
-
-
-[![CircleCI](https://circleci.com/gh/improbable-eng/grpc-web/tree/master.svg?style=svg)](https://circleci.com/gh/improbable-eng/grpc-web/tree/master)
-[![Sauce Test Status](https://app.saucelabs.com/buildstatus/ImprobableEngBot)](https://app.saucelabs.com/u/ImprobableEngBot)
-[![NPM](https://img.shields.io/npm/v/@improbable-eng/grpc-web.svg)](https://www.npmjs.com/package/@improbable-eng/grpc-web)
-[![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/improbable-eng/grpc-web/go/grpcweb) 
-[![Apache 2.0 License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![quality: alpha](https://img.shields.io/badge/quality-alpha-orange.svg)](#status)
-[![Slack](https://img.shields.io/badge/join%20slack-%23grpc--web-brightgreen.svg)](https://join.slack.com/t/improbable-eng/shared_invite/enQtMzQ1ODcyMzQ5MjM4LWY5ZWZmNGM2ODc5MmViNmQ3ZTA3ZTY3NzQwOTBlMTkzZmIxZTIxODk0OWU3YjZhNWVlNDU3MDlkZGViZjhkMjc)
+# gRPC-Websocket: Typed Frontend Development
+I give [improbable-eng/grpc-web](https://github.com/improbable-eng/grpc-web) credit for this fork. 
 
 [gRPC](http://www.grpc.io/) is a modern, [HTTP2](https://hpbn.co/http2/)-based protocol, that provides RPC semantics using the strongly-typed *binary* data format of [protocol buffers](https://developers.google.com/protocol-buffers/docs/overview) across multiple languages (C++, C#, Golang, Java, Python, NodeJS, ObjectiveC, etc.)
 
 [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) is a cutting-edge spec that enables invoking gRPC services from *modern* browsers.
+
+[gRPC-Websocket] Is an attempt to multiplex the grpc calls over a single webscoket allowing for full support of streaming without running into connection issues or other browser limitations. Because there is no way to force an http2 conenction in the browser.
 
 *__If you are looking for gRPC support for Node.js there is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc). This package supports Node.js, but requires that the server has the gRPC-Web compatibility layer (read on to understand more).__*
 
@@ -30,7 +24,7 @@ With gRPC-Web, it is extremely easy to build well-defined, easy to reason about 
  * no more hand-crafted JSON call objects - all requests and responses are strongly typed and code-generated, with hints available in the IDE.
  * no more dealing with methods, headers, body and low level networking - everything is handled by `grpc.invoke`.
  * no more second-guessing the meaning of error codes - [gRPC status codes](https://godoc.org/google.golang.org/grpc/codes) are a canonical way of representing issues in APIs.
- * no more one-off server-side request handlers to avoid concurrent connections - gRPC-Web is based on HTTP2, with multiplexes multiple streams over the [same connection](https://hpbn.co/http2/#streams-messages-and-frames).
+ * no more one-off server-side request handlers to avoid concurrent connections - gRPC-Websocket multiplexes multiple streams over the [same connection websocket](https://hpbn.co/http2/#streams-messages-and-frames).
  * no more problems streaming data from a server -  gRPC-Web supports both *1:1* RPCs and *1:many* streaming requests.
  * no more data parse errors when rolling out new binaries - [backwards and forwards-compatibility](https://developers.google.com/protocol-buffers/docs/gotutorial#extending-a-protocol-buffer) of requests and responses.
 

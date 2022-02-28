@@ -21,16 +21,6 @@ export namespace grpc {
   export interface TransportFactory extends impTransport.TransportFactory {}
   export const setDefaultTransport = impTransport.setDefaultTransportFactory;
 
-  export const CrossBrowserHttpTransport = impTransportHttp.CrossBrowserHttpTransport;
-  export interface CrossBrowserHttpTransportInit extends impTransportHttp.CrossBrowserHttpTransportInit {}
-
-  export const FetchReadableStreamTransport = impTransportFetch.FetchReadableStreamTransport;
-  export interface FetchReadableStreamInit extends impTransportFetch.FetchTransportInit {}
-
-  export const XhrTransport = impTransportXhr.XhrTransport;
-  export interface XhrTransportInit extends impTransportXhr.XhrTransportInit {}
-
-  export const WebsocketTransport = impTransportWebSocket.WebsocketTransport;
   export const WebsocketChannelTransport = impTransportWebSocketChannel.WebsocketChannelTransport;
 
   export interface UnaryMethodDefinition<TRequest extends ProtobufMessage, TResponse extends ProtobufMessage> extends impService.UnaryMethodDefinition<TRequest, TResponse> {}
