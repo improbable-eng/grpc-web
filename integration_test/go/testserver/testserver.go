@@ -125,6 +125,8 @@ func main() {
 type testSrv struct {
 	streamsMutex *sync.Mutex
 	streams      map[string]chan bool
+	testproto.UnimplementedTestServiceServer
+	testproto.UnimplementedTestUtilServiceServer
 }
 
 func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*testproto.PingResponse, error) {
