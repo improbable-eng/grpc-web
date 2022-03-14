@@ -62,7 +62,6 @@ jobs:
       browser-params:
         type: string
     executor: test-executor
-    parallelism: 1
     steps:
       - checkout
       # Attaches the workspace from the previous step to retrieve the built assets for the tests
@@ -91,7 +90,11 @@ workflows:
   test-workflow:
     jobs:
       - initial-unit-test-lint-prebuild
-      - browser-tests:
+      # Split browser test matrix into separate jobs to keep parallelism
+      # to a maximum of 5 jobs, the maximum number of parallel jobs
+      # our SauceLabs configuration allows.
+      - browser-tests-1:
+          name: browser-tests
           matrix:
             parameters:
               browser-params:
@@ -100,21 +103,49 @@ workflows:
                 - BROWSER=firefox38_win DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=chrome_89
                 - BROWSER=chrome_52
+          requires:
+            - initial-unit-test-lint-prebuild
+      - browser-tests-2:
+          name: browser-tests
+          matrix:
+            parameters:
+              browser-params:
                 - BROWSER=chrome_43
                 - BROWSER=chrome_42
                 - BROWSER=chrome_41
                 - BROWSER=edge88_win
                 - BROWSER=edge16_win
+          requires:
+            - browser-tests-1
+      - browser-tests-3:
+          name: browser-tests
+          matrix:
+            parameters:
+              browser-params:
                 - BROWSER=edge14_win
                 - BROWSER=edge13_win
                 - BROWSER=safari14 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari13_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari12_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+          requires:
+            - browser-tests-2
+      - browser-tests-4:
+          name: browser-tests
+          matrix:
+            parameters:
+              browser-params:
                 - BROWSER=safari11_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari10_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari9_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari8 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
+          requires:
+            - browser-tests-3
+      - browser-tests-5:
+          name: browser-tests
+          matrix:
+            parameters:
+              browser-params:
                 - BROWSER=nodejs
           requires:
-            - initial-unit-test-lint-prebuild
+            - browser-tests-4
