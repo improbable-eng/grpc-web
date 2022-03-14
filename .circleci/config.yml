@@ -94,7 +94,7 @@ workflows:
       # to a maximum of 5 jobs, the maximum number of parallel jobs
       # our SauceLabs configuration allows.
       - browser-tests:
-          name: browser-tests-1
+          name: browser-tests-first
           matrix:
             parameters:
               browser-params:
@@ -106,7 +106,7 @@ workflows:
           requires:
             - initial-unit-test-lint-prebuild
       - browser-tests:
-          name: browser-tests-2
+          name: browser-tests-second
           matrix:
             parameters:
               browser-params:
@@ -116,9 +116,9 @@ workflows:
                 - BROWSER=edge88_win
                 - BROWSER=edge16_win
           requires:
-            - browser-tests-1
+            - browser-tests-first
       - browser-tests:
-          name: browser-tests-3
+          name: browser-tests-third
           matrix:
             parameters:
               browser-params:
@@ -128,9 +128,9 @@ workflows:
                 - BROWSER=safari13_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari12_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
           requires:
-            - browser-tests-2
+            - browser-tests-second
       - browser-tests:
-          name: browser-tests-4
+          name: browser-tests-fourth
           matrix:
             parameters:
               browser-params:
@@ -140,12 +140,12 @@ workflows:
                 - BROWSER=safari8 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
           requires:
-            - browser-tests-3
+            - browser-tests-third
       - browser-tests:
-          name: browser-tests-5
+          name: browser-tests-fifth
           matrix:
             parameters:
               browser-params:
                 - BROWSER=nodejs
           requires:
-            - browser-tests-4
+            - browser-tests-fourth
