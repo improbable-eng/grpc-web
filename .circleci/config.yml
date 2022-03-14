@@ -116,7 +116,7 @@ workflows:
                 - BROWSER=edge88_win
                 - BROWSER=edge16_win
           requires:
-            - browser-tests-first
+            - browser-tests
       - browser-tests:
           name: browser-tests-third
           matrix:
@@ -128,7 +128,7 @@ workflows:
                 - BROWSER=safari13_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari12_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
           requires:
-            - browser-tests-second
+            - browser-tests
       - browser-tests:
           name: browser-tests-fourth
           matrix:
@@ -140,7 +140,7 @@ workflows:
                 - BROWSER=safari8 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
           requires:
-            - browser-tests-third
+            - browser-tests
       - browser-tests:
           name: browser-tests-fifth
           matrix:
@@ -148,4 +148,4 @@ workflows:
               browser-params:
                 - BROWSER=nodejs
           requires:
-            - browser-tests-fourth
+            - browser-tests
