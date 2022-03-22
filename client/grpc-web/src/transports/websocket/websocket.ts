@@ -87,10 +87,10 @@ function websocketRequest(options: TransportOptions): Transport {
 }
 
 function constructWebSocketAddress(url: string) {
-  if (url.substr(0, 8) === "https://") {
-    return `wss://${url.substr(8)}`;
-  } else if (url.substr(0, 7) === "http://") {
-    return `ws://${url.substr(7)}`;
+  if (url.slice(0, 8) === "https://") {
+    return `wss://${url.slice(8)}`;
+  } else if (url.slice(0, 7) === "http://") {
+    return `ws://${url.slice(7)}`;
   }
   throw new Error("Websocket transport constructed with non-https:// or http:// host.");
 }
