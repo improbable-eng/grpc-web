@@ -157,6 +157,7 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 	wsConn, err := websocket.Accept(resp, req, &websocket.AcceptOptions{
 		InsecureSkipVerify: true, // managed by ServeHTTP
 		Subprotocols:       []string{"grpc-websockets"},
+		CompressionMode:    websocket.CompressionDisabled,
 	})
 	if err != nil {
 		grpclog.Errorf("Unable to upgrade websocket request: %v", err)
