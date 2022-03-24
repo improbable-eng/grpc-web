@@ -90,8 +90,12 @@ workflows:
   test-workflow:
     jobs:
       - initial-unit-test-lint-prebuild
+      # Split browser test matrix into separate jobs to keep parallelism
+      # to a maximum of 5 jobs, the maximum number of parallel jobs
+      # our SauceLabs configuration allows.
       - browser-tests:
           matrix:
+            alias: browser-tests-first
             parameters:
               browser-params:
                 - BROWSER=firefox86_win
@@ -99,21 +103,48 @@ workflows:
                 - BROWSER=firefox38_win DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=chrome_89
                 - BROWSER=chrome_52
+          requires:
+            - initial-unit-test-lint-prebuild
+      - browser-tests:
+          matrix:
+            alias: browser-tests-second
+            parameters:
+              browser-params:
                 - BROWSER=chrome_43
                 - BROWSER=chrome_42
                 - BROWSER=chrome_41
                 - BROWSER=edge88_win
                 - BROWSER=edge16_win
+          requires:
+            - browser-tests-first
+      - browser-tests:
+          matrix:
+            alias: browser-tests-third
+            parameters:
+              browser-params:
                 - BROWSER=edge14_win
                 - BROWSER=edge13_win
                 - BROWSER=safari14 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari13_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari12_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
+          requires:
+            - browser-tests-second
+      - browser-tests:
+          matrix:
+            alias: browser-tests-fourth
+            parameters:
+              browser-params:
                 - BROWSER=safari11_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari10_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari9_1 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=safari8 SC_SSL_BUMPING=true DISABLE_WEBSOCKET_TESTS=true
                 - BROWSER=ie11_win DISABLE_WEBSOCKET_TESTS=true
+          requires:
+            - browser-tests-third
+      - browser-tests:
+          matrix:
+            parameters:
+              browser-params:
                 - BROWSER=nodejs
           requires:
-            - initial-unit-test-lint-prebuild
+            - browser-tests-fourth
