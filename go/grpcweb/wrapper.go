@@ -144,7 +144,7 @@ func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *http.Request) {
 	intReq, isTextFormat := hackIntoNormalGrpcRequest(req)
 	intResp := newGrpcWebResponse(resp, isTextFormat)
-	req.URL.Path = w.endpointFunc(req)
+	intReq.URL.Path = w.endpointFunc(intReq)
 	w.handler.ServeHTTP(intResp, intReq)
 	intResp.finishRequest(req)
 }
@@ -206,12 +206,13 @@ func (w *WrappedGrpcServer) HandleGrpcWebsocketRequest(resp http.ResponseWriter,
 	req.Body = wrappedReader
 	req.Method = http.MethodPost
 	req.Header = headers
+	req.URL.Path = w.endpointFunc(req)
 
 	interceptedRequest, isTextFormat := hackIntoNormalGrpcRequest(req.WithContext(ctx))
 	if isTextFormat {
 		grpclog.Errorf("web socket text format requests not yet supported")
 	}
-	req.URL.Path = w.endpointFunc(req)
+
 	w.handler.ServeHTTP(respWriter, interceptedRequest)
 }
 
