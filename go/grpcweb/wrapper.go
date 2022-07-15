@@ -139,7 +139,7 @@ func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 		return false
 	}
 
-	for _, subproto := range req.Header["Sec-Websocket-Protocol"] {
+	for _, subproto := range req.Header.Values("Sec-Websocket-Protocol") {
 		for _, token := range strings.Split(subproto, ",") {
 			token = strings.TrimSpace(token)
 			if strings.EqualFold(token, "grpc-websockets") {
