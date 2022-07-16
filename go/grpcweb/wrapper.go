@@ -133,9 +133,21 @@ func (w *WrappedGrpcServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 }
 
 // IsGrpcWebSocketRequest determines if a request is a gRPC-Web request by checking that the "Sec-Websocket-Protocol"
-// header value is "grpc-websockets"
+// header value contains "grpc-websockets"
 func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
-	return strings.ToLower(req.Header.Get("Upgrade")) == "websocket" && strings.ToLower(req.Header.Get("Sec-Websocket-Protocol")) == "grpc-websockets"
+	if strings.ToLower(req.Header.Get("Upgrade")) != "websocket" {
+		return false
+	}
+
+	for _, subproto := range req.Header.Values("Sec-Websocket-Protocol") {
+		for _, token := range strings.Split(subproto, ",") {
+			token = strings.TrimSpace(token)
+			if strings.EqualFold(token, "grpc-websockets") {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // HandleGrpcWebRequest takes a HTTP request that is assumed to be a gRPC-Web request and wraps it with a compatibility

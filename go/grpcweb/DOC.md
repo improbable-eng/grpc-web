@@ -286,7 +286,7 @@ the "content-type" is "application/grpc-web" and that the method is POST.
 func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool
 ```
 IsGrpcWebSocketRequest determines if a request is a gRPC-Web request by checking
-that the "Sec-Websocket-Protocol" header value is "grpc-websockets"
+that the "Sec-Websocket-Protocol" header value contains "grpc-websockets"
 
 #### func (*WrappedGrpcServer) ServeHTTP
 
