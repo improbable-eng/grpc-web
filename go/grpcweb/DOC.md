@@ -165,6 +165,15 @@ The default behaviour is to deny all requests from remote origins.
 The relevant CORS pre-flight docs:
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
 
+#### func  WithWebsocketCompressionMode
+
+```go
+func WithWebsocketCompressionMode(compressionMode websocket.CompressionMode) Option
+```
+WithWebsocketCompressionMode sets compression mode for websocket requests
+
+The default mode is CompressionNoContextTakeover
+
 #### func  WithWebsocketOriginFunc
 
 ```go

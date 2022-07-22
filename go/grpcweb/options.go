@@ -5,8 +5,9 @@ package grpcweb
 
 import (
 	"net/http"
-	"nhooyr.io/websocket"
 	"time"
+
+	"nhooyr.io/websocket"
 )
 
 var (

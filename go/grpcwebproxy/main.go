@@ -6,10 +6,11 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof" // register in DefaultServerMux
-	"nhooyr.io/websocket"
 	"os"
 	"sync"
 	"time"
+
+	"nhooyr.io/websocket"
 
 	"crypto/tls"
 
