@@ -68,6 +68,18 @@ $GOPATH/bin/grpcwebproxy \
     --use_websockets
 ```
 
+### Changing Websocket Compression
+By default, websocket compression is used as `no context takover`. To override compression type, use the `--websocket_compression_mode` option.
+Available options are `no_context_takeover`, `context_takeover`, `disabled`. Websocket compression types are described in [RFC 7692](https://datatracker.ietf.org/doc/html/rfc7692).
+
+For example, for disabling websocket compression run the following:
+```
+$GOPATH/bin/grpcwebproxy \
+    --backend_addr=localhost:9090 \
+    --use_websockets \
+    --websocket_compression_mode=disabled
+```
+
 ### Changing the Maximum Receive Message Size
 
 By default, grpcwebproxy will limit the message size that the backend sends to the client. This is currently 4MB.
