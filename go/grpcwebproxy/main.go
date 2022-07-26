@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"nhooyr.io/websocket"
+
 	"crypto/tls"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -40,9 +42,10 @@ var (
 	runHttpServer = pflag.Bool("run_http_server", true, "whether to run HTTP server")
 	runTlsServer  = pflag.Bool("run_tls_server", true, "whether to run TLS server")
 
-	useWebsockets         = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
-	websocketPingInterval = pflag.Duration("websocket_ping_interval", 0, "whether to use websocket keepalive pinging. Only used when using websockets. Configured interval must be >= 1s.")
-	websocketReadLimit    = pflag.Int64("websocket_read_limit", 0, "sets the maximum message read limit on the underlying websocket. The default message read limit is 32769 bytes.")
+	useWebsockets            = pflag.Bool("use_websockets", false, "whether to use beta websocket transport layer")
+	websocketPingInterval    = pflag.Duration("websocket_ping_interval", 0, "whether to use websocket keepalive pinging. Only used when using websockets. Configured interval must be >= 1s.")
+	websocketReadLimit       = pflag.Int64("websocket_read_limit", 0, "sets the maximum message read limit on the underlying websocket. The default message read limit is 32769 bytes.")
+	websocketCompressionMode = pflag.String("websocket_compression_mode", "no_context_takeover", "set compression mode for websocket. Values are no_context_takeover (, context_takeover, disabled. The default value is no_context_takeover.")
 
 	flagHttpMaxWriteTimeout = pflag.Duration("server_http_max_write_timeout", 10*time.Second, "HTTP server config, max write duration.")
 	flagHttpMaxReadTimeout  = pflag.Duration("server_http_max_read_timeout", 10*time.Second, "HTTP server config, max read duration.")
@@ -99,6 +102,23 @@ func main() {
 		options = append(
 			options,
 			grpcweb.WithWebsocketPingInterval(*websocketPingInterval),
+		)
+
+		var compressionMode websocket.CompressionMode
+		switch *websocketCompressionMode {
+		case "no_context_takeover":
+			compressionMode = websocket.CompressionNoContextTakeover
+		case "context_takeover":
+			compressionMode = websocket.CompressionContextTakeover
+		case "disabled":
+			compressionMode = websocket.CompressionDisabled
+		default:
+			logrus.Fatalf("unknwon param for websocket compression mode: %s", *websocketCompressionMode)
+		}
+
+		options = append(
+			options,
+			grpcweb.WithWebsocketCompressionMode(compressionMode),
 		)
 	}
 

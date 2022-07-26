@@ -6,6 +6,8 @@ package grpcweb
 import (
 	"net/http"
 	"time"
+
+	"nhooyr.io/websocket"
 )
 
 var (
@@ -15,6 +17,7 @@ var (
 		originFunc:                     func(origin string) bool { return false },
 		allowNonRootResources:          false,
 		corsMaxAge:                     10 * time.Minute,
+		websocketCompressionMode:       websocket.CompressionNoContextTakeover,
 	}
 )
 
@@ -27,6 +30,7 @@ type options struct {
 	websocketPingInterval          time.Duration
 	websocketOriginFunc            func(req *http.Request) bool
 	websocketReadLimit             int64
+	websocketCompressionMode       websocket.CompressionMode
 	allowNonRootResources          bool
 	endpointsFunc                  *func() []string
 }
@@ -164,5 +168,14 @@ func WithWebsocketsMessageReadLimit(websocketReadLimit int64) Option {
 func WithAllowNonRootResource(allowNonRootResources bool) Option {
 	return func(o *options) {
 		o.allowNonRootResources = allowNonRootResources
+	}
+}
+
+// WithWebsocketCompressionMode sets compression mode for websocket requests
+//
+// The default mode is CompressionNoContextTakeover
+func WithWebsocketCompressionMode(compressionMode websocket.CompressionMode) Option {
+	return func(o *options) {
+		o.websocketCompressionMode = compressionMode
 	}
 }
