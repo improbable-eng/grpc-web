@@ -1,6 +1,6 @@
 # Client-side streaming over websocket
 
-Due to the [limitations](./transport.md#http/2-based-transports) of HTTP/2 based transports in browsers, they cannot support client-side/bi-directional streaming. `@improbable-eng/grpc-web` provides a built-in [websocket](./transport.md#socket-based-transports) transport that can be used to alleviate this issue.
+Due to the [limitations](./transport.md#http2-based-transports) of HTTP/2 based transports in browsers, they cannot support client-side/bi-directional streaming. `@improbable-eng/grpc-web` provides a built-in [websocket](./transport.md#socket-based-transports) transport that can be used to alleviate this issue.
 
 ## Enabling at the client side
 
