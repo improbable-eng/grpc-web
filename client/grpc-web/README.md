@@ -92,3 +92,4 @@ Refer to [grpc-web-node-http-transport](https://www.npmjs.com/package/@improbabl
 * [Code Generation](docs/code-generation.md)
 * [Concepts](docs/concepts.md)
 * [Transport](docs/transport.md)
+* [Client-side streaming](docs/websocket.md)
