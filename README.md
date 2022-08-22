@@ -166,6 +166,8 @@ It is very important to note that the gRPC-Web spec currently *does not support 
 
 This, however, is useful for a lot of frontend functionality.
 
+*Note that `@improbable-eng/grpc-web` provides a built-in [websocket](./client/grpc-web/docs/websocket.md) transport that can support client-side/bi-directional streaming RPCs.*
+
 ## Status
 
 The code here is `alpha` quality. It is being used for a subset of Improbable's frontend single-page apps in production.
