@@ -3,9 +3,9 @@ import * as https from "https";
 import * as url from "url";
 import { grpc } from "@improbable-eng/grpc-web";
 
-export function NodeHttpTransport(): grpc.TransportFactory {
+export function NodeHttpTransport(httpsOptions?: https.RequestOptions): grpc.TransportFactory {
   return (opts: grpc.TransportOptions) => {
-    return new NodeHttp(opts);
+    return new NodeHttp(opts, httpsOptions);
   };
 }
 
@@ -13,7 +13,7 @@ class NodeHttp implements grpc.Transport {
   options: grpc.TransportOptions;
   request: http.ClientRequest;
 
-  constructor(transportOptions: grpc.TransportOptions) {
+  constructor(transportOptions: grpc.TransportOptions, readonly httpsOptions?: https.RequestOptions) {
     this.options = transportOptions;
   }
 
@@ -61,7 +61,7 @@ class NodeHttp implements grpc.Transport {
       method: "POST"
     };
     if (parsedUrl.protocol === "https:") {
-      this.request = https.request(httpOptions, this.responseCallback.bind(this));
+      this.request = https.request({ ...httpOptions, ...this?.httpsOptions }, this.responseCallback.bind(this));
     } else {
       this.request = http.request(httpOptions, this.responseCallback.bind(this));
     }
