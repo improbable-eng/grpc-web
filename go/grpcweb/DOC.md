@@ -15,7 +15,7 @@ protocol specification.
 Here's an example of how to use it inside an existing gRPC Go server on a
 separate http.Server that serves over TLS:
 
-    grpcServer := grpc.Server()
+```go    grpcServer := grpc.Server()
     wrappedGrpc := grpcweb.WrapServer(grpcServer)
     tlsHttpServer.Handler = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
     	if wrappedGrpc.IsGrpcWebRequest(req) {
@@ -25,7 +25,7 @@ separate http.Server that serves over TLS:
     	// Fall back to other servers.
     	http.DefaultServeMux.ServeHTTP(resp, req)
     })
-
+```
 If you'd like to have a standalone binary, please take a look at `grpcwebproxy`.
 
 ## Usage
