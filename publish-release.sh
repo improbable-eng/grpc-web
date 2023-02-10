@@ -25,6 +25,10 @@ GOOS=linux GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-linux-x86_64" ./grpc
 GOOS=windows GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-win64.exe" ./grpcwebproxy
 GOOS=windows GOARCH=386 go build -o "dist/grpcwebproxy-$TAG-win32.exe" ./grpcwebproxy
 GOOS=darwin GOARCH=amd64 go build -o "dist/grpcwebproxy-$TAG-osx-x86_64" ./grpcwebproxy
+GOARCH=arm64 go build -o "dist/grpcwebproxy-$TAG-arm64" ./grpcwebproxy
+GOARM=5 GOARCH=arm go build -o "dist/grpcwebproxy-$TAG-arm5" ./grpcwebproxy
+GOARM=6 GOARCH=arm go build -o "dist/grpcwebproxy-$TAG-arm6" ./grpcwebproxy
+GOARM=7 GOARCH=arm go build -o "dist/grpcwebproxy-$TAG-arm7" ./grpcwebproxy
 for f in dist/*; do zip -9r "$f.zip" "$f"; done
 ls -l ./dist
 cd ..
