@@ -27,6 +27,7 @@ type options struct {
 	corsMaxAge                     time.Duration
 	originFunc                     func(origin string) bool
 	enableWebsockets               bool
+	enableGet                      bool
 	websocketPingInterval          time.Duration
 	websocketOriginFunc            func(req *http.Request) bool
 	websocketReadLimit             int64
@@ -127,6 +128,15 @@ func WithAllowedRequestHeaders(headers []string) Option {
 func WithWebsockets(enableWebsockets bool) Option {
 	return func(o *options) {
 		o.enableWebsockets = enableWebsockets
+	}
+}
+
+// WithMethodGet allows for handling grpc-web GET requests - enabling progressive web apps.
+//
+// The default behaviour is false, i.e. to disallow GET
+func WithMethodGet(enableGet bool) Option {
+	return func(o *options) {
+		o.enableGet = enableGet
 	}
 }
 
