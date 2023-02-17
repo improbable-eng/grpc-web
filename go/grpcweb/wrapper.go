@@ -294,6 +294,7 @@ func hackIntoNormalGrpcRequest(req *http.Request) (*http.Request, bool) {
 	// DATA frame payload lengths. https://http2.github.io/http2-spec/#malformed This effectively
 	// switches to chunked encoding which is the default for h2
 	req.Header.Del("content-length")
+	req.ContentLength = -1
 
 	return req, isTextFormat
 }
