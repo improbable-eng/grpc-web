@@ -33,7 +33,7 @@ export class XHR implements Transport {
 
   onProgressEvent() {
     this.options.debug && debug("XHR.onProgressEvent.length: ", this.xhr.response.length);
-    const rawText = this.xhr.response.substr(this.index);
+    const rawText = this.xhr.response.slice(this.index);
     this.index = this.xhr.response.length;
     const asArrayBuffer = stringToArrayBuffer(rawText);
     this.options.onChunk(asArrayBuffer);
