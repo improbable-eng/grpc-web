@@ -1,0 +1,30 @@
+{
+  "name": "@improbable-eng/protoc-gen-improbable-grpc-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "bin": {
+    "protoc-gen-improbable-grpc-web": "bin/protoc-gen-improbable-grpc-web"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "protoc-plugin": "0.0.6"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "^3.2.7",
+    "@types/node": "^11.10.5",
+    "rimraf": "^2.6.3",
+    "ts-morph": "^1.3.0",
+    "typescript": "^3.3.3333"
+  },
+  "scripts": {
+    "clean": "rimraf 'generated/**' 'lib/**'",
+    "build": "npm run clean && tsc",
+    "generate": "npm run build && ./generate-protos.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
