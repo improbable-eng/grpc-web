@@ -41,4 +41,4 @@ service BookService {
 
 Will generate `book_service_pb.js`, `book_service_pb.d.ts`, `book_service_pb_service.js` and `book_service_pb_service.d.ts`
 
-The first two files contain the message classes while the lst two contain a `BookService.GetBook` class that acts as [method definition](concepts.md#method-definition) that can be used with `@improbable-eng/grpc-web`.
+The first two files contain the message classes while the last two contain a `BookService.GetBook` class that acts as [method definition](concepts.md#method-definition) that can be used with `@improbable-eng/grpc-web`.
