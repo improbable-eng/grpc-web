@@ -15,7 +15,7 @@
 
 [gRPC-Web](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) is a cutting-edge spec that enables invoking gRPC services from *modern* browsers.
 
-*__If you are looking for gRPC support for Node.js there is an [official Node.js gRPC library](https://www.npmjs.com/package/grpc). This package supports Node.js, but requires that the server has the gRPC-Web compatibility layer (read on to understand more).__*
+*__If you are looking for gRPC support for Node.js there is an [official Node.js gRPC library](https://www.npmjs.com/package/@grpc/grpc-js). This package supports Node.js, but requires that the server has the gRPC-Web compatibility layer (read on to understand more).__*
 
 Components of the stack are based on Golang and TypeScript:
 
