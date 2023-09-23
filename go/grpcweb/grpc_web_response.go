@@ -25,13 +25,17 @@ type grpcWebResponse struct {
 
 	// The standard "application/grpc" content-type will be replaced with this.
 	contentType string
+
+	// Values appended to "Access-Control-Expose-Headers" response header.
+	exposedHeaders []string
 }
 
-func newGrpcWebResponse(resp http.ResponseWriter, isTextFormat bool) *grpcWebResponse {
+func newGrpcWebResponse(resp http.ResponseWriter, isTextFormat bool, exposedHeaders []string) *grpcWebResponse {
 	g := &grpcWebResponse{
-		headers:     make(http.Header),
-		wrapped:     resp,
-		contentType: grpcWebContentType,
+		headers:        make(http.Header),
+		wrapped:        resp,
+		contentType:    grpcWebContentType,
+		exposedHeaders: exposedHeaders,
 	}
 	if isTextFormat {
 		g.wrapped = newBase64ResponseWriter(g.wrapped)
@@ -79,8 +83,9 @@ func (w *grpcWebResponse) prepareHeaders() {
 	)
 	responseHeaderKeys := headerKeys(wh)
 	responseHeaderKeys = append(responseHeaderKeys, "grpc-status", "grpc-message")
+	responseHeaderKeys = append(responseHeaderKeys, w.exposedHeaders...)
 	wh.Set(
-		http.CanonicalHeaderKey("access-control-expose-headers"),
+		"access-control-expose-headers",
 		strings.Join(responseHeaderKeys, ", "),
 	)
 }

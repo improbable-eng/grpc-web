@@ -23,6 +23,7 @@ var (
 
 type options struct {
 	allowedRequestHeaders          []string
+	exposedResponseHeaders         []string
 	corsForRegisteredEndpointsOnly bool
 	corsMaxAge                     time.Duration
 	originFunc                     func(origin string) bool
@@ -118,6 +119,12 @@ func WithEndpointsFunc(endpointsFunc func() []string) Option {
 func WithAllowedRequestHeaders(headers []string) Option {
 	return func(o *options) {
 		o.allowedRequestHeaders = headers
+	}
+}
+
+func WithExposedResponseHeaders(headers []string) Option {
+	return func(o *options) {
+		o.exposedResponseHeaders = headers
 	}
 }
 

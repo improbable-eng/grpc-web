@@ -11,7 +11,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -208,7 +207,7 @@ func (s *GrpcWebWrapperTestSuite) makeGrpcRequest(
 		return nil, grpcweb.Trailer{}, nil, err
 	}
 	defer resp.Body.Close()
-	contents, err := ioutil.ReadAll(resp.Body)
+	contents, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, grpcweb.Trailer{}, nil, err
 	}
@@ -519,6 +518,26 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_EndpointsOnlyTrueWithHandler
 	corsResp, err = s.makeRequest("OPTIONS", badMethod, headers, nil, false)
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
 	assert.Equal(s.T(), 401, corsResp.StatusCode, "cors should return 403 as mocked")
+}
+
+func (s *GrpcWebWrapperTestSuite) TestExposedHeaders() {
+	const targetHeader = "x-b3-traceid"
+
+	s.wrappedServer = grpcweb.WrapServer(s.grpcServer,
+		grpcweb.WithExposedResponseHeaders([]string{
+			targetHeader,
+		}),
+	)
+
+	headers, _, _, err := s.makeGrpcRequest(
+		"/improbable.grpcweb.test.TestService/PingEmpty",
+		headerWithFlag(),
+		serializeProtoMessages([]proto.Message{&google_protobuf.Empty{}}),
+		false)
+	require.NoError(s.T(), err, "No error on making request")
+
+	value := headers.Get("Access-Control-Expose-Headers")
+	require.Contains(s.T(), value, targetHeader)
 }
 
 func (s *GrpcWebWrapperTestSuite) assertHeadersContainMetadata(headers http.Header, meta metadata.MD) {

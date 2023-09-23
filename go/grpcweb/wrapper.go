@@ -155,7 +155,7 @@ func (w *WrappedGrpcServer) IsGrpcWebSocketRequest(req *http.Request) bool {
 // with the gRPC-Web protocol.
 func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *http.Request) {
 	intReq, isTextFormat := hackIntoNormalGrpcRequest(req)
-	intResp := newGrpcWebResponse(resp, isTextFormat)
+	intResp := newGrpcWebResponse(resp, isTextFormat, w.opts.exposedResponseHeaders)
 	intReq.URL.Path = w.endpointFunc(intReq)
 	w.handler.ServeHTTP(intResp, intReq)
 	intResp.finishRequest(req)
