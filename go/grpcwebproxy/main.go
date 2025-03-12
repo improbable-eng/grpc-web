@@ -10,16 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"nhooyr.io/websocket"
-
 	"crypto/tls"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/coder/websocket"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/mwitkow/go-conntrack"
 	"github.com/mwitkow/grpc-proxy/proxy"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
@@ -67,7 +65,6 @@ func main() {
 	}
 
 	logrus.SetOutput(os.Stdout)
-	logEntry := logrus.NewEntry(logrus.StandardLogger())
 
 	if *flagAllowAllOrigins && len(*flagAllowedOrigins) != 0 {
 		logrus.Fatal("Ambiguous --allow_all_origins and --allow_origins configuration. Either set --allow_all_origins=true OR specify one or more origins to whitelist with --allow_origins, not both.")
@@ -75,7 +72,7 @@ func main() {
 
 	backendConn := dialBackendOrFail()
 
-	grpcServer := buildGrpcProxyServer(backendConn, logEntry)
+	grpcServer := buildGrpcProxyServer(backendConn)
 	errChan := make(chan error)
 
 	allowedOrigins := makeAllowedOrigins(*flagAllowedOrigins)
@@ -203,10 +200,9 @@ func serveServer(server *http.Server, listener net.Listener, name string, errCha
 	}()
 }
 
-func buildGrpcProxyServer(backendConn *grpc.ClientConn, logger *logrus.Entry) *grpc.Server {
+func buildGrpcProxyServer(backendConn *grpc.ClientConn) *grpc.Server {
 	// gRPC-wide changes.
 	grpc.EnableTracing = true
-	grpc_logrus.ReplaceGrpcLogger(logger)
 
 	// gRPC proxy logic.
 	director := func(ctx context.Context, fullMethodName string) (context.Context, *grpc.ClientConn, error) {
@@ -222,19 +218,17 @@ func buildGrpcProxyServer(backendConn *grpc.ClientConn, logger *logrus.Entry) *g
 		return outCtx, backendConn, nil
 	}
 
+	serverMetrics := grpc_prometheus.NewServerMetrics()
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(serverMetrics)
+
 	// Server with logging and monitoring enabled.
 	return grpc.NewServer(
 		grpc.CustomCodec(proxy.Codec()), // needed for proxy to function.
 		grpc.UnknownServiceHandler(proxy.TransparentHandler(director)),
 		grpc.MaxRecvMsgSize(*flagMaxCallRecvMsgSize),
-		grpc_middleware.WithUnaryServerChain(
-			grpc_logrus.UnaryServerInterceptor(logger),
-			grpc_prometheus.UnaryServerInterceptor,
-		),
-		grpc_middleware.WithStreamServerChain(
-			grpc_logrus.StreamServerInterceptor(logger),
-			grpc_prometheus.StreamServerInterceptor,
-		),
+		grpc.UnaryInterceptor(serverMetrics.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(serverMetrics.StreamServerInterceptor()),
 	)
 }
 

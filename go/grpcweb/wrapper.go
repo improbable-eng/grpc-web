@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
-	"nhooyr.io/websocket"
 )
 
 var (

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coder/websocket"
 	"github.com/desertbit/timer"
 	"golang.org/x/net/http2"
-	"nhooyr.io/websocket"
 )
 
 type webSocketResponseWriter struct {

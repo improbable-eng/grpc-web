@@ -85,7 +85,7 @@ func TestNonRootResource(t *testing.T) {
 	resp := httptest.NewRecorder()
 	wrappedServer.ServeHTTP(resp, req)
 
-	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, http.StatusNoContent, resp.Code)
 }
 
 func (s *GrpcWebWrapperTestSuite) SetupTest() {
@@ -437,16 +437,17 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_AllowedByOriginFunc() {
 
 	corsResp, err := s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/PingList", headers, nil, false)
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
+	assert.Equal(s.T(), 204, corsResp.StatusCode, "cors should return 204 as the list is empty")
 
 	preflight := corsResp.Header
 	assert.Equal(s.T(), "https://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the response headers")
 	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
 	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
-	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must be in the response headers")
+	assert.Equal(s.T(), strings.ToLower("Origin, X-Something-Custom, X-Grpc-Web, Accept"), strings.ToLower(preflight.Get("Access-Control-Allow-Headers")), "allowed headers must be in the response headers")
 
 	corsResp, err = s.makeRequest("OPTIONS", "/improbable.grpcweb.test.TestService/Unknown", headers, nil, false)
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
-	assert.Equal(s.T(), 500, corsResp.StatusCode, "cors should return 500 as grpc server does not understand that endpoint")
+	assert.Equal(s.T(), 405, corsResp.StatusCode, "cors should return 405 as grpc server does not understand that endpoint")
 }
 
 func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_CorsMaxAge() {
@@ -514,7 +515,7 @@ func (s *GrpcWebWrapperTestSuite) TestCORSPreflight_EndpointsOnlyTrueWithHandler
 	assert.Equal(s.T(), "https://foo.client.com", preflight.Get("Access-Control-Allow-Origin"), "origin must be in the response headers")
 	assert.Equal(s.T(), "POST", preflight.Get("Access-Control-Allow-Methods"), "allowed methods must be in the response headers")
 	assert.Equal(s.T(), "600", preflight.Get("Access-Control-Max-Age"), "allowed max age must be in the response headers")
-	assert.Equal(s.T(), "Origin, X-Something-Custom, X-Grpc-Web, Accept", preflight.Get("Access-Control-Allow-Headers"), "allowed headers must be in the response headers")
+	assert.Equal(s.T(), strings.ToLower("Origin, X-Something-Custom, X-Grpc-Web, Accept"), strings.ToLower(preflight.Get("Access-Control-Allow-Headers")), "allowed headers must be in the response headers")
 
 	corsResp, err = s.makeRequest("OPTIONS", badMethod, headers, nil, false)
 	assert.NoError(s.T(), err, "cors preflight should not return errors")
